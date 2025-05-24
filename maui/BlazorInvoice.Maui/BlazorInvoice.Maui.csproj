@@ -76,9 +76,9 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\src2\BlazorInvoice.Db\BlazorInvoice.Db.csproj" />
-      <ProjectReference Include="..\..\src2\BlazorInvoice.Weblib\BlazorInvoice.Weblib.csproj" />
-      <ProjectReference Include="..\..\src2\BlazorInvoice.Localization\BlazorInvoice.Localization.csproj" />
+      <ProjectReference Include="..\..\src\BlazorInvoice.Db\BlazorInvoice.Db.csproj" />
+      <ProjectReference Include="..\..\src\BlazorInvoice.Weblib\BlazorInvoice.Weblib.csproj" />
+      <ProjectReference Include="..\..\src\BlazorInvoice.Localization\BlazorInvoice.Localization.csproj" />
     </ItemGroup>
 
 </Project>
