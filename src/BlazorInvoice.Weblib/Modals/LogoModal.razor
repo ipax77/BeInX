@@ -1,0 +1,166 @@
+﻿@using BlazorInvoice.Shared
+@using BlazorInvoice.Shared.Interfaces
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.JSInterop
+@using pax.BBToast
+@using pax.XRechnung.NET.AnnotatedDtos
+@using pax.XRechnung.NET.BaseDtos
+@inherits InvoiceBaseComponent
+@inject IInvoiceRepository invoiceRepository
+@inject IJSRuntime JSRuntime
+@inject IToastService toastService
+
+<div class="modal fade" id="@_modalId" tabindex="-1" aria-labelledby="logoModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5 d-flex align-items-center" id="logoModalLabel">
+                    Logo upload for @Seller?.Email
+                    @if (isLoading)
+                    {
+                        <LoadingIndicator />
+                    }
+                </h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" style="min-height: 400px;">
+                <p>PNG image with size 250x250</p>
+                <div @ref="fileDropContainer"
+                     class="file-drop-zone @hoverClass"
+                     @ondragenter="OnDragEnter"
+                     @ondragleave="OnDragLeave"
+                     @ondragover="OnDragEnter"
+                     dropzone="all">
+                    <InputFile @ref="inputFile" class="form-control" OnChange="LoadFiles" multiple />
+                </div>
+                <div>
+                    @if (doc != null)
+                    {
+                        <p>Logo</p>
+                        <img src="data:@doc.MimeCode;base64, @doc.Content" alt="Logo" />
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-primary" @onclick="SaveImage">@Loc["Save"]</button>
+                            <button type="button" class="btn btn-danger" @onclick="DeleteImage">@Loc["Delete"]</button>
+                        </div>
+                    }
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@Loc["Close"]</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@code {
+    private readonly string _modalId = "logoModal";
+
+    [Parameter]
+    public IPartyBaseDto? Seller { get; set; }
+
+    [Parameter]
+    public int PartyId { get; set; }
+
+    [Parameter]
+    public EventCallback<IDocumentReferenceBaseDto> OnLogoChanged { get; set; }
+
+    private long maxFileSize = 1024 * 15;
+    private int maxAllowedFiles = 1;
+    private bool isLoading;
+    DocumentReferenceAnnotationDto? doc;
+
+    string hoverClass = string.Empty;
+    InputFile? inputFile;
+    ElementReference? fileDropContainer;
+
+    public async void Show(IPartyBaseDto seller, int partyId)
+    {
+        Seller = seller;
+        PartyId = partyId;
+        await JSRuntime.InvokeVoidAsync("openModalById", _modalId);
+        _ = LoadLogo();
+    }
+
+    void OnDragEnter(DragEventArgs e) => hoverClass = "hover";
+    void OnDragLeave(DragEventArgs e) => hoverClass = string.Empty;
+
+    private async Task LoadFiles(InputFileChangeEventArgs e)
+    {
+        isLoading = true;
+        await InvokeAsync(() => StateHasChanged());
+        doc = null;
+        int i = 0;
+        foreach (var file in e.GetMultipleFiles(maxAllowedFiles))
+        {
+            if (i >= maxAllowedFiles)
+            {
+                break;
+            }
+            try
+            {
+                using var stream = new MemoryStream();
+                await file.OpenReadStream(maxFileSize).CopyToAsync(stream);
+                stream.Position = 0;
+                byte[] fileBytes = stream.ToArray();
+                var base64String = Convert.ToBase64String(fileBytes);
+                doc = new()
+                {
+                    MimeCode = "image/png",
+                    DocumentDescription = "Seller Logo",
+                    Content = base64String,
+                };
+            }
+            catch (Exception ex)
+            {
+                toastService.ShowError(ex.Message, "Upload failed");
+            }
+            i++;
+        }
+
+        isLoading = false;
+        await InvokeAsync(() => StateHasChanged());
+    }
+
+    private async Task LoadLogo()
+    {
+        if (Seller is null)
+        {
+            return;
+        }
+        isLoading = true;
+        await InvokeAsync(() => StateHasChanged());
+        doc = await invoiceRepository.GetPartyLogo(PartyId);
+        isLoading = false;
+        await InvokeAsync(() => StateHasChanged());
+    }
+
+    private async Task SaveImage()
+    {
+        if (Seller is null || doc is null)
+        {
+            return;
+        }
+        isLoading = true;
+        await InvokeAsync(() => StateHasChanged());
+        await invoiceRepository.AddReplaceOrDeletePartyLogo(doc.Content, PartyId);
+        isLoading = false;
+        await InvokeAsync(() => StateHasChanged());
+        toastService.ShowSuccess("Logo successfully saved.");
+    }
+
+    private async Task DeleteImage()
+    {
+        if (PartyId == 0)
+        {
+            return;
+        }
+        isLoading = true;
+        await InvokeAsync(() => StateHasChanged());
+        await invoiceRepository.AddReplaceOrDeletePartyLogo(null, PartyId);
+        doc = null;
+        isLoading = false;
+        await InvokeAsync(() => StateHasChanged());
+        toastService.ShowSuccess("Logo successfully deleted.");
+    }
+}

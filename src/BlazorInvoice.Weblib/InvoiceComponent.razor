@@ -1,0 +1,414 @@
+﻿@inherits InvoiceBaseComponent
+@using BlazorInvoice.Pdf
+@using BlazorInvoice.Weblib.Forms
+@using BlazorInvoice.Weblib.Modals
+<div class="container-fluid mt-2 mb-5">
+    <div class="d-flex">
+        <div>
+        @if (InvoiceId is null)
+        {
+            <h2>@Loc["Create New Invoice"]</h2>
+        }
+        else
+        {
+            <h2>@Loc["Edit Invoice"]</h2>
+        }
+        </div>
+        <div class="form-check form-switch ms-3 mt-1">
+            <label for="showdesc" class="form-check-label">@Loc["Show Descriptions"]</label>
+            <input id="showdesc" type="checkbox" class="form-check-input" role="switch"
+                @bind="appConfig.ShowFormDescriptions" @bind:after="() => ConfigService.UpdateConfig(appConfig)" />
+        </div>
+        @if (NoneRequiredSelected)
+        {
+            <div class="ms-3">
+                <button type="button" class="btn btn-sm btn-outline-light" @onclick="CreateSampleInvoice">
+                    @Loc["Create Sample Invoice"]
+                </button>
+            </div>
+        }
+    </div>
+    <div class="row">
+        <div class="col-5">
+            <hr />
+            @if (ShowSellerCreation)
+            {
+                @if (SelectedSellerId is null)
+                {
+                    <h3>@Loc["Create New Seller"] <i class="pointer bi bi-x-lg text-danger" @onclick="e => ShowSellerCreation = false"></i></h3>
+                }
+                else
+                {
+                    <h3>@Loc["Edit Seller"] <i class="pointer bi bi-x-lg text-danger" @onclick="e => ShowSellerCreation = false"></i></h3>
+                }
+                <CascadingValue Value="sellerEditContext" Name="partyEditContext">
+                    <SellerPartyForm Party="invoiceDto.SellerParty" OnValidSubmit="OnSellerChanged"
+                                     OnCodeListRequested="CodeListRequest" ShowDesc="showDesc"
+                                     OnCancel="e => ShowSellerCreation = false" />
+                </CascadingValue>
+            }
+            else if (ShowBuyerCreation)
+            {
+                @if (SelectedBuyerId is null)
+                {
+                    <h3>@Loc["Create New Buyer"] <i class="pointer bi bi-x-lg text-danger" @onclick="e => ShowBuyerCreation = false"></i></h3>
+                }
+                else
+                {
+                    <h3>@Loc["Edit Buyer"] <i class="pointer bi bi-x-lg text-danger" @onclick="e => ShowBuyerCreation = false"></i></h3>
+                }
+                <CascadingValue Value="buyerEditContext" Name="partyEditContext">
+                    <BuyerPartyForm Party="invoiceDto.BuyerParty" OnValidSubmit="OnBuyerChanged"
+                                    OnCodeListRequested="CodeListRequest" ShowDesc="showDesc"
+                                    OnCancel="e => ShowBuyerCreation = false" />
+                </CascadingValue>
+            }
+            else if (ShowPaymentCreation)
+            {
+                @if (SelectedPaymentId is null)
+                {
+                    <h3>@Loc["Create New Payment Means"] <i class="pointer bi bi-x-lg text-danger" @onclick="e => ShowPaymentCreation = false"></i></h3>
+                }
+                else
+                {
+                    <h3>@Loc["Edit Payment Means"] <i class="pointer bi bi-x-lg text-danger" @onclick="e => ShowPaymentCreation = false"></i></h3>
+                }
+                <CascadingValue Value="paymentEditContext" Name="paymentEditContext">
+                    <PaymentForm Payment="invoiceDto.PaymentMeans" OnValidSubmit="OnPaymentChanged"
+                                 OnCodeListRequested="CodeListRequest" ShowDesc="showDesc"
+                                 OnCancel="e => ShowPaymentCreation = false" />
+                </CascadingValue>
+            }
+            else if (ShowLineCreation)
+            {
+                @if (!isLineEdit)
+                {
+                    <h3>@Loc["Create New Line"] <i class="pointer bi bi-x-lg text-danger" @onclick="e => ShowLineCreation = false"></i></h3>
+                }
+                else
+                {
+                    <h3>@Loc["Edit Line"] <i class="pointer bi bi-x-lg text-danger" @onclick="e => ShowLineCreation = false"></i></h3>
+                }
+                <CascadingValue Value="invoiceEditContext" Name="invoiceEditContext">
+                    <LineForm Invoice="invoiceDto" LineIndex="@SelectedLineIndex" OnCancel="e => ShowLineCreation = false"
+                              OnCodeListRequested="CodeListRequest" ShowDesc="showDesc"
+                              OnValidSubmit="OnLineChanged" />
+                </CascadingValue>
+            }
+            else
+            {
+                <div>
+                    @if (SelectedSellerId is null)
+                    {
+                        <div class="mb-4">
+                            <h5>@Loc["Select or Create Seller"]</h5>
+                            @if (Sellers is not null)
+                            {
+                                <select class="form-select" @bind="SelectedSellerId" @bind:after="OnSellerSelected">
+                                    <option value="">-- Select a seller --</option>
+                                    @foreach (var seller in Sellers)
+                                    {
+                                        <option value="@seller.PartyId">@seller.Name</option>
+                                    }
+                                </select>
+                                <button class="btn btn-sm btn-secondary mt-2" @onclick="e => ShowSellerCreation = true">
+                                    + @Loc["Add New Seller"]
+                                </button>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div>
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-outline-info" disabled style="width: 200px;">
+                                    @Loc["Seller"]
+                                </button>
+                                <button type="button" class="btn btn-outline-light text-truncate" disabled
+                                        style="width: 250px;">
+                                    @invoiceDto.SellerParty.Name
+                                </button>
+                                <button type="button" class="btn btn-outline-warning"
+                                        @onclick="e => ShowSellerCreation = true">
+                                    @Loc["Edit"]
+                                </button>
+                                <button type="button" class="btn btn-outline-danger"
+                                        @onclick="e => RemoveSeller()">
+                                    @Loc["Remove"]
+                                </button>
+                            </div>
+                        </div>
+                    }
+
+                    @if (SelectedBuyerId is null)
+                    {
+                        <div class="mb-4">
+                            <h5>@Loc["Select or Create Buyer"]</h5>
+                            @if (Buyers is not null)
+                            {
+                                <select class="form-select" @bind="SelectedBuyerId" @bind:after="OnBuyerSelected">
+                                    <option value="">-- Select a buyer --</option>
+                                    @foreach (var buyer in Buyers)
+                                    {
+                                        <option value="@buyer.PartyId">@buyer.Name</option>
+                                    }
+                                </select>
+                                <button class="btn btn-sm btn-secondary mt-2" @onclick="e => ShowBuyerCreation = true">
+                                    + @Loc["Add New Buyer"]
+                                </button>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div>
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-outline-info" disabled style="width: 200px;">
+                                    @Loc["Buyer"]
+                                </button>
+                                <button type="button" class="btn btn-outline-light text-truncate" disabled
+                                        style="width: 250px;">
+                                    @invoiceDto.BuyerParty.Name
+                                </button>
+                                <button type="button" class="btn btn-outline-warning"
+                                        @onclick="e => ShowBuyerCreation = true">
+                                    @Loc["Edit"]
+                                </button>
+                                <button type="button" class="btn btn-outline-danger"
+                                        @onclick="e => RemoveBuyer()">
+                                    @Loc["Remove"]
+                                </button>
+                            </div>
+                        </div>
+                    }
+
+                    @if (SelectedPaymentId is null)
+                    {
+                        <div class="mb-4">
+                            <h5>@Loc["Select or Create Payment Means"]</h5>
+                            @if (Payments is not null)
+                            {
+                                <select class="form-select" @bind="SelectedPaymentId" @bind:after="OnPaymentSelected">
+                                    <option value="">-- Select a payment --</option>
+                                    @foreach (var payment in Payments)
+                                    {
+                                        <option value="@payment.PlaymentMeansId">@payment.Name</option>
+                                    }
+                                </select>
+                                <button class="btn btn-sm btn-secondary mt-2" @onclick="e => ShowPaymentCreation = true">
+                                    + @Loc["Add New Payment Means"]
+                                </button>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div>
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-outline-info" disabled style="width: 200px;">
+                                    @Loc["Payment Means"]
+                                </button>
+                                <button type="button" class="btn btn-outline-light text-truncate" disabled
+                                        style="width: 250px;">
+                                    @invoiceDto.PaymentMeans.Name
+                                </button>
+                                <button type="button" class="btn btn-outline-warning"
+                                        @onclick="e => ShowPaymentCreation = true">
+                                    @Loc["Edit"]
+                                </button>
+                                <button type="button" class="btn btn-outline-danger"
+                                        @onclick="e => RemovePayment()">
+                                    @Loc["Remove"]
+                                </button>
+                            </div>
+                        </div>
+                    }
+                </div>
+                <hr />
+                @if (AllRequiredSelected)
+                {
+                    <div class="mt-2">
+                        <div>
+                            <CascadingValue Value="invoiceEditContext" Name="invoiceEditContext">
+                                <InvoiceForm Invoice="invoiceDto" ShowDesc="showDesc" OnCodeListRequested="CodeListRequest" />
+                            </CascadingValue>
+                        </div>
+                        <hr />
+                        <div class="mt-2 mb-5">
+                            <div class="d-flex">
+                            <h4>@Loc["Invoice Lines"] - &sum; @invoiceDto.InvoiceLines.Sum(s => s.LineTotal).ToString("N2")</h4>
+                            <div class="ms-2">
+                                <button type="button" class="btn btn-sm btn-outline-secondary"
+                                        @onclick="e => lineImportModal?.Show(invoiceDto)">
+                                    @Loc["Line Import"]
+                                </button>
+                            </div>
+                            </div>
+                            @for (int i = 0; i < invoiceDto.InvoiceLines.Count; i++)
+                            {
+                                var invoiceLine = invoiceDto.InvoiceLines[i];
+                                var index = i;
+                                <div>
+                                    <div class="btn-group">
+                                        <button type="button" class="btn btn-sm btn-outline-light"
+                                                @onclick="e => MoveLineUp(index)">
+                                            <i class="bi bi-arrow-up"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-light"
+                                                @onclick="e => MoveLineDown(index)">
+                                            <i class="bi bi-arrow-down"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-outline-secondary" disabled>
+                                            @Loc["Line"] @(index + 1):
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-light text-truncate" disabled
+                                                style="width: 250px;">
+                                            @invoiceLine.Name / @invoiceLine.LineTotal.ToString("N2")
+                                            @invoiceDto.DocumentCurrencyCode
+                                        </button>
+                                        <button type="button" class="btn btn-outline-warning"
+                                                @onclick="e => EditLine(index)">
+                                            @Loc["Edit"]
+                                        </button>
+                                        <button type="button" class="btn btn-outline-danger"
+                                                @onclick="e => RemoveLine(index)">
+                                            @Loc["Remove"]
+                                        </button>
+                                    </div>
+                                </div>
+                            }
+                            <button class="btn btn-sm btn-secondary mt-2" @onclick="AddLine">+ @Loc["Add New Line"]</button>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+        <div class="col-7">
+            @if (AllRequiredSelected)
+            {
+                <div class="sticky-top mt-2 mb-2">
+                    <div class="btn-group p-1 border rounded bg-dark-subtle">
+                        <button type="button" class="btn btn-outline-success"
+                                @onclick="e => OnInvoiceChanged(invoiceDto)">
+                            @Loc["Save"]
+                        </button>
+                        @if (InvoiceId != null && InvoiceId > 0)
+                        {
+                            <button type="button" class="btn btn-outline-warning" @onclick="e => exportModal?.Show(new() { Id = invoiceDto.Id, InvoiceId = InvoiceId.Value })">@Loc["Export"]</button>
+                        } else
+                        {
+                            <button type="button" class="btn btn-outline-warning" disabled>@Loc["Export"]</button>
+                        }
+                    </div>
+                </div>
+
+                <div class="mb-2">
+                    <button class="btn btn-outline-light" type="button" @onclick="e => ShowPdfComponent = !ShowPdfComponent">
+                        @if (ShowPdfComponent)
+                        {
+                            <i class="bi bi-chevron-double-up"></i>
+                            <span>Hide PDF</span>
+                        }
+                        else
+                        {
+                            <i class="bi bi-chevron-double-down"></i>
+                            <span>Show PDF</span>
+                        }
+                    </button>
+                </div>
+
+                @if (ShowPdfComponent)
+                {
+                    <div class="mt-2" style="width: 800px;">
+                        <InvoicePdfComponent @ref="invoicePdfComponent" Invoice="invoiceDto" />
+                    </div>
+                }
+
+                <div class="mb-2">
+                    <button class="btn btn-outline-light" type="button" data-bs-toggle="collapse" data-bs-target="#xmlText"
+                            aria-expanded="false" aria-controls="xmlText" @onclick="e => ShowXmlText = !ShowXmlText">
+                        @if (ShowXmlText)
+                        {
+                            <i class="bi bi-chevron-double-up"></i>
+                            <span>Hide Xml</span>
+                        }
+                        else
+                        {
+                            <i class="bi bi-chevron-double-down"></i>
+                            <span>Show Xml</span>
+                        }
+                    </button>
+                </div>
+                <div class="collapse" id="xmlText">
+                    @if (ShowXmlText)
+                    {
+                        <XmlTextComponent @ref="xmlTextComponent" Invoice="invoiceDto" />
+                    }
+                </div>
+                <div class="mb-2">
+                     <button class="btn btn-outline-light" type="button" data-bs-toggle="collapse" data-bs-target="#chatgpt"
+                            aria-expanded="false" aria-controls="validation" @onclick="e => ShowChatGpt = !ShowChatGpt">
+                        @if (ShowChatGpt)
+                        {
+                            <i class="bi bi-chevron-double-up"></i>
+                            <span>Hide Json</span>
+                        }
+                        else
+                        {
+                            <i class="bi bi-chevron-double-down"></i>
+                            <span>Show Json</span>
+                        }
+                    </button>
+                </div>
+                <div class="collapse" id="chatgpt">
+                    @if (ShowChatGpt)
+                    {
+                        <ChatGptComponent @ref="chatGptComponent" Invoice="invoiceDto" />
+                    }
+                </div>
+                <div class="mb-2">
+                     <button class="btn btn-outline-light" type="button" data-bs-toggle="collapse" data-bs-target="#validation"
+                            aria-expanded="false" aria-controls="validation" @onclick="e => ShowValidation = !ShowValidation">
+                        @if (ShowValidation)
+                        {
+                            <i class="bi bi-chevron-double-up"></i>
+                            <span>Hide @Loc["Validation"]</span>
+                        }
+                        else
+                        {
+                            <i class="bi bi-chevron-double-down"></i>
+                            <span>Show @Loc["Validation"]</span>
+                        }
+                    </button>
+                </div>
+                 <div class="collapse" id="validation">
+                    <div class="btn-group mt-2">
+                        <button type="button" class="btn btn-outline-primary" @onclick="ValidateInvoiceSchema">
+                            Validate
+                            XML
+                        </button>
+                        <button type="button" class="btn btn-outline-primary" @onclick="ValidateInvoiceSchematron">
+                            Validate
+                            Schematron
+                        </button>
+                        <div class="form-check form-switch ms-2 mt-1">
+                            <label for="xmlvalidation" class="form-check-label">Show Warnings</label>
+                            <input id="xmlvalidation" type="checkbox" class="form-check-input" role="switch" @bind="appConfig.ShowValidationWarnings" @bind:after="() => ConfigService.UpdateConfig(appConfig)" />
+                        </div>
+                    </div>
+                    <div class="mt-2">
+                        @if (invoiceValidationResult is not null && ShowValidation)
+                        {
+                            <ValidationResultComponent Result="invoiceValidationResult" ShowWarnings="appConfig.ShowValidationWarnings" />
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<TempInvoiceModal @ref="tempInvoiceModal" OnContinue="ContinueTempInvoice" />
+<LineImportModal @ref="lineImportModal" Invoice="invoiceDto" OnLinesAdded="e => FieldChanged(null, new(new()))" />
+<CodeListModal @ref="codeListModal" OnSelected="CodeListSelected" />
+<ExportModal @ref="exportModal" />

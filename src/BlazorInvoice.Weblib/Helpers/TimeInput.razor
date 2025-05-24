@@ -1,0 +1,66 @@
+﻿@using Microsoft.AspNetCore.Components.Forms
+
+<div>
+    <form name="@_id">
+        <fieldset>
+            <label for="time_@_id" class="form-label">
+                @ChildContent
+            </label>
+            <div id="time_@_id" class="d-flex align-items-center">
+                <div class="me-2">
+                    <input type="date" @bind="_dateOnly" @bind:event="oninput" @bind:after="SetTime" />
+                </div>
+                <div class="me-2">
+                    <input type="time" @bind="_timeOnly" @bind:event="oninput" @bind:after="SetTime" />
+                </div>
+                <div>
+                    <i class="pointer text-danger bi bi-x-lg" @onclick="ClearValues"></i>
+                </div>
+            </div>
+        </fieldset>
+    </form>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public DateTime? TimeValue { get; set; }
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    [Parameter]
+    public EventCallback<DateTime?> OnTimeValueChanged { get; set; }
+
+    private Guid _id = Guid.NewGuid();
+
+    private TimeOnly _timeOnly;
+    private DateOnly _dateOnly;
+
+    protected override void OnParametersSet()
+    {
+        if (TimeValue != null)
+        {
+            _timeOnly = TimeOnly.FromDateTime(TimeValue.Value);
+            _dateOnly = DateOnly.FromDateTime(TimeValue.Value);
+        }
+    }
+
+    private void SetTime()
+    {
+        if (_dateOnly == default && _timeOnly == default)
+        {
+            OnTimeValueChanged.InvokeAsync(null);
+            return;
+        }
+        DateTime newDate = new DateTime(_dateOnly.Year, _dateOnly.Month, _dateOnly.Day);
+        DateTime newDateTime = newDate.AddHours(_timeOnly.Hour).AddMinutes(_timeOnly.Minute);
+        OnTimeValueChanged.InvokeAsync(newDateTime);
+    }
+
+    private void ClearValues()
+    {
+        _dateOnly = default;
+        _timeOnly = default;
+        OnTimeValueChanged.InvokeAsync(null);
+    }
+}

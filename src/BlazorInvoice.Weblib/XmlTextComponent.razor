@@ -1,0 +1,38 @@
+@using BlazorInvoice.Shared
+@using pax.XRechnung.NET
+
+<div class="w-100 p-1 border">
+    <textarea @bind="xmlText" rows="15" class="form-input w-100"></textarea>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public BlazorInvoiceDto Invoice { get; set; } = null!;
+
+    private string xmlText = string.Empty;
+    private BlazorInvoiceMapper mapper = new BlazorInvoiceMapper();
+
+    protected override void OnInitialized()
+    {
+        CreateText();
+    }
+
+    public void Update(BlazorInvoiceDto invoiceDto)
+    {
+        Invoice = invoiceDto;
+        CreateText();
+    }
+
+    private void CreateText()
+    {
+        try
+        {
+            var xmlInvoice = mapper.ToXml(Invoice);
+            xmlText = XmlInvoiceWriter.Serialize(xmlInvoice);
+        }
+        catch (Exception ex)
+        {
+            xmlText = ex.Message;
+        }
+    }
+}

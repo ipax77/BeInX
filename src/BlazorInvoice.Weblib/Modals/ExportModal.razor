@@ -1,0 +1,168 @@
+﻿@using BlazorInvoice.Pdf
+@using BlazorInvoice.Shared
+@using BlazorInvoice.Shared.Interfaces
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.JSInterop
+@using System.Security.Cryptography
+@using pax.BBToast
+@using pax.XRechnung.NET
+@using pax.XRechnung.NET.CodeListModel
+@inherits InvoiceBaseComponent
+@inject IJSRuntime JSRuntime
+@inject IInvoiceRepository InvoiceRepository
+@inject PdfJsInterop PdfJsInterop
+@inject IToastService ToastService
+
+<div class="modal fade" id="@_modalId" tabindex="-1" aria-labelledby="codeListModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="codeListModalLabel">@Loc["Invoice Export"]</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div>
+                    <h6 class="mt-2">Options</h6>
+                    <hr />
+                    <EditForm EditContext="editContext" FormName="exportOptionsForm">
+                        <DataAnnotationsValidator />
+                        <div class="mb-3 form-check">
+                            <InputCheckbox id="embedPdf" class="form-check-input" @bind-Value="config.ExportEmbedPdf" />
+                            <label for="embedPdf" class="form-check-label">@Loc["Embed PDF"]</label>
+                        </div>
+                        <div class="mb-3 form-check">
+                            <InputCheckbox id="validate" class="form-check-input" @bind-Value="config.ExportValidate" />
+                            <label for="validate" class="form-check-label">@Loc["Validate XML"]</label>
+                        </div>
+                        <div class="mb-3 form-check">
+                            <InputCheckbox id="finalize" class="form-check-input" @bind-Value="config.ExportFinalize" />
+                            <label for="finalize" class="form-check-label">@Loc["Finalize"]</label>
+                        </div>
+                        <div class="mb-3">
+                            <label for="typeselect" class="form-label">Export Type</label>
+                            <InputSelect id="typeselect" class="form-select" @bind-Value="config.ExportType">
+                                @foreach (ExportType ent in Enum.GetValues(typeof(ExportType)))
+                                {
+                                    <option value="@ent">@ent</option>
+                                }
+                            </InputSelect>
+                        </div>
+                    </EditForm>
+                    <hr />
+                </div>
+                @if (_invoiceInfo != null)
+                {
+                    <div class="alert alert-secondary">
+                        <strong>Invoice ID:</strong> @_invoiceInfo.Id
+                    </div>
+                }
+                @if (isLoading)
+                {
+                    <div class="text-center my-3">
+                        <LoadingIndicator />
+                    </div>
+                }
+                @if (_finalizeResult != null)
+                {
+                    <div class="alert alert-success">
+                        <p><strong>Created:</strong> @_finalizeResult.Created</p>
+                        <p><strong>Hash:</strong> @_finalizeResult.Sha1Hash</p>
+                    </div>
+                }
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary btn-lg" @onclick="Export" disabled="@isLoading">@Loc["Export"]</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@Loc["Close"]</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private readonly string _modalId = "exportModal";
+    private AppConfigDto config = new();
+    private FinalizeResult? _finalizeResult;
+    private bool isLoading;
+
+    [Parameter]
+    public EventCallback OnExported { get; set; }
+
+    private InvoiceListDto? _invoiceInfo;
+    private EditContext editContext = null!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        config = await ConfigService.GetConfig();
+        editContext = new EditContext(this.config);
+        editContext.OnFieldChanged += OnFieldChanged;
+    }
+
+    public void Show(InvoiceListDto invoiceInfo)
+    {
+        _finalizeResult = null;
+        _invoiceInfo = invoiceInfo;
+        JSRuntime.InvokeVoidAsync("openModalById", _modalId);
+    }
+
+    public void Close()
+    {
+        JSRuntime.InvokeVoidAsync("closeModalById", _modalId);
+    }
+
+    private async void OnFieldChanged(object? sender, FieldChangedEventArgs e)
+    {
+        await ConfigService.UpdateConfig(config);
+    }
+
+    private async Task Export()
+    {
+        isLoading = true;
+        await InvokeAsync(StateHasChanged);
+        if (_invoiceInfo is null)
+        {
+            return;
+        }
+        try
+        {
+            var invoice = await InvoiceRepository.GetInvoice(_invoiceInfo.InvoiceId);
+            if (invoice is null)
+            {
+                ToastService.ShowError("Invoice not found.");
+                return;
+            }
+            var pdfBytes = await PdfJsInterop.CreateInvoicePdfBytes(invoice.InvoiceDto, config.CultureName);
+            var exportResult = await InvoiceRepository.ExportInvoice(_invoiceInfo.InvoiceId, pdfBytes);
+            if (!string.IsNullOrEmpty(exportResult.Error))
+            {
+                ToastService.ShowError(exportResult.Error);
+                return;
+            }
+            _finalizeResult = exportResult.FinalizeResult;
+
+            await Download(exportResult.FileName, exportResult.FinalizeResult.MimeType, exportResult.FinalizeResult.Blob);
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError(ex.Message);
+        }
+        finally
+        {
+            isLoading = false;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private async Task Download(string fileName, string mimeType, byte[] blob)
+    {
+        var stream = new MemoryStream(blob);
+        using var streamRef = new DotNetStreamReference(stream);
+        await JSRuntime.InvokeVoidAsync("downloadFileFromStream", fileName, streamRef, mimeType);
+    }
+
+    public override void Dispose()
+    {
+        editContext.OnFieldChanged -= OnFieldChanged;
+        base.Dispose();
+    }
+}
+

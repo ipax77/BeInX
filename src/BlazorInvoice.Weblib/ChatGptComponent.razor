@@ -1,0 +1,31 @@
+﻿@using BlazorInvoice.Shared
+@using System.Text.Json
+@using pax.XRechnung.NET
+
+<div class="w-100 p-1 border">
+    <textarea @bind="json" rows="15" class="form-input w-100"></textarea>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public BlazorInvoiceDto Invoice { get; set; } = null!;
+
+    private string json = string.Empty;
+    private JsonSerializerOptions options = new() { WriteIndented = true };
+
+    protected override void OnInitialized()
+    {
+        CreateJson();
+    }
+
+    public void Update(BlazorInvoiceDto invoiceDto)
+    {
+        Invoice = invoiceDto;
+        CreateJson();
+    }
+
+    private void CreateJson()
+    {
+        json = JsonSerializer.Serialize(Invoice, options);
+    }
+}

@@ -1,0 +1,28 @@
+﻿<Project Sdk="MSTest.Sdk/3.8.3">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <UseVSTest>true</UseVSTest>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BlazorInvoice.Shared\BlazorInvoice.Shared.csproj" />
+    <ProjectReference Include="..\BlazorInvoice.Weblib\BlazorInvoice.Weblib.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Update="Microsoft.NET.Test.Sdk" Version="17.14.0-preview-25107-01" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Update="MSTest.TestAdapter" Version="3.9.0-preview.25167.10" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Update="MSTest.TestFramework" Version="3.9.0-preview.25167.10" />
+  </ItemGroup>
+
+</Project>

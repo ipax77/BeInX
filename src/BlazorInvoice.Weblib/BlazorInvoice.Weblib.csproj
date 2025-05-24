@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+
+  <ItemGroup>
+    <SupportedPlatform Include="browser" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="9.0.5" />
+    <PackageReference Include="Microsoft.Extensions.Localization" Version="9.0.5" />
+    <PackageReference Include="pax.BlazorChartJs" Version="0.8.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BlazorInvoice.Localization\BlazorInvoice.Localization.csproj" />
+    <ProjectReference Include="..\BlazorInvoice.Shared\BlazorInvoice.Shared.csproj" />
+    <ProjectReference Include="..\pax.BBToast\pax.BBToast.csproj" />
+    <ProjectReference Include="..\BlazorInvoice.Pdf\BlazorInvoice.Pdf.csproj" />
+  </ItemGroup>
+
+</Project>

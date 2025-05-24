@@ -1,0 +1,24 @@
+﻿<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="/" />
+    <link rel="stylesheet" href="@Assets["_content/BlazorInvoice.Weblib/css/bootstrap.min.css"]" />
+    <link rel="stylesheet" href="@Assets["_content/BlazorInvoice.Weblib/css/app.css"]" />
+    <link rel="stylesheet" href="@Assets["BlazorInvoice.Web.styles.css"]" />
+    <link rel="stylesheet" href="@Assets["_content/BlazorInvoice.Weblib/css/bootstrap-icons/font/bootstrap-icons.min.css"]" />
+    <ImportMap />
+    <HeadOutlet @rendermode="InteractiveServer" />
+</head>
+
+<body>
+    <Routes @rendermode="InteractiveServer" />
+    <script src="_framework/blazor.web.js"></script>
+    <script src="@Assets["_content/BlazorInvoice.Weblib/js/bootstrap.bundle.min.js"]"></script>
+    <script src="@Assets["_content/BlazorInvoice.Weblib/js/blazorinvoice.js"]"></script>
+
+</body>
+
+</html>

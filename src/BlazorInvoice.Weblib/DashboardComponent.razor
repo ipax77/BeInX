@@ -1,0 +1,181 @@
+@using BlazorInvoice.Shared
+@using BlazorInvoice.Weblib.Helpers
+@using BlazorInvoice.Weblib.Modals
+@using BlazorInvoice.Shared.Interfaces
+@using pax.BBToast
+@inherits InvoiceBaseComponent
+@inject IInvoiceRepository InvoiceRepository
+@inject NavigationManager NavigationManager
+@inject IToastService ToastService
+@inject IStatsRepository StatsRepository
+
+<div class="container-fluid mt-3">
+    <div class="row">
+        <div class="col-4">
+            <div class="p-3 border rounded bgchart">
+                <h3>Blazor eInvoice XRechung App</h3>
+                <p class="text-muted">Manage and view your eInvoices effortlessly</p>
+            </div>
+        </div>
+        <div class="col-7">
+            @if (statsResponse != null)
+            {
+                <div class="row">
+                    <div class="col-auto">
+                        <div class="card">
+                            <div class="card-header bgchart2">
+                                @Loc["Total Invoices"]
+                            </div>
+                            <div class="card-body bgchart text-center">
+                                @statsResponse.TotalInvoices.ToString("N0")
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <div class="card">
+                            <div class="card-header bgchart2">
+                                @Loc["Paid"]
+                            </div>
+                            <div class="card-body bgchart text-center">
+                                @statsResponse.PaidInvoices.ToString("N0")
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <div class="card">
+                            <div class="card-header bgchart2">
+                                @Loc["Unpaid"]
+                            </div>
+                            <div class="card-body bgchart text-center">
+                                @((statsResponse.TotalInvoices - statsResponse.PaidInvoices).ToString("N0"))
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-4">
+            <div class="mt-3">
+                @if (hasTempInvoice)
+                {
+                    <div class="alert alert-warning d-flex justify-content-between align-items-center"
+                        style="max-width: 500px;">
+                        <span>@Loc["Unfinished invoice found!"]</span>
+                        <a href="create" class="btn btn-sm btn-outline-secondary">Continue Editing</a>
+                    </div>
+                }
+                else
+                {
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-outline-light"
+                            @onclick="@(() => NavigationManager.NavigateTo("create"))">
+                            <i class="bi bi-plus-circle"></i> @Loc["New Invoice"]
+                        </button>
+                    </div>
+                }
+            </div>
+        </div>
+        <div class="col-7">
+            @if (statsResponse != null)
+            {
+                <div class="alert @(statsResponse.UnpaidAmount == 0 ? "alert-success" : "alert-warning") mt-3"
+                    style="max-width: 500px;">
+                    <strong>@Loc["Unpaid Invoices"]:</strong> <span>@statsResponse.UnpaidAmount.ToString("N2")</span>
+                </div>
+                @if (statsResponse.UnpaidAmount > 0)
+                {
+                    <InvoicesComponent Unpaid="true" OnPaidChanged="LoadStats" />
+                }
+            }
+        </div>
+    </div>
+
+    <div class="row mt-3">
+        @if (statsResponse != null)
+        {
+            <div class="col-4">
+                <div class="d-flex align-items-end gap-3 my-3">
+                    <div>
+                        <label for="yearInput" class="form-label">@Loc["Stats For Year"]</label>
+                        <input id="yearInput" type="number" class="form-control" step="1" @bind="year"
+                            @bind:after="LoadStats" />
+                    </div>
+                    <div>
+                        @if (isLoading)
+                        {
+                            <LoadingIndicator />
+                        }
+                        else
+                        {
+                            <button type="button" class="btn btn-sm btn-outline-primary" @onclick="LoadStats">Refresh</button>
+                        }
+                    </div>
+                </div>
+                <div class="table-responsive" style="max-width: 500px;">
+                    <table class="table table-striped">
+                        <thead class="table-light">
+                            <tr>
+                                <th>@Loc["Time Period"]</th>
+                                <th>@Loc["Amount (tax exclusive)"]</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var stat in statsResponse.Steps)
+                            {
+                                <tr>
+                                    <td>@stat.Start.ToShortDateString() - @stat.End.ToShortDateString()</td>
+                                    <td class="text-end">@stat.TotalAmountWithoutVat.ToString("N2")</td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot>
+                            <tr class="fw-bold">
+                                <td>@Loc["Total"]</td>
+                                <td class="text-end">@statsResponse.Steps.Sum(s => s.TotalAmountWithoutVat).ToString("N2")
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+            <div class="col-7">
+                <StatsChartComponent @ref="statsChartComponent" StatsResponse="statsResponse" />
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    bool hasTempInvoice;
+    StatsResponse? statsResponse = null;
+    int year = DateTime.Today.Year;
+    bool isLoading = false;
+    StatsChartComponent? statsChartComponent;
+
+    protected override async Task OnInitializedAsync()
+    {
+        hasTempInvoice = await InvoiceRepository.HasTempInvoice();
+        statsResponse = await StatsRepository.GetStats(year);
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender && hasTempInvoice)
+        {
+        }
+        base.OnAfterRender(firstRender);
+    }
+
+    private async Task LoadStats()
+    {
+        isLoading = true;
+        await InvokeAsync(StateHasChanged);
+        statsResponse = await StatsRepository.GetStats(year);
+        statsChartComponent?.Update(statsResponse);
+        isLoading = false;
+        await InvokeAsync(StateHasChanged);
+    }
+}

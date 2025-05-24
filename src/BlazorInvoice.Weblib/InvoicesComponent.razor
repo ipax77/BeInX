@@ -1,0 +1,107 @@
+@using BlazorInvoice.Shared.Interfaces
+@using BlazorInvoice.Weblib.Helpers
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components.Web.Virtualization
+@using Microsoft.JSInterop
+@inherits InvoiceBaseComponent
+@inject IInvoiceRepository InvoiceRepository
+@inject NavigationManager NavigationManager
+
+@if (!Unpaid)
+{
+    <div class="mt-2">
+        <EditForm EditContext="@editContext" FormName="InvoiceRequest">
+            <div class="row">
+                <div class="col-auto d-flex">
+                    <div>
+                        <label for="invoiceSearch" class="form-label">@Loc["Search"]</label>
+                        <InputText class="form-control" id="invoiceSearch" @bind-Value="request.Filter" />
+                    </div>
+                    <div>
+                        <i class="bi bi-x-lg text-danger pointer" @onclick="Reset"></i>
+                    </div>
+                </div>
+            </div>
+        </EditForm>
+    </div>
+}
+<div class="table-responsive d-inline-block text-nowrap mt-2" style="max-width: 1100px; max-height: 80vh;">
+    <h3>
+        @if (Unpaid)
+        {
+            <span>@Loc["Unpaid Invoices"] - # @totalCount.ToString("N0")</span>
+        }
+        else
+        {
+            <span>@Loc["Invoices"] - # @totalCount.ToString("N0")</span>
+        }
+        @if (isLoading)
+        {
+            <span class="spinner-border spinner-border-sm text-danger ms-1" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </span>
+        }
+    </h3>
+    <table class="table table-striped">
+        <thead class="user-select-none table-light">
+            <CascadingValue Value="request.TableOrders">
+                <tr>
+                    <th>Paid</th>
+                    <th scope="col" class="pointer" @onclick="@(e => SortList(e, "Id"))">
+                        <SortArrow Property="Id">
+                            Id
+                        </SortArrow>
+                    </th>
+                    <th scope="col" class="pointer" @onclick="@(e => SortList(e, "IssueDate"))">
+                        <SortArrow Property="IssueDate">
+                            @Loc["Issue Date"]
+                        </SortArrow>
+                    </th>
+                    <th scope="col" class="pointer" @onclick="@(e => SortList(e, "BuyerEmail"))">
+                        <SortArrow Property="BuyerEmail">
+                            @Loc["Buyer Email"]
+                        </SortArrow>
+                    </th>
+                    <th></th>
+                </tr>
+            </CascadingValue>
+        </thead>
+        <tbody>
+            <Virtualize @ref="virtualizeComponent" ItemsProvider="LoadInvoices" Context="invoice" ItemSize="47" SpacerElement="tr">
+                <ItemContent>
+                    <tr @key="@invoice" height="47px">
+                        @if (invoice.IsPaid)
+                        {
+                            <td class="text-success"><i class="bi bi-check-circle"></i></td>
+                        }
+                        else
+                        {
+                            <td></td>
+                        }
+                        <td>@invoice.Id</td>
+                        <td>@invoice.IssueDate.ToShortDateString()</td>
+                        <td>@invoice.BuyerEmail</td>
+                        <InvoiceListButtonColumn @key="@invoice.InvoiceId" Invoice="invoice" 
+                            OnCopy="Copy"
+                            OnExport="Export"
+                            OnSetPaid="e => SetPaid(e, true)"
+                            OnSetUnPaid="e => SetPaid(e, false)"
+                            OnDelete="Delete" />
+                    </tr>
+                </ItemContent>
+                <Placeholder>
+                    <tr height="47px">
+                        <td colspan="100">Loading ...</td>
+                    </tr>
+                </Placeholder>
+                <EmptyContent>
+                    <tr>
+                        <td colspan="100">@Loc["No data found"].</td>
+                    </tr>
+                </EmptyContent>
+            </Virtualize>
+        </tbody>
+    </table>
+</div>
+
+<BlazorInvoice.Weblib.Modals.ExportModal @ref="exportModal" OnExported="Reload" />

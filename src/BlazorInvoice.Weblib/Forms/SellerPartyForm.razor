@@ -1,0 +1,135 @@
+﻿@using BlazorInvoice.Localization
+@using BlazorInvoice.Shared.Interfaces
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.Extensions.Localization
+@using pax.XRechnung.NET.AnnotatedDtos
+@using pax.XRechnung.NET.BaseDtos
+@inject IStringLocalizer<InvoiceLoc> Loc
+
+<div>
+    <EditForm EditContext="partyEditContext" FormName="InvoicePartyForm" OnValidSubmit="HandleValidSubmit">
+        <DataAnnotationsValidator />
+        <div class="mb-3">
+            <label for="bt27" class="form-label">Name</label>
+            <InputText class="form-control" id="bt27" aria-describedby="bt27desc" @bind-Value="Party.Name" />
+            <small id="bt27desc" class="@descClass">@Loc["BT-27"]</small>
+            <div>
+                <ValidationMessage For="@(() => Party.Name)" />
+            </div>
+        </div>
+        <div class="mb-3">
+            <label for="bt27" class="form-label">Registration Name</label>
+            <InputText class="form-control" id="bt27" aria-describedby="bt27desc" @bind-Value="Party.RegistrationName" />
+            <small id="bt28desc" class="@descClass">@Loc["BT-28"]</small>
+            <div>
+                <ValidationMessage For="@(() => Party.RegistrationName)" />
+            </div>
+        </div>
+        <div class="mb-3">
+            <label for="bt35" class="form-label">Street Name</label>
+            <InputText class="form-control" id="bt35" aria-describedby="bt35desc" @bind-Value="Party.StreetName" />
+            <small id="bt35desc" class="@descClass">@Loc["BT-35"]</small>
+            <div>
+                <ValidationMessage For="@(() => Party.StreetName)" />
+            </div>
+        </div>
+        <div class="mb-3">
+            <label for="bt38" class="form-label">Postal Zone</label>
+            <InputText class="form-control" id="bt38" aria-describedby="bt38desc" @bind-Value="Party.PostCode" />
+            <small id="bt38desc" class="@descClass">@Loc["BT-38"]</small>
+            <div>
+                <ValidationMessage For="@(() => Party.PostCode)" />
+            </div>
+        </div>
+        <div class="mb-3">
+            <label for="bt37" class="form-label">City Name</label>
+            <InputText class="form-control" id="bt37" aria-describedby="bt37desc" @bind-Value="Party.City" />
+            <small id="bt37desc" class="@descClass">@Loc["BT-37"]</small>
+            <div>
+                <ValidationMessage For="@(() => Party.City)" />
+            </div>
+        </div>
+        <div class="mb-3">
+            <label for="bt40" class="form-label">Country</label>
+            <div class="input-group">
+                <InputText class="form-control" id="bt40" aria-describedby="bt40desc" @bind-Value="Party.CountryCode" />
+                <button type="button" class="btn btn-sm btn-outline-light ms-1" @onclick="@(() => OnCodeListRequested.InvokeAsync("Country_Codes"))">Pick</button>
+            </div>
+            <small id="bt40desc" class="@descClass">@Loc["BT-40"] - ISO 3166</small>
+            <div>
+                <ValidationMessage For="@(() => Party.CountryCode)" />
+            </div>
+        </div>
+        <div class="mb-3">
+            <label for="bt42" class="form-label">Contact Telephone</label>
+            <InputText class="form-control" id="bt42" aria-describedby="bt42desc" @bind-Value="Party.Telefone" />
+            <small id="bt42desc" class="@descClass">@Loc["BT-42"]</small>
+            <div>
+                <ValidationMessage For="@(() => Party.Telefone)" />
+            </div>
+        </div>
+        <div class="mb-3">
+            <label for="bt43" class="form-label">Contact Email</label>
+            <InputText class="form-control" id="bt43" aria-describedby="bt43desc" @bind-Value="Party.Email" />
+            <small id="bt43desc" class="@descClass">@Loc["BT-43"]</small>
+            <div>
+                <ValidationMessage For="@(() => Party.Email)" />
+            </div>
+        </div>
+        <div class="mb-3">
+            <label for="btweb" class="form-label">Website</label>
+            <InputText class="form-control" id="btweb" aria-describedby="btwebdesc" @bind-Value="Party.Website" />
+            @* <small id="btwebdesc" class="@descClass">@Loc["BT-WEB"]</small> *@
+            <div>
+                <ValidationMessage For="@(() => Party.Website)" />
+            </div>
+        </div>
+        <div class="mb-3">
+            <label for="bt31" class="form-label">Umsatzsteuer-Identifikationsnummer</label>
+            <InputText class="form-control" id="bt31" aria-describedby="bt31desc" aria-placeholder="DE123456789" @bind-Value="Party.TaxId" />
+            <small id="bt31desc" class="@descClass">@Loc["BT-31"]</small>
+            <div>
+                <ValidationMessage For="@(() => Party.TaxId)" />
+            </div>
+        </div>
+        <div class="mb-3">
+            <label for="bt32" class="form-label">Steuernummer</label>
+            <InputText class="form-control" id="bt32" aria-describedby="bt32desc" aria-placeholder="000/0000/0000/0" @bind-Value="Party.CompanyId" />
+            <small id="bt32desc" class="@descClass">@Loc["BT-32"]</small>
+            <div>
+                <ValidationMessage For="@(() => Party.CompanyId)" />
+            </div>
+        </div>
+        <div class="mt-3">
+            <button type="button" class="btn btn-danger" @onclick="e => OnCancel.InvokeAsync()">Cancel</button>
+            <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+    </EditForm>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public SellerAnnotationDto Party { get; set; } = null!;
+
+    [Parameter]
+    public EventCallback<SellerAnnotationDto> OnValidSubmit { get; set; }
+
+    [Parameter]
+    public EventCallback OnCancel { get; set; }
+
+    [Parameter]
+    public EventCallback<string> OnCodeListRequested { get; set; }
+
+    [Parameter]
+    public bool ShowDesc { get; set; } = true;
+
+    [CascadingParameter(Name = "partyEditContext")]
+    public EditContext partyEditContext { get; set; } = null!;
+
+    string descClass => ShowDesc ? "form-text text-muted" : "d-none";
+
+    private async Task HandleValidSubmit()
+    {
+        await OnValidSubmit.InvokeAsync(Party);
+    }
+}
