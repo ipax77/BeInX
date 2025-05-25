@@ -120,12 +120,11 @@
                     else
                     {
                         <div>
-                            <div class="btn-group">
-                                <button type="button" class="btn btn-outline-info" disabled style="width: 200px;">
+                            <div class="btn-group flex-wrap btn-group-responsive mb-2">
+                                <button type="button" class="btn btn-outline-info fixed-label-button" disabled>
                                     @Loc["Seller"]
                                 </button>
-                                <button type="button" class="btn btn-outline-light text-truncate" disabled
-                                        style="width: 250px;">
+                                <button type="button" class="btn btn-outline-light text-truncate flex-grow-1" disabled>
                                     @invoiceDto.SellerParty.Name
                                 </button>
                                 <button type="button" class="btn btn-outline-warning"
@@ -162,12 +161,11 @@
                     else
                     {
                         <div>
-                            <div class="btn-group">
-                                <button type="button" class="btn btn-outline-info" disabled style="width: 200px;">
+                            <div class="btn-group flex-wrap btn-group-responsive mb-2">
+                                <button type="button" class="btn btn-outline-info fixed-label-button" disabled>
                                     @Loc["Buyer"]
                                 </button>
-                                <button type="button" class="btn btn-outline-light text-truncate" disabled
-                                        style="width: 250px;">
+                                <button type="button" class="btn btn-outline-light text-truncate flex-grow-1" disabled>
                                     @invoiceDto.BuyerParty.Name
                                 </button>
                                 <button type="button" class="btn btn-outline-warning"
@@ -204,12 +202,11 @@
                     else
                     {
                         <div>
-                            <div class="btn-group">
-                                <button type="button" class="btn btn-outline-info" disabled style="width: 200px;">
+                            <div class="btn-group flex-wrap btn-group-responsive mb-2">
+                                <button type="button" class="btn btn-outline-info fixed-label-button" disabled>
                                     @Loc["Payment Means"]
                                 </button>
-                                <button type="button" class="btn btn-outline-light text-truncate" disabled
-                                        style="width: 250px;">
+                                <button type="button" class="btn btn-outline-light text-truncate flex-grow-1" disabled>
                                     @invoiceDto.PaymentMeans.Name
                                 </button>
                                 <button type="button" class="btn btn-outline-warning"
@@ -261,8 +258,7 @@
                                         <button type="button" class="btn btn-outline-secondary" disabled>
                                             @Loc["Line"] @(index + 1):
                                         </button>
-                                        <button type="button" class="btn btn-sm btn-outline-light text-truncate" disabled
-                                                style="width: 250px;">
+                                        <button type="button" class="btn btn-sm btn-outline-light text-truncate" disabled>
                                             @invoiceLine.Name / @invoiceLine.LineTotal.ToString("N2")
                                             @invoiceDto.DocumentCurrencyCode
                                         </button>
