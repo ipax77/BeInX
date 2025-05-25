@@ -30,13 +30,10 @@ public class GitHubUpdateService(ILogger<GitHubUpdateService> logger) : IUpdateS
 
         try
         {
-            var stream = await httpClient.GetStreamAsync("/latest.yml");
-
-            StreamReader reader = new StreamReader(stream);
-            string versionInfo = await reader.ReadLineAsync() ?? "";
-
-
-            if (Version.TryParse(versionInfo.Split(' ').LastOrDefault(), out Version? newVersion)
+            var response = await httpClient.GetAsync(packageUri + "/latest.yml");
+            response.EnsureSuccessStatusCode();
+            string content = await response.Content.ReadAsStringAsync();
+            if (Version.TryParse(content.Split(' ').LastOrDefault(), out Version? newVersion)
                 && newVersion is not null)
             {
                 latestVersion = newVersion;
