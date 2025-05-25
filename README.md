@@ -22,6 +22,8 @@ To install the latest release:
 * Only **one VAT category** per invoice
 * Only **credit transfer** is supported as a payment method
 * PDF generation optimized for **time-based services**
+* Currently runs on Windows Desktop only (via .NET MAUI)
+* Installation via GitHub Releases requires manual setup and may be time-consuming until the app is published on the Microsoft Store
 
 # Contributing
 
