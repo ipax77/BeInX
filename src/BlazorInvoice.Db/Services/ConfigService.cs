@@ -81,6 +81,7 @@ public class ConfigService(IServiceScopeFactory scopeFactory) : IConfigService
         config.SchematronValidationUri = configDto.SchematronValidationUri;
         config.ShowFormDescriptions = configDto.ShowFormDescriptions;
         config.ShowValidationWarnings = configDto.ShowValidationWarnings;
+        config.CheckForUpdates = configDto.CheckForUpdates;
         config.ExportEmbedPdf = configDto.ExportEmbedPdf;
         config.ExportValidate = configDto.ExportValidate;
         config.ExportFinalize = configDto.ExportFinalize;
@@ -99,6 +100,7 @@ public class ConfigService(IServiceScopeFactory scopeFactory) : IConfigService
             SchematronValidationUri = config.SchematronValidationUri,
             ShowFormDescriptions = config.ShowFormDescriptions,
             ShowValidationWarnings = config.ShowValidationWarnings,
+            CheckForUpdates = config.CheckForUpdates,
             ExportValidate = config.ExportValidate,
             ExportEmbedPdf = config.ExportEmbedPdf,
             ExportFinalize = config.ExportFinalize,
@@ -113,9 +115,9 @@ public class ConfigService(IServiceScopeFactory scopeFactory) : IConfigService
 
     public List<CultureInfo> SupportedCultures { get; } =
     [
-        new CultureInfo("de"),
         new CultureInfo("en"),
         new CultureInfo("es"),
+        new CultureInfo("de"),
         new CultureInfo("fr"),
     ];
 

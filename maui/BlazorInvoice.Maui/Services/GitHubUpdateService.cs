@@ -1,17 +1,17 @@
 using Microsoft.Extensions.Logging;
 using Windows.Management.Deployment;
 using BlazorInvoice.Shared;
+using BlazorInvoice.Shared.Interfaces;
 
 namespace BlazorInvoice.Maui.Services;
 
-public class GitHubUpdateService(ILogger<GitHubUpdateService> logger)
+public class GitHubUpdateService(ILogger<GitHubUpdateService> logger) : IUpdateService
 {
     private readonly string packageUri = "https://github.com/ipax77/beinx/releases/latest/download";
     private readonly string packageName = "BlazorInvoice.Maui";
-    public static readonly Version CurrentVersion = new(1, 0, 0, 0);
     private Version latestVersion = new(0, 0, 0, 0);
 
-    public EventHandler<UpdateProgressEventArgs>? UpdateProgress;
+    public event EventHandler<UpdateProgressEventArgs>? UpdateProgress;
 
     private void OnUpdateProgress(UpdateProgressEventArgs e)
     {
@@ -21,6 +21,8 @@ public class GitHubUpdateService(ILogger<GitHubUpdateService> logger)
 
     public async Task<bool> CheckForUpdates()
     {
+        Version currentVersion = GetCurrentVersion();
+
         HttpClient httpClient = new()
         {
             BaseAddress = new Uri(packageUri)
@@ -38,7 +40,7 @@ public class GitHubUpdateService(ILogger<GitHubUpdateService> logger)
                 && newVersion is not null)
             {
                 latestVersion = newVersion;
-                return latestVersion > CurrentVersion;
+                return latestVersion > currentVersion;
             }
         }
         catch (Exception ex)
@@ -50,7 +52,7 @@ public class GitHubUpdateService(ILogger<GitHubUpdateService> logger)
 
     public async Task<bool> UpdateApp()
     {
-        if (latestVersion <= CurrentVersion)
+        if (latestVersion <= GetCurrentVersion())
         {
             return true;
         }
@@ -77,5 +79,10 @@ public class GitHubUpdateService(ILogger<GitHubUpdateService> logger)
         return false;
     }
 
+    public Version GetCurrentVersion()
+    {
+        var version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+        return version ?? new Version(1, 0, 0, 1);
+    }
 }
 

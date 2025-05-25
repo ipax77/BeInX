@@ -32,6 +32,7 @@ namespace BlazorInvoice.Web
 
             builder.Services.AddSingleton<IConfigService, ConfigService>();
             builder.Services.AddSingleton<IBackupService, BackupService>();
+            builder.Services.AddSingleton<IUpdateService, FakeUpdateService>();
 
             builder.Services.AddScoped<IInvoiceRepository, InvoiceRepository>();
             builder.Services.AddScoped<IStatsRepository, StatsRepository>();

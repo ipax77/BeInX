@@ -517,4 +517,28 @@
   <data name="Create Sample Invoice" xml:space="preserve">
     <value>Create Sample Invoice</value>
   </data>
+  <data name="KositWarn" xml:space="preserve">
+    <value>Only enter trusted Servers or setup your own.</value>
+  </data>
+  <data name="External Link" xml:space="preserve">
+    <value>External Link</value>
+  </data>
+  <data name="Update Check" xml:space="preserve">
+    <value>Update Check</value>
+  </data>
+  <data name="UpdateCheck" xml:space="preserve">
+    <value>Check for new version on app start</value>
+  </data>
+  <data name="Update Available" xml:space="preserve">
+    <value>Update Available</value>
+  </data>
+  <data name="UpdateAvailable" xml:space="preserve">
+    <value>A new version is available. Do you want to update?</value>
+  </data>
+  <data name="Yes" xml:space="preserve">
+    <value>Yes</value>
+  </data>
+  <data name="No" xml:space="preserve">
+    <value>No</value>
+  </data>
 </root>

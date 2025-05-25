@@ -19,15 +19,20 @@
             <label for="kosit" class="form-label">@Loc["Kosit validator uri"]</label>
             <InputText class="form-control" id="kosit" aria-describedby="kositdesc" @bind-Value="appConfig.SchematronValidationUri" />
             <small id="kositdesc" class="form-text">@Loc["KositDesc", "https://pax77.org/validate"]</small>
-            <small class="text-warning">@Loc["KositWarn"] <a href="https://github.com/ipax77/pax.XRechnung.NET?tab=readme-ov-file#java-schematron-validator">@Loc["External Link"]</a></small>
+            <small class="text-warning">@Loc["KositWarn"] <a href="https://github.com/ipax77/BeInX/blob/main/PRIVACY_POLICY.md#external-validation-services">@Loc["External Link"]</a></small>
         </div>
         <div class="mb-1 form-check form-switch">
             <label for="desc" class="form-label">@Loc["Show Form Descriptions"]</label>
             <InputCheckbox id="desc" class="form-check-input" role="switch" @bind-Value="appConfig.ShowFormDescriptions" />
         </div>
-        <div class="mb-3 form-check form-switch">
+        <div class="mb-1 form-check form-switch">
             <label for="xmlvalidation" class="form-label">@Loc["Show XML Validation Warnings"]</label>
             <InputCheckbox id="xmlvalidation" class="form-check-input" role="switch" @bind-Value="appConfig.ShowValidationWarnings" />
+        </div>
+        <div class="mb-3 form-check form-switch">
+            <label for="updatecheck" class="form-label">@Loc["Update Check"]</label>
+            <InputCheckbox id="updatecheck" class="form-check-input" role="switch" aria-describedby="updatecheckdesc" @bind-Value="appConfig.CheckForUpdates" />
+            <small id="updatecheckdesc" class="form-text">@Loc["UpdateCheck"]</small>
         </div>
         <div class="mb-3 p-3 border rounded">
             <h3>@Loc["Backup Options"]</h3>

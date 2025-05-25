@@ -42,6 +42,7 @@ namespace BlazorInvoice.Maui
             builder.Services.AddSingleton<IFolderPicker>(FolderPicker.Default);
             builder.Services.AddSingleton<IConfigService, ConfigService>();
             builder.Services.AddSingleton<IBackupService, BackupService>();
+            builder.Services.AddSingleton<IUpdateService, GitHubUpdateService>();
 
             builder.Services.AddScoped<IInvoiceRepository, InvoiceRepository>();
             builder.Services.AddScoped<IMauiPathService, MauiPathService>();

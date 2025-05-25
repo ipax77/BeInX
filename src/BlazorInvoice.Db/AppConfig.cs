@@ -17,6 +17,7 @@ public class AppConfig
     [Precision(0)]
     public bool ShowFormDescriptions { get; set; } = true;
     public bool ShowValidationWarnings { get; set; }
+    public bool CheckForUpdates { get; set; } = true;
 
     // Export
     public bool ExportEmbedPdf { get; set; } = true;

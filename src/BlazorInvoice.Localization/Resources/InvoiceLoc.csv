@@ -154,3 +154,9 @@ ChartTitle;Paid Invoices Tax Exclusive Amount;Bezahlt: Betrag ohne Umsatzsteuer;
 Create Sample Invoice;Create Sample Invoice;Beispielrechnung erstellen;Crear factura de ejemplo;Créer une facture d'exemple
 KositWarn;Only enter trusted Servers or setup your own.;Geben Sie nur vertrauenswürdige Server ein oder richten Sie Ihren eigenen ein.;Ingrese solo servidores confiables o configure el suyo propio.;N'entrez que des serveurs de confiance ou configurez le vôtre.
 External Link;External Link;Externer Link;Enlace externo;Lien externe
+Update Check;Update Check;Update-Prüfung;Verificación de actualizaciones;Vérification des mises à jour
+UpdateCheck;Check for new version on app start;Beim Start der App nach neuer Version suchen;Buscar nueva versión al iniciar la aplicación;Vérifier une nouvelle version au démarrage de l'application
+Update Available;Update Available;Update verfügbar;Actualización disponible;Mise à jour disponible
+UpdateAvailable;A new version is available. Do you want to update?;Eine neue Version ist verfügbar. Möchten Sie aktualisieren?;Hay una nueva versión disponible. ¿Desea actualizar?;Une nouvelle version est disponible. Voulez-vous mettre à jour ?
+Yes;Yes;Ja;Sí;Oui
+No;No;Nein;No;Non
