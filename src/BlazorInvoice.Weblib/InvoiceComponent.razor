@@ -246,7 +246,7 @@
                                 var invoiceLine = invoiceDto.InvoiceLines[i];
                                 var index = i;
                                 <div>
-                                    <div class="btn-group">
+                                    <div class="btn-group flex-wrap btn-group-responsive mb-1">
                                         <button type="button" class="btn btn-sm btn-outline-light"
                                                 @onclick="e => MoveLineUp(index)">
                                             <i class="bi bi-arrow-up"></i>
@@ -255,10 +255,10 @@
                                                 @onclick="e => MoveLineDown(index)">
                                             <i class="bi bi-arrow-down"></i>
                                         </button>
-                                        <button type="button" class="btn btn-outline-secondary" disabled>
+                                        <button type="button" class="btn btn-outline-info" disabled>
                                             @Loc["Line"] @(index + 1):
                                         </button>
-                                        <button type="button" class="btn btn-sm btn-outline-light text-truncate" disabled>
+                                        <button type="button" class="btn btn-sm btn-outline-light text-truncate flex-grow-1" disabled>
                                             @invoiceLine.Name / @invoiceLine.LineTotal.ToString("N2")
                                             @invoiceDto.DocumentCurrencyCode
                                         </button>

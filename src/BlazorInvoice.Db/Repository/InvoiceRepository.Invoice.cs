@@ -288,6 +288,17 @@ public partial class InvoiceRepository
         ArgumentNullException.ThrowIfNull(invoice, nameof(invoice));
         invoice.IsPaid = isPaid;
         await context.SaveChangesAsync(token);
+        if (invoice.XmlInvoiceCreated == null)
+        {
+            var info = await GetInvoice(invoiceId, token);
+            if (info is null)
+            {
+                return;
+            }
+            var mapper = new BlazorInvoiceMapper();
+            var xmlInvoice = mapper.ToXml(info.InvoiceDto);
+            await FinalizeInvoice(invoiceId, xmlInvoice, token);
+        }
     }
 
     public async Task<int> CreateInvoiceCopy(int invoiceId)
