@@ -1,3 +1,5 @@
+[![.NET](https://github.com/ipax77/BeInX/actions/workflows/dotnet.yml/badge.svg)](https://github.com/ipax77/BeInX/actions/workflows/dotnet.yml)
+
 # BeInX
 **Blazor eInvoice XRechnung App**
 
