@@ -6,6 +6,10 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Content Remove="C:\Users\pax77\.nuget\packages\pax.blazorchartjs\0.8.5\contentFiles\any\net8.0\tsconfig.json" />
+  </ItemGroup>
+
 
   <ItemGroup>
     <SupportedPlatform Include="browser" />

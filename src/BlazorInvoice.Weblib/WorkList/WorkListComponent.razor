@@ -5,7 +5,7 @@
 @inject IWorkListRepository WorkListRepository
 
 <h3>Work List</h3>
-<div class="mb-4">
+<div class="mb-4" style="max-width: 400px;">
     <h5>@Loc["Select or Create Buyer"]</h5>
     <select class="form-select" @bind="partyId" @bind:after="OnPartySelected">
         <option value="0">-- Select party --</option>
@@ -16,43 +16,203 @@
     </select>
 </div>
 
-<h3>Entries</h3>
-<div>
-    @foreach (var entry in workEntries)
-    {
-        <div class="card mb-2 p-2">
-            <input type="text" class="form-control mb-1" @bind="entry.Job" @oninput="() => OnFieldChanged()" />
-
-            <input type="time" class="form-control mb-1" @bind="entry.StartTime" @oninput="() => OnFieldChanged()" />
-
-            <input type="time" class="form-control mb-1" @bind="entry.EndTime" @oninput="() => OnFieldChanged()" />
-
-            <input type="number" class="form-control mb-1" step="0.01" @bind="entry.HourlyRate"
-                @oninput="() => OnFieldChanged()" />
-        </div>
-    }
+<h3>Entries @focusedRow|@focusedColumn @keyPressed</h3>
+<div class="table-responsive">
+    <table class="table table-bordered table-sm align-middle text-center">
+        <colgroup>
+            <col class="col-2">
+            <col class="col">
+            <col class="col-1">
+            <col class="col-1">
+            <col class="col-1">
+            <col class="col-2">
+        </colgroup>
+        <thead class="table-light">
+            <tr>
+                <th>Date</th>
+                <th>Job</th>
+                <th>Start Time</th>
+                <th>End Time</th>
+                <th>€/h</th>
+                <th>Summary</th>
+            </tr>
+        </thead>
+        <tbody @onfocusout="HandleFocusOut" tabindex="0">
+            @for (int row = 0; row < workEntries.Count; row++)
+            {
+                var entry = workEntries[row];
+                var rowIndex = row;
+                entry.Row = rowIndex;
+                <tr @key="entry" id="@entry.EntryGuid">
+                    <td>
+                        <input @ref="entry.ElementReferences[0]" type="date" class="form-control form-control-sm" data-row="@rowIndex" data-col="0" @onfocus="e => Focus(rowIndex, 0)"
+                               @onkeydown="KeyPressed"
+                               @bind="entry.Date" @oninput="() => OnFieldChanged(entry)" />
+                    </td>
+                    <td>
+                        <input @ref="entry.ElementReferences[1]" type="text" class="form-control form-control-sm" data-row="@rowIndex" data-col="1" @onfocus="e => Focus(rowIndex, 1)"
+                               @onkeydown="KeyPressed"
+                               @bind="entry.Job" @oninput="() => OnFieldChanged(entry)" />
+                    </td>
+                    <td>
+                        <input @ref="entry.ElementReferences[2]" type="time" class="form-control form-control-sm" data-row="@rowIndex" data-col="2" @onfocus="e => Focus(rowIndex, 2)"
+                               @onkeydown="KeyPressed"
+                               @bind="entry.StartTime" @oninput="() => OnFieldChanged(entry)" />
+                    </td>
+                    <td>
+                        <input @ref="entry.ElementReferences[3]" type="time" class="form-control form-control-sm" data-row="@rowIndex" data-col="3" @onfocus="e => Focus(rowIndex, 3)"
+                               @onkeydown="KeyPressed"
+                               @bind="entry.EndTime" @oninput="() => OnFieldChanged(entry)" />
+                    </td>
+                    <td>
+                        <input @ref="entry.ElementReferences[4]" type="number" step="0.01" class="form-control form-control-sm" data-row="@rowIndex" data-col="4" @onfocus="e => Focus(rowIndex, 4)"
+                               @onkeydown="KeyPressed"
+                               @bind="entry.HourlyRate" @oninput="() => OnFieldChanged(entry)" />
+                    </td>
+                    <td>@(((double)entry.HourlyRate * (entry.EndTime - entry.StartTime).TotalHours).ToString("N2"))</td>
+                </tr>
+            }
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="4" class="text-start"><button type="button" class="btn btn-sm btn-outline-light" @onclick="AddLine">Add Line</button></td>
+                <td class="text-end">Total:</td>
+                <td>@(workEntries.Sum(e => (double)e.HourlyRate * (e.EndTime - e.StartTime).TotalHours).ToString("N2"))</td>
+            </tr>
+        </tfoot>
+    </table>
 </div>
 
 @code {
+    int columnCount = 5;
     List<PartyListDto> parties = [];
     int partyId = 0;
-    List<WorkEntryDto> workEntries = [];
+    List<WorkEntryWeb> workEntries = [];
     bool hasTempEntries;
+    int focusedRow = -1;
+    int focusedColumn = -1;
+    string keyPressed = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
         parties = await InvoiceRepository.GetBuyers(new());
-
     }
     private async Task OnPartySelected()
     {
         hasTempEntries = await WorkListRepository.HasTempWorkEntries(partyId);
-        // TODO: notify -> continue quesiton
-        workEntries = await WorkListRepository.GetWorkEntires(partyId, false);
+        // TODO: notify -> continue question
+
+        var entries = await WorkListRepository.GetWorkEntires(partyId, false);
+        workEntries = entries.Select(e => new WorkEntryWeb(e, columnCount)).ToList();
+        workEntries.Add(new(new() { Date = DateTime.Today }, columnCount));
+        await InvokeAsync(StateHasChanged);
     }
 
-    private async Task OnFieldChanged()
+    private async Task OnFieldChanged(WorkEntryDto entry)
     {
-        await WorkListRepository.SaveTempWorkEntriesAsync(workEntries, partyId);
+        await WorkListRepository
+            .SaveTempWorkEntriesAsync(workEntries.Select(s => s.GetDto()).ToList(), partyId);
+    }
+
+    private void AddLine()
+    {
+        workEntries.Add(new(new() { Date = DateTime.Today }, columnCount));
+    }
+
+    private void Focus(int row, int column)
+    {
+        focusedRow = row;
+        focusedColumn = column;
+    }
+
+    private async Task KeyPressed(KeyboardEventArgs e)
+    {
+        keyPressed = e.Key; // For debugging or display
+
+        if (focusedRow < 0 || focusedColumn < 0) return;
+
+        var current = workEntries.FirstOrDefault(x => x.Row == focusedRow);
+        if (current == null) return;
+        var currentElement = current.ElementReferences[focusedColumn];
+        ElementReference? next = null;
+
+        if (e.Code == "ArrowDown" && focusedRow < workEntries.Count - 1)
+        {
+            next = workEntries[focusedRow + 1].ElementReferences[focusedColumn];
+            focusedRow++;
+        }
+        else if (e.Code == "ArrowUp" && focusedRow > 0)
+        {
+            next = workEntries[focusedRow - 1].ElementReferences[focusedColumn];
+            focusedRow--;
+        }
+        else if (e.Code == "ArrowRight" || (e.Code == "Tab" && !e.ShiftKey))
+        {
+            if (focusedColumn < columnCount - 1)
+            {
+                next = current.ElementReferences[focusedColumn + 1];
+                focusedColumn++;
+            }
+            else if (focusedRow < workEntries.Count - 1)
+            {
+                next = workEntries[focusedRow + 1].ElementReferences[0];
+                focusedRow++;
+                focusedColumn = 0;
+            }
+        }
+        else if (e.Code == "ArrowLeft" || (e.Code == "Tab" && e.ShiftKey))
+        {
+            if (focusedColumn > 0)
+            {
+                next = current.ElementReferences[focusedColumn - 1];
+                focusedColumn--;
+            }
+            else if (focusedRow > 0)
+            {
+                next = workEntries[focusedRow - 1].ElementReferences[columnCount - 1];
+                focusedRow--;
+                focusedColumn = columnCount - 1;
+            }
+        }
+
+        if (next.HasValue)
+        {
+            await next.Value.FocusAsync();
+        }
+    }
+
+    private void HandleFocusOut()
+    {
+        focusedRow = -1;
+        focusedColumn = -1;
+    }
+
+    internal record WorkEntryWeb : WorkEntryDto
+    {
+        public WorkEntryWeb(WorkEntryDto entryDto, int columnCount)
+        {
+            EntryGuid = entryDto.EntryGuid;
+            Date = entryDto.Date;
+            Job = entryDto.Job;
+            StartTime = entryDto.StartTime;
+            EndTime = entryDto.EndTime;
+            HourlyRate = entryDto.HourlyRate;
+            ElementReferences = new ElementReference[columnCount];
+        }
+        public ElementReference[] ElementReferences { get; set; }
+        public int Row { get; set; } = -1;
+
+        public WorkEntryDto GetDto()
+        {
+            return new WorkEntryDto
+            {
+                EntryGuid = EntryGuid,
+                Date = Date,
+                Job = Job,
+                StartTime = StartTime,
+                EndTime = EndTime,
+                HourlyRate = HourlyRate
+            };
+        }
     }
 }

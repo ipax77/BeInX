@@ -91,7 +91,7 @@ public class WorkListRepository(InvoiceContext context) : IWorkListRepository
             StartTime = workEntry.StartTime,
             EndTime = workEntry.EndTime,
             Billed = workEntry.Billed,
-            HourlyRate = workEntry.HourlyRate,
+            HourlyRate = (double)workEntry.HourlyRate,
         };
     }
 
@@ -105,7 +105,7 @@ public class WorkListRepository(InvoiceContext context) : IWorkListRepository
             StartTime = workEntry.StartTime,
             EndTime = workEntry.EndTime,
             Billed = workEntry.Billed,
-            HourlyRate = workEntry.HourlyRate,
+            HourlyRate = (decimal)workEntry.HourlyRate,
             InvoicePartyId = partyId,
         };
     }

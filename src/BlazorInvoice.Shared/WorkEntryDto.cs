@@ -8,5 +8,5 @@ public record WorkEntryDto
     public DateTime StartTime { get; set; }
     public DateTime EndTime { get; set; }
     public bool Billed { get; set; }
-    public decimal HourlyRate { get; set; }
+    public double HourlyRate { get; set; }
 }
