@@ -11,6 +11,8 @@ public sealed class InvoiceContext : DbContext
     public DbSet<AdditionalDocumentReference> AdditionalDocumentReferences { get; set; } = null!;
     public DbSet<TempInvoice> TempInvoices { get; set; } = null!;
     public DbSet<AppConfig> AppConfigs { get; set; } = null!;
+    public DbSet<WorkEntry> WorkEntries { get; set; } = null!;
+    public DbSet<TempWorkEntry> TempWorkEntries { get; set; } = null!;
 
     public InvoiceContext(DbContextOptions<InvoiceContext> options)
     : base(options)
@@ -31,18 +33,11 @@ public sealed class InvoiceContext : DbContext
             entity.HasIndex(i => i.IsSeller);
         });
 
+        modelBuilder.Entity<WorkEntry>(entity =>
+        {
+            entity.HasIndex(i => i.EntryGuid).IsUnique();
+        });
+
         base.OnModelCreating(modelBuilder);
     }
-}
-
-public class TempInvoice
-{
-    public int TempInvoiceId { get; set; }
-    [Precision(0)]
-    public DateTime Created { get; set; } = DateTime.UtcNow;
-    public byte[] InvoiceBlob { get; set; } = [];
-    public int? InvoiceId { get; set; }
-    public int? SellerPartyId { get; set; }
-    public int? BuyerPartyId { get; set; }
-    public int? PaymentMeansId { get; set; }
 }

@@ -38,6 +38,7 @@ namespace BlazorInvoice.Web
             builder.Services.AddScoped<IStatsRepository, StatsRepository>();
             builder.Services.AddScoped<IMauiPathService, FakeMauiPathService>();
             builder.Services.AddScoped<IMauiPopupService, FakeMauiPopupService>();
+            builder.Services.AddScoped<IWorkListRepository, WorkListRepository>();
 
             builder.Services.AddPdfGenerator();
             builder.Services.AddBbToast();

@@ -135,4 +135,5 @@ public sealed class InvoiceParty
     public byte[]? Logo { get; set; }
     public bool IsSeller { get; set; }
     public bool IsDeleted { get; set; }
+    public decimal HourlyRate { get; set; }
 }
