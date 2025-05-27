@@ -12,7 +12,7 @@
 
   <Properties>
     <DisplayName>$placeholder$</DisplayName>
-    <PublisherDisplayName>User Name</PublisherDisplayName>
+    <PublisherDisplayName>Philipp Hetzner</PublisherDisplayName>
     <Logo>$placeholder$.png</Logo>
   </Properties>
 
@@ -22,7 +22,10 @@
   </Dependencies>
 
   <Resources>
-    <Resource Language="x-generate" />
+    <Resource Language="en"/>
+    <Resource Language="de"/>
+    <Resource Language="es"/>
+    <Resource Language="fr"/>
   </Resources>
 
   <Applications>
