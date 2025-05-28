@@ -110,3 +110,24 @@ function cleanupOrphanedTooltips() {
         }
     });
 }
+
+function registerCustomKeydownEvent() {
+    Blazor.registerCustomEventType('customkeydown', {
+        browserEventName: 'keydown',
+        createEventArgs: event => {
+            // Navigation keys to suppress
+            const navKeys = ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Tab'];
+
+            if (navKeys.includes(event.code)) {
+                event.preventDefault();
+            }
+            return {
+                code: event.code,
+                key: event.key,
+                shiftKey: event.shiftKey,
+                ctrlKey: event.ctrlKey,
+                altKey: event.altKey
+            };
+        }
+    });
+}

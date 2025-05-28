@@ -1,8 +1,12 @@
 @using BlazorInvoice.Shared
 @using BlazorInvoice.Shared.Interfaces
+@using BlazorInvoice.Weblib.Services
+@using System.Collections.Frozen
+@using Microsoft.JSInterop
 @inherits InvoiceBaseComponent
 @inject IInvoiceRepository InvoiceRepository
 @inject IWorkListRepository WorkListRepository
+@inject IJSRuntime JSRuntime
 
 <h3>Work List</h3>
 <div class="mb-4" style="max-width: 400px;">
@@ -31,9 +35,9 @@
             <tr>
                 <th>Date</th>
                 <th>Job</th>
-                <th>Start Time</th>
-                <th>End Time</th>
-                <th>€/h</th>
+                <th>Start</th>
+                <th>End</th>
+                <th>â‚¬/h</th>
                 <th>Summary</th>
             </tr>
         </thead>
@@ -46,28 +50,28 @@
                 <tr @key="entry" id="@entry.EntryGuid">
                     <td>
                         <input @ref="entry.ElementReferences[0]" type="date" class="form-control form-control-sm" data-row="@rowIndex" data-col="0" @onfocus="e => Focus(rowIndex, 0)"
-                               @onkeydown="KeyPressed"
-                               @bind="entry.Date" @oninput="() => OnFieldChanged(entry)" />
+                               @oncustomkeydown="KeyPressed"
+                               @bind="entry.Date" @bind:after="() => OnFieldChanged(entry)" />
                     </td>
                     <td>
                         <input @ref="entry.ElementReferences[1]" type="text" class="form-control form-control-sm" data-row="@rowIndex" data-col="1" @onfocus="e => Focus(rowIndex, 1)"
-                               @onkeydown="KeyPressed"
-                               @bind="entry.Job" @oninput="() => OnFieldChanged(entry)" />
+                               @oncustomkeydown="KeyPressed"
+                               @bind="entry.Job" @bind:after="() => OnFieldChanged(entry)" />
                     </td>
                     <td>
                         <input @ref="entry.ElementReferences[2]" type="time" class="form-control form-control-sm" data-row="@rowIndex" data-col="2" @onfocus="e => Focus(rowIndex, 2)"
-                               @onkeydown="KeyPressed"
-                               @bind="entry.StartTime" @oninput="() => OnFieldChanged(entry)" />
+                               @oncustomkeydown="KeyPressed"
+                               @bind="entry.StartTime" @bind:after="() => OnFieldChanged(entry)" />
                     </td>
                     <td>
                         <input @ref="entry.ElementReferences[3]" type="time" class="form-control form-control-sm" data-row="@rowIndex" data-col="3" @onfocus="e => Focus(rowIndex, 3)"
-                               @onkeydown="KeyPressed"
-                               @bind="entry.EndTime" @oninput="() => OnFieldChanged(entry)" />
+                               @oncustomkeydown="KeyPressed"
+                               @bind="entry.EndTime" @bind:after="() => OnFieldChanged(entry)" />
                     </td>
                     <td>
                         <input @ref="entry.ElementReferences[4]" type="number" step="0.01" class="form-control form-control-sm" data-row="@rowIndex" data-col="4" @onfocus="e => Focus(rowIndex, 4)"
-                               @onkeydown="KeyPressed"
-                               @bind="entry.HourlyRate" @oninput="() => OnFieldChanged(entry)" />
+                               @oncustomkeydown="KeyPressed"
+                               @bind="entry.HourlyRate" @bind:after="() => OnFieldChanged(entry)" />
                     </td>
                     <td>@(((double)entry.HourlyRate * (entry.EndTime - entry.StartTime).TotalHours).ToString("N2"))</td>
                 </tr>
@@ -92,11 +96,27 @@
     int focusedRow = -1;
     int focusedColumn = -1;
     string keyPressed = string.Empty;
-
+    private FrozenDictionary<string, bool> interestKeys = new Dictionary<string, bool>() {
+        { "ArrowUp", false },
+        { "ArrowDown", false },
+        { "ArrowLeft", false },
+        { "ArrowRight", false },
+        { "Tab", false },
+    }.ToFrozenDictionary();
+    
     protected override async Task OnInitializedAsync()
     {
         parties = await InvoiceRepository.GetBuyers(new());
     }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JSRuntime.InvokeVoidAsync("registerCustomKeydownEvent");
+        }
+    }
+
     private async Task OnPartySelected()
     {
         hasTempEntries = await WorkListRepository.HasTempWorkEntries(partyId);
@@ -127,6 +147,10 @@
 
     private async Task KeyPressed(KeyboardEventArgs e)
     {
+        if (!interestKeys.ContainsKey(e.Code))
+        {
+            return;
+        }
         keyPressed = e.Key; // For debugging or display
 
         if (focusedRow < 0 || focusedColumn < 0) return;
@@ -213,6 +237,11 @@
                 EndTime = EndTime,
                 HourlyRate = HourlyRate
             };
+        }
+
+        public void PreventDefault(int index)
+        {
+            
         }
     }
 }
