@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BlazorInvoice.Db.Migrations
 {
     [DbContext(typeof(InvoiceContext))]
-    [Migration("20250526091636_WorkList")]
+    [Migration("20250528161227_WorkList")]
     partial class WorkList
     {
         /// <inheritdoc />
@@ -447,10 +447,8 @@ namespace BlazorInvoice.Db.Migrations
                     b.Property<bool>("Billed")
                         .HasColumnType("INTEGER");
 
-                    b.Property<DateTime>("Date")
-                        .HasColumnType("TEXT");
-
                     b.Property<DateTime>("EndTime")
+                        .HasPrecision(0)
                         .HasColumnType("TEXT");
 
                     b.Property<Guid>("EntryGuid")
@@ -468,6 +466,7 @@ namespace BlazorInvoice.Db.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("StartTime")
+                        .HasPrecision(0)
                         .HasColumnType("TEXT");
 
                     b.HasKey("WorkEntryId");

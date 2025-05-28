@@ -40,10 +40,9 @@ namespace BlazorInvoice.Db.Migrations
                     WorkEntryId = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     EntryGuid = table.Column<Guid>(type: "TEXT", nullable: false),
-                    Date = table.Column<DateTime>(type: "TEXT", nullable: false),
                     Job = table.Column<string>(type: "TEXT", maxLength: 500, nullable: false),
-                    StartTime = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    EndTime = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    StartTime = table.Column<DateTime>(type: "TEXT", precision: 0, nullable: false),
+                    EndTime = table.Column<DateTime>(type: "TEXT", precision: 0, nullable: false),
                     Billed = table.Column<bool>(type: "INTEGER", nullable: false),
                     HourlyRate = table.Column<decimal>(type: "TEXT", nullable: false),
                     InvoicePartyId = table.Column<int>(type: "INTEGER", nullable: false)

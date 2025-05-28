@@ -1,0 +1,53 @@
+﻿@using BlazorInvoice.Weblib.Services
+
+<tr @key="Entry" id="@Entry.EntryGuid">
+    <td>
+        <input @ref="Entry.ElementReferences[0]" type="date" class="form-control form-control-sm"
+               @onfocus="e => OnFocus.InvokeAsync((RowIndex, 0))"
+               @oncustomkeydown="OnKeyPressed"
+               @bind="Entry.Date" @bind:after="() => OnFieldChanged.InvokeAsync(Entry)" />
+    </td>
+    <td>
+        <input @ref="Entry.ElementReferences[1]" type="text" class="form-control form-control-sm"
+               placeholder="@(Entry.IsEmpty() ? "Empty" : "")"
+               @onfocus="e => OnFocus.InvokeAsync((RowIndex, 1))"
+               @oncustomkeydown="OnKeyPressed"
+               @bind="Entry.Job" @bind:after="() => OnFieldChanged.InvokeAsync(Entry)" />
+    </td>
+    <td>
+        <input @ref="Entry.ElementReferences[2]" type="time" class="form-control form-control-sm"
+               @onfocus="e => OnFocus.InvokeAsync((RowIndex, 2))"
+               @oncustomkeydown="OnKeyPressed"
+               @bind="Entry.StartTime" @bind:after="() => OnFieldChanged.InvokeAsync(Entry)" />
+    </td>
+    <td>
+        <input @ref="Entry.ElementReferences[3]" type="time" class="form-control form-control-sm"
+               @onfocus="e => OnFocus.InvokeAsync((RowIndex, 3))"
+               @oncustomkeydown="OnKeyPressed"
+               @bind="Entry.EndTime" @bind:after="() => OnFieldChanged.InvokeAsync(Entry)" />
+    </td>
+    <td>
+        <input @ref="Entry.ElementReferences[4]" type="number" step="0.01" class="form-control form-control-sm"
+               @onfocus="e => OnFocus.InvokeAsync((RowIndex, 4))"
+               @oncustomkeydown="OnKeyPressed"
+               @bind="Entry.HourlyRate" @bind:after="() => OnFieldChanged.InvokeAsync(Entry)" />
+    </td>
+    <td>@(((double)Entry.HourlyRate * (Entry.EndTime - Entry.StartTime).TotalHours).ToString("N2"))</td>
+</tr>
+
+@code {
+    [Parameter, EditorRequired]
+    public WorkEntryWeb Entry { get; set; } = null!;
+
+    [Parameter, EditorRequired]
+    public int RowIndex { get; set; }
+
+    [Parameter]
+    public EventCallback<KeyboardEventArgs> OnKeyPressed { get; set; }
+
+    [Parameter]
+    public EventCallback<WorkEntryWeb> OnFieldChanged { get; set; } = default!;
+
+    [Parameter]
+    public EventCallback<(int, int)> OnFocus { get; set; } = default!;
+}

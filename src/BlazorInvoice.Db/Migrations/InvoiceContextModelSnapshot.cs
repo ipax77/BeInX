@@ -444,10 +444,8 @@ namespace BlazorInvoice.Db.Migrations
                     b.Property<bool>("Billed")
                         .HasColumnType("INTEGER");
 
-                    b.Property<DateTime>("Date")
-                        .HasColumnType("TEXT");
-
                     b.Property<DateTime>("EndTime")
+                        .HasPrecision(0)
                         .HasColumnType("TEXT");
 
                     b.Property<Guid>("EntryGuid")
@@ -465,6 +463,7 @@ namespace BlazorInvoice.Db.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("StartTime")
+                        .HasPrecision(0)
                         .HasColumnType("TEXT");
 
                     b.HasKey("WorkEntryId");

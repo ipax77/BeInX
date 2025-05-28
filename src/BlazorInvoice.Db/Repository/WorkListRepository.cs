@@ -11,7 +11,7 @@ public class WorkListRepository(InvoiceContext context) : IWorkListRepository
     {
         var entries = await context.WorkEntries
             .Where(x => x.InvoicePartyId == partyId && x.Billed == billed)
-            .OrderBy(o => o.Date)
+            .OrderBy(o => o.StartTime)
             .ToListAsync();
         return entries.Select(s => MapWorkEntry(s)).ToList();
     }
@@ -86,10 +86,10 @@ public class WorkListRepository(InvoiceContext context) : IWorkListRepository
         return new()
         {
             EntryGuid = workEntry.EntryGuid,
-            Date = workEntry.Date,
+            Date = new DateOnly(workEntry.StartTime.Year, workEntry.StartTime.Month, workEntry.StartTime.Day),
             Job = workEntry.Job,
-            StartTime = workEntry.StartTime,
-            EndTime = workEntry.EndTime,
+            StartTime = new TimeOnly(workEntry.StartTime.Hour, workEntry.StartTime.Minute, workEntry.StartTime.Second),
+            EndTime = new TimeOnly(workEntry.EndTime.Hour, workEntry.EndTime.Minute, workEntry.EndTime.Second),
             Billed = workEntry.Billed,
             HourlyRate = (double)workEntry.HourlyRate,
         };
@@ -97,13 +97,13 @@ public class WorkListRepository(InvoiceContext context) : IWorkListRepository
 
     private static WorkEntry MapWorkEntry(WorkEntryDto workEntry, int partyId)
     {
+
         return new()
         {
             EntryGuid = workEntry.EntryGuid,
-            Date = workEntry.Date,
             Job = workEntry.Job,
-            StartTime = workEntry.StartTime,
-            EndTime = workEntry.EndTime,
+            StartTime = workEntry.Date.ToDateTime(workEntry.StartTime),
+            EndTime = workEntry.Date.ToDateTime(workEntry.EndTime),
             Billed = workEntry.Billed,
             HourlyRate = (decimal)workEntry.HourlyRate,
             InvoicePartyId = partyId,

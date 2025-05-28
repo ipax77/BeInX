@@ -7,10 +7,11 @@ public class WorkEntry
 {
     public int WorkEntryId { get; set; }
     public Guid EntryGuid { get; set; } = Guid.NewGuid();
-    public DateTime Date { get; set; }
     [MaxLength(500)]
     public string Job { get; set; } = string.Empty;
+    [Precision(0)]
     public DateTime StartTime { get; set; }
+    [Precision(0)]
     public DateTime EndTime { get; set; }
     public bool Billed { get; set; }
     public decimal HourlyRate { get; set; }
@@ -23,6 +24,6 @@ public class TempWorkEntry
     public int TempWorkEntryId { get; set; }
     [Precision(0)]
     public DateTime LastModified { get; set; } = DateTime.UtcNow;
-    public byte[] WorkEntriesBlob { get; set; } = Array.Empty<byte>();
+    public byte[] WorkEntriesBlob { get; set; } = [];
     public int? InvoicePartyId { get; set; }
 }
