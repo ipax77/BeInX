@@ -27,8 +27,20 @@ public record WorkEntryWeb : WorkEntryDto
             Job = Job,
             StartTime = StartTime,
             EndTime = EndTime,
-            HourlyRate = HourlyRate
+            HourlyRate = HourlyRate,
+            PartyId = PartyId,
         };
+    }
+
+    public void UpdateDto(WorkEntryDto entryDto)
+    {
+        entryDto.EntryGuid = EntryGuid;
+        entryDto.Date = Date;
+        entryDto.Job = Job;
+        entryDto.StartTime = StartTime;
+        entryDto.EndTime = EndTime;
+        entryDto.HourlyRate = HourlyRate;
+        entryDto.PartyId = PartyId;
     }
 
     public bool IsEmpty() =>

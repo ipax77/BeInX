@@ -7,28 +7,51 @@ namespace BlazorInvoice.Db.Repository;
 
 public class WorkListRepository(InvoiceContext context) : IWorkListRepository
 {
-    public async Task<List<WorkEntryDto>> GetWorkEntires(int partyId, bool billed)
+    public async Task<WorkEntrySnapShot> GetWorkEntries()
     {
         var entries = await context.WorkEntries
-            .Where(x => x.InvoicePartyId == partyId && x.Billed == billed)
             .OrderBy(o => o.StartTime)
             .ToListAsync();
-        return entries.Select(s => MapWorkEntry(s)).ToList();
+        return new()
+        {
+            EntriesByParty = entries
+            .GroupBy(g => g.InvoicePartyId)
+            .ToDictionary(p => p.Key, v => v.Select(s => MapWorkEntry(s)).ToList())
+        };
     }
 
-    public async Task SaveWorkEntries(List<WorkEntryDto> workEntries, int partyId)
+    public async Task<List<WorkEntryDto>> GetBilledWorkEntries(int partyId, int year)
     {
-        var entires = workEntries.Select(s => MapWorkEntry(s, partyId));
-        context.WorkEntries.AddRange(entires);
-        await context.SaveChangesAsync();
-        await DeleteTempWorkEntries(partyId);
+        var lines = await context.InvoiceLines
+            .Where(x => x.Invoice!.BuyerParty!.InvoicePartyId == partyId
+                && x.Invoice.IssueDate.Year == year)
+            .OrderBy(o => o.StartDate)
+            .Select(s => new { s, s.Invoice!.IssueDate })
+            .ToListAsync();
+
+        return lines.Select(s => MapWorkEntry(s.s, s.IssueDate, partyId)).ToList();
     }
 
-    private async Task DeleteTempWorkEntries(int partyId)
+    public async Task SaveWorkEntries(WorkEntrySnapShot snapshot)
+    {
+        foreach (var partyId in snapshot.EntriesByParty.Keys)
+        {
+            var existingEntries = await context.WorkEntries
+                .Where(x => x.InvoicePartyId == partyId)
+                .ToListAsync();
+            context.WorkEntries.RemoveRange(existingEntries);
+        }
+
+        var entries = snapshot.EntriesByParty.SelectMany(s => s.Value).Select(t => MapWorkEntry(t));
+        context.WorkEntries.AddRange(entries);
+        await context.SaveChangesAsync();
+        await DeleteTempWorkEntries();
+    }
+
+    private async Task DeleteTempWorkEntries()
     {
         var entry = await context.TempWorkEntries
             .OrderBy(o => o.TempWorkEntryId)
-            .Where(x => x.InvoicePartyId == partyId)
             .FirstOrDefaultAsync();
         if (entry is not null)
         {
@@ -37,10 +60,11 @@ public class WorkListRepository(InvoiceContext context) : IWorkListRepository
         }
     }
 
-    public async Task SaveTempWorkEntriesAsync(List<WorkEntryDto> entries, int partyId)
+    public async Task SaveTempWorkEntriesAsync(List<WorkEntryDto> entries)
     {
         var temp = await context.TempWorkEntries
-            .FirstOrDefaultAsync(t => t.InvoicePartyId == partyId);
+            .OrderBy(o => o.TempWorkEntryId)
+            .FirstOrDefaultAsync();
 
         var blob = SerializeWorkEntries(entries);
 
@@ -48,7 +72,6 @@ public class WorkListRepository(InvoiceContext context) : IWorkListRepository
         {
             temp = new TempWorkEntry
             {
-                InvoicePartyId = partyId,
                 WorkEntriesBlob = blob,
                 LastModified = DateTime.UtcNow
             };
@@ -63,10 +86,11 @@ public class WorkListRepository(InvoiceContext context) : IWorkListRepository
         await context.SaveChangesAsync();
     }
 
-    public async Task<List<WorkEntryDto>> LoadTempWorkEntriesAsync(int partyId)
+    public async Task<List<WorkEntryDto>> LoadTempWorkEntriesAsync()
     {
         var temp = await context.TempWorkEntries
-            .FirstOrDefaultAsync(t => t.InvoicePartyId == partyId);
+            .OrderBy(o => o.TempWorkEntryId)
+            .FirstOrDefaultAsync();
 
         if (temp == null || temp.WorkEntriesBlob.Length == 0)
             return [];
@@ -74,10 +98,9 @@ public class WorkListRepository(InvoiceContext context) : IWorkListRepository
         return DeserializeWorkEntries(temp.WorkEntriesBlob);
     }
 
-    public async Task<bool> HasTempWorkEntries(int partyId)
+    public async Task<bool> HasTempWorkEntries()
     {
         return await context.TempWorkEntries
-            .Where(x => x.InvoicePartyId == partyId)
             .AnyAsync();
     }
 
@@ -92,10 +115,11 @@ public class WorkListRepository(InvoiceContext context) : IWorkListRepository
             EndTime = new TimeOnly(workEntry.EndTime.Hour, workEntry.EndTime.Minute, workEntry.EndTime.Second),
             Billed = workEntry.Billed,
             HourlyRate = (double)workEntry.HourlyRate,
+            PartyId = workEntry.InvoicePartyId,
         };
     }
 
-    private static WorkEntry MapWorkEntry(WorkEntryDto workEntry, int partyId)
+    private static WorkEntry MapWorkEntry(WorkEntryDto workEntry)
     {
 
         return new()
@@ -106,10 +130,40 @@ public class WorkListRepository(InvoiceContext context) : IWorkListRepository
             EndTime = workEntry.Date.ToDateTime(workEntry.EndTime),
             Billed = workEntry.Billed,
             HourlyRate = (decimal)workEntry.HourlyRate,
-            InvoicePartyId = partyId,
+            InvoicePartyId = workEntry.PartyId,
         };
     }
 
+    private static WorkEntryDto MapWorkEntry(InvoiceLine invoiceLine, DateTime issueDate, int partyId)
+    {
+        DateTime startDate = invoiceLine.StartDate ?? issueDate;
+        DateTime endDate = invoiceLine.EndDate ?? issueDate.AddHours(invoiceLine.Quantity);
+        return new()
+        {
+            Job = invoiceLine.Name,
+            Date = DateOnly.FromDateTime(startDate),
+            StartTime = TimeOnly.FromDateTime(startDate),
+            EndTime = TimeOnly.FromDateTime(endDate),
+            Billed = true,
+            HourlyRate = invoiceLine.UnitPrice,
+            PartyId = partyId,
+        };
+    }
+
+    private static InvoiceLine MapWorkEntry(WorkEntryDto workEntry, DateTime issueDate)
+    {
+        DateTime startDate = workEntry.Date.ToDateTime(workEntry.StartTime);
+        DateTime endDate = workEntry.Date.ToDateTime(workEntry.EndTime);
+        return new()
+        {
+            Name = workEntry.Job,
+            StartDate = startDate,
+            EndDate = endDate,
+            QuantityCode = "HUR",
+            Quantity = (endDate - startDate).TotalHours,
+            UnitPrice = workEntry.HourlyRate,
+        };
+    }
 
     public static byte[] SerializeWorkEntries(List<WorkEntryDto> entries)
     {

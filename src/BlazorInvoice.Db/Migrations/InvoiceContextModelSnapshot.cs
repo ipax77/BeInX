@@ -419,9 +419,6 @@ namespace BlazorInvoice.Db.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<int?>("InvoicePartyId")
-                        .HasColumnType("INTEGER");
-
                     b.Property<DateTime>("LastModified")
                         .HasPrecision(0)
                         .HasColumnType("TEXT");

@@ -25,8 +25,7 @@ namespace BlazorInvoice.Db.Migrations
                     TempWorkEntryId = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     LastModified = table.Column<DateTime>(type: "TEXT", precision: 0, nullable: false),
-                    WorkEntriesBlob = table.Column<byte[]>(type: "BLOB", nullable: false),
-                    InvoicePartyId = table.Column<int>(type: "INTEGER", nullable: true)
+                    WorkEntriesBlob = table.Column<byte[]>(type: "BLOB", nullable: false)
                 },
                 constraints: table =>
                 {

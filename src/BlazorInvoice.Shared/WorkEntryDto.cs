@@ -9,4 +9,10 @@ public record WorkEntryDto
     public TimeOnly EndTime { get; set; }
     public bool Billed { get; set; }
     public double HourlyRate { get; set; }
+    public int PartyId { get; set; }
+}
+
+public record WorkEntrySnapShot
+{
+    public Dictionary<int, List<WorkEntryDto>> EntriesByParty { get; set; } = [];
 }

@@ -1,12 +1,13 @@
 @using BlazorInvoice.Shared
 @using BlazorInvoice.Shared.Interfaces
 @using BlazorInvoice.Weblib.Services
-@using System.Collections.Frozen
 @using Microsoft.JSInterop
+@using pax.BBToast;
 @inherits InvoiceBaseComponent
 @inject IInvoiceRepository InvoiceRepository
 @inject IWorkListRepository WorkListRepository
 @inject IJSRuntime JSRuntime
+@inject IToastService ToastService
 
 <h3>Work List</h3>
 <div class="mb-4" style="max-width: 400px;">
@@ -20,73 +21,47 @@
     </select>
 </div>
 
-<h3>Entries @focusedRow|@focusedColumn @keyPressed</h3>
-<div class="table-responsive">
-    <table class="table table-bordered table-sm align-middle text-center">
-        <colgroup>
-            <col class="col-1">
-            <col class="col" style="min-width: 200px;">
-            <col class="col-1">
-            <col class="col-1">
-            <col class="col-1">
-            <col class="col-2">
-        </colgroup>
-        <thead class="table-light">
-            <tr>
-                <th>Date</th>
-                <th>Job</th>
-                <th>Start</th>
-                <th>End</th>
-                <th>€/h</th>
-                <th>Summary</th>
-            </tr>
-        </thead>
-        <tbody @onfocusout="HandleFocusOut" tabindex="0">
-            @for (int row = 0; row < workEntries.Count; row++)
-            {
-                var entry = workEntries[row];
-                var rowIndex = row;
-                entry.Row = rowIndex;
-                <WorkListRow Entry="@entry" RowIndex="@rowIndex"
-                             OnKeyPressed="KeyPressed"
-                             OnFieldChanged="OnFieldChanged"
-                             OnFocus="Focus" />
-            }
-        </tbody>
-        <tfoot>
-            <tr>
-                <td colspan="4" class="text-start"><button type="button" class="btn btn-sm btn-outline-light" @onclick="AddLine">Add Line</button></td>
-                <td class="text-end">Total:</td>
-                <td>@(workEntries.Sum(e => (double)e.HourlyRate * (e.EndTime - e.StartTime).TotalHours).ToString("N2"))</td>
-            </tr>
-        </tfoot>
-    </table>
+<div>
+    <ul class="nav nav-tabs">
+        @foreach (var party in parties)
+        {
+            <li class="nav-item">
+                <button class="nav-link @(party.PartyId == partyId ? "active" : "")"
+                        @onclick="() => partyId = party.PartyId">
+                    @party.Name
+                </button>
+            </li>
+        }
+    </ul>
+
+    @foreach (var party in parties)
+    {
+        <div class="tab-content @(party.PartyId == partyId ? "show active" : "visually-hidden")">
+            <WorkEntriesComponent WorkEntries="GetEntriesByParty(party.PartyId)"
+                                  PartyId="@party.PartyId"
+                                  ColumnCount="@columnCount"
+                                  OnFieldChanged="FieldChanged" />
+        </div>
+    }
 </div>
 
 @code {
     int columnCount = 5;
     List<PartyListDto> parties = [];
     int partyId = 0;
-    List<WorkEntryWeb> workEntries = [];
+    int currentPartyId = 0;
     bool hasTempEntries;
-    int focusedRow = -1;
-    int focusedColumn = -1;
-    string keyPressed = string.Empty;
-    private FrozenDictionary<string, bool> interestKeys = new Dictionary<string, bool>() {
-        { "ArrowUp", false },
-        { "ArrowDown", false },
-        { "ArrowLeft", false },
-        { "ArrowRight", false },
-        { "Tab", false },
-    }.ToFrozenDictionary();
+    Lock updateLock = new();
+
+    WorkEntrySnapShot? workEntrySnapShot;
+
+    Dictionary<int, List<WorkEntryWeb>> tempEntries = new();
+    HashSet<Guid> savedGuids = [];
 
     protected override async Task OnInitializedAsync()
     {
         parties = await InvoiceRepository.GetBuyers(new());
-        for (int i = 0; i < 10; i++)
-        {
-            workEntries.Add(new(new() { Date = DateOnly.FromDateTime(DateTime.Today) }, columnCount));
-        }
+        await LoadSnapShot();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -97,97 +72,73 @@
         }
     }
 
+    private async Task LoadSnapShot()
+    {
+        workEntrySnapShot = await WorkListRepository.GetWorkEntries();
+    }
+
+    private List<WorkEntryWeb> GetEntriesByParty(int partyId)
+    {
+        if (workEntrySnapShot == null || !workEntrySnapShot.EntriesByParty.ContainsKey(partyId))
+        {
+            return new List<WorkEntryWeb>();
+        }
+        return workEntrySnapShot.EntriesByParty[partyId].Select(s => new WorkEntryWeb(s, columnCount)).ToList();
+    }
+
     private async Task OnPartySelected()
     {
-        hasTempEntries = await WorkListRepository.HasTempWorkEntries(partyId);
-        // TODO: notify -> continue question
 
-        var entries = await WorkListRepository.GetWorkEntires(partyId, false);
-        workEntries = entries.Select(e => new WorkEntryWeb(e, columnCount)).ToList();
-        workEntries.Add(new(new() { Date = DateOnly.FromDateTime(DateTime.Today) }, columnCount));
-        await InvokeAsync(StateHasChanged);
     }
 
-    private async Task OnFieldChanged(WorkEntryDto entry)
+    private async Task FieldChanged(WorkEntryWeb entry)
     {
-        await WorkListRepository
-            .SaveTempWorkEntriesAsync(workEntries.Select(s => s.GetDto()).ToList(), partyId);
-    }
-
-    private void AddLine()
-    {
-        workEntries.Add(new(new() { Date = DateOnly.FromDateTime(DateTime.Today) }, columnCount));
-    }
-
-    private void Focus((int, int) info)
-    {
-        focusedRow = info.Item1;
-        focusedColumn = info.Item2;
-    }
-
-    private async Task KeyPressed(KeyboardEventArgs e)
-    {
-        if (!interestKeys.ContainsKey(e.Code))
+        if (workEntrySnapShot == null)
         {
             return;
         }
-        keyPressed = e.Key; // For debugging or display
-
-        if (focusedRow < 0 || focusedColumn < 0) return;
-
-        var current = workEntries.FirstOrDefault(x => x.Row == focusedRow);
-        if (current == null) return;
-        var currentElement = current.ElementReferences[focusedColumn];
-        ElementReference? next = null;
-
-        if (e.Code == "ArrowDown" && focusedRow < workEntries.Count - 1)
+        lock (updateLock)
         {
-            next = workEntries[focusedRow + 1].ElementReferences[focusedColumn];
-            focusedRow++;
-        }
-        else if (e.Code == "ArrowUp" && focusedRow > 0)
-        {
-            next = workEntries[focusedRow - 1].ElementReferences[focusedColumn];
-            focusedRow--;
-        }
-        else if (e.Code == "ArrowRight" || (e.Code == "Tab" && !e.ShiftKey))
-        {
-            if (focusedColumn < columnCount - 1)
+            if (workEntrySnapShot.EntriesByParty.TryGetValue(entry.PartyId, out var entries))
             {
-                next = current.ElementReferences[focusedColumn + 1];
-                focusedColumn++;
+                var existingEntry = entries.FirstOrDefault(f => f.EntryGuid == entry.EntryGuid);
+                if (existingEntry != null)
+                {
+                    entry.UpdateDto(existingEntry);
+                }
+                else
+                {
+                    entries.Add(entry.GetDto());
+                }
             }
-            else if (focusedRow < workEntries.Count - 1)
+            else
             {
-                next = workEntries[focusedRow + 1].ElementReferences[0];
-                focusedRow++;
-                focusedColumn = 0;
+                workEntrySnapShot.EntriesByParty[entry.PartyId] = [entry.GetDto()];
             }
-        }
-        else if (e.Code == "ArrowLeft" || (e.Code == "Tab" && e.ShiftKey))
-        {
-            if (focusedColumn > 0)
-            {
-                next = current.ElementReferences[focusedColumn - 1];
-                focusedColumn--;
-            }
-            else if (focusedRow > 0)
-            {
-                next = workEntries[focusedRow - 1].ElementReferences[columnCount - 1];
-                focusedRow--;
-                focusedColumn = columnCount - 1;
-            }
-        }
-
-        if (next.HasValue)
-        {
-            await next.Value.FocusAsync();
         }
     }
 
-    private void HandleFocusOut()
+    private void DeleteEntry(Guid entryGuid, int partyId)
     {
-        focusedRow = -1;
-        focusedColumn = -1;
+        if (workEntrySnapShot?.EntriesByParty.TryGetValue(partyId, out var entries) == true)
+        {
+            var entryToRemove = entries.FirstOrDefault(e => e.EntryGuid == entryGuid);
+            if (entryToRemove != null)
+            {
+                entries.Remove(entryToRemove);
+            }
+        }
+    }
+
+
+    private async Task SaveEntries()
+    {
+        if (workEntrySnapShot == null)
+        {
+            ToastService.ShowError(Loc["No work entries loaded."]);
+            return;
+        }
+        await WorkListRepository.SaveWorkEntries(workEntrySnapShot);
+        ToastService.ShowSuccess(Loc["Work entries saved successfully."]);
     }
 }

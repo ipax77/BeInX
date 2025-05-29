@@ -25,5 +25,4 @@ public class TempWorkEntry
     [Precision(0)]
     public DateTime LastModified { get; set; } = DateTime.UtcNow;
     public byte[] WorkEntriesBlob { get; set; } = [];
-    public int? InvoicePartyId { get; set; }
 }

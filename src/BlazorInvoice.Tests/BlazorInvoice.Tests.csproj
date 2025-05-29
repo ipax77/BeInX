@@ -9,6 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\BlazorInvoice.Db\BlazorInvoice.Db.csproj" />
     <ProjectReference Include="..\BlazorInvoice.Shared\BlazorInvoice.Shared.csproj" />
     <ProjectReference Include="..\BlazorInvoice.Weblib\BlazorInvoice.Weblib.csproj" />
   </ItemGroup>

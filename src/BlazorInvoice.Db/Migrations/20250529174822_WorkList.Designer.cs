@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BlazorInvoice.Db.Migrations
 {
     [DbContext(typeof(InvoiceContext))]
-    [Migration("20250528161227_WorkList")]
+    [Migration("20250529174822_WorkList")]
     partial class WorkList
     {
         /// <inheritdoc />
@@ -420,9 +420,6 @@ namespace BlazorInvoice.Db.Migrations
                 {
                     b.Property<int>("TempWorkEntryId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int?>("InvoicePartyId")
                         .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("LastModified")

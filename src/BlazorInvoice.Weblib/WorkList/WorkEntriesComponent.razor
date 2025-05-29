@@ -1,0 +1,154 @@
+﻿@using BlazorInvoice.Shared
+@using BlazorInvoice.Shared.Interfaces
+@using BlazorInvoice.Weblib.Services
+@using System.Collections.Frozen
+@using pax.BBToast;
+@inherits InvoiceBaseComponent
+@inject IToastService ToastService
+
+<div class="table-responsive">
+    <table class="table table-bordered table-sm align-middle text-center">
+        <colgroup>
+            <col class="col-1">
+            <col class="col" style="min-width: 200px;">
+            <col class="col-1">
+            <col class="col-1">
+            <col class="col-1">
+            <col class="col-2">
+        </colgroup>
+        <thead class="table-light">
+            <tr>
+                <th>Date</th>
+                <th>Job</th>
+                <th>Start</th>
+                <th>End</th>
+                <th>€/h</th>
+                <th>Summary</th>
+            </tr>
+        </thead>
+        <tbody @onfocusout="HandleFocusOut" tabindex="0">
+            @for (int row = 0; row < WorkEntries.Count; row++)
+            {
+                var entry = WorkEntries[row];
+                var rowIndex = row;
+                entry.Row = rowIndex;
+                <WorkListRow Entry="@entry" RowIndex="@rowIndex"
+                             OnKeyPressed="KeyPressed"
+                             OnFieldChanged="OnFieldChanged"
+                             OnFocus="Focus" />
+            }
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="4" class="text-start"><button type="button" class="btn btn-sm btn-outline-light" disabled="@(PartyId == 0)" @onclick="AddLine">Add Line</button></td>
+                <td class="text-end">Total:</td>
+                <td>@(WorkEntries.Sum(e => (double)e.HourlyRate * (e.EndTime - e.StartTime).TotalHours).ToString("N2"))</td>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public List<WorkEntryWeb> WorkEntries { get; set; } = [];
+
+    [Parameter, EditorRequired]
+    public int PartyId { get; set; }
+
+    [Parameter]
+    public int ColumnCount { get; set; } = 5;
+
+    [Parameter]
+    public EventCallback<WorkEntryWeb> OnFieldChanged { get; set; }
+
+    private FrozenDictionary<string, bool> interestKeys = new Dictionary<string, bool>() {
+        { "ArrowUp", false },
+        { "ArrowDown", false },
+        { "ArrowLeft", false },
+        { "ArrowRight", false },
+        { "Tab", false },
+    }.ToFrozenDictionary();
+
+    int focusedRow = -1;
+    int focusedColumn = -1;
+
+    private void AddLine()
+    {
+        if (PartyId == 0)
+        {
+            ToastService.ShowError(Loc["Please select a party first."]);
+            return;
+        }
+        WorkEntries.Add(new(new() { Date = DateOnly.FromDateTime(DateTime.Today), PartyId = PartyId }, ColumnCount));
+    }
+
+    private void Focus((int, int) info)
+    {
+        focusedRow = info.Item1;
+        focusedColumn = info.Item2;
+    }
+
+    private async Task KeyPressed(KeyboardEventArgs e)
+    {
+        if (PartyId == 0 || !interestKeys.ContainsKey(e.Code))
+        {
+            return;
+        }
+
+        if (focusedRow < 0 || focusedColumn < 0) return;
+        var current = WorkEntries.FirstOrDefault(x => x.Row == focusedRow);
+        if (current == null) return;
+        var currentElement = current.ElementReferences[focusedColumn];
+        ElementReference? next = null;
+
+        if (e.Code == "ArrowDown" && focusedRow < WorkEntries.Count - 1)
+        {
+            next = WorkEntries[focusedRow + 1].ElementReferences[focusedColumn];
+            focusedRow++;
+        }
+        else if (e.Code == "ArrowUp" && focusedRow > 0)
+        {
+            next = WorkEntries[focusedRow - 1].ElementReferences[focusedColumn];
+            focusedRow--;
+        }
+        else if (e.Code == "ArrowRight" || (e.Code == "Tab" && !e.ShiftKey))
+        {
+            if (focusedColumn < ColumnCount - 1)
+            {
+                next = current.ElementReferences[focusedColumn + 1];
+                focusedColumn++;
+            }
+            else if (focusedRow < WorkEntries.Count - 1)
+            {
+                next = WorkEntries[focusedRow + 1].ElementReferences[0];
+                focusedRow++;
+                focusedColumn = 0;
+            }
+        }
+        else if (e.Code == "ArrowLeft" || (e.Code == "Tab" && e.ShiftKey))
+        {
+            if (focusedColumn > 0)
+            {
+                next = current.ElementReferences[focusedColumn - 1];
+                focusedColumn--;
+            }
+            else if (focusedRow > 0)
+            {
+                next = WorkEntries[focusedRow - 1].ElementReferences[ColumnCount - 1];
+                focusedRow--;
+                focusedColumn = ColumnCount - 1;
+            }
+        }
+
+        if (next.HasValue)
+        {
+            await next.Value.FocusAsync();
+        }
+    }
+
+    private void HandleFocusOut()
+    {
+        focusedRow = -1;
+        focusedColumn = -1;
+    }
+}
