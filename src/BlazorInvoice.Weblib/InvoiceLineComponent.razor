@@ -1,0 +1,105 @@
+﻿@using Microsoft.JSInterop
+@using pax.XRechnung.NET.AnnotatedDtos
+@inherits InvoiceBaseComponent
+@inject IJSRuntime JSRuntime
+@implements IDisposable
+
+<tr @key="InvoiceLine" id="@($"line{Index}")">
+    <td>
+        <div class="btn-group">
+            <button type="button" class="btn btn-sm btn-outline-light"
+                    @onclick="e => OnMoveLine.InvokeAsync((Index, true))">
+                <i class="bi bi-arrow-up"></i>
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-light"
+                    @onclick="e => OnMoveLine.InvokeAsync((Index, false))">
+                <i class="bi bi-arrow-down"></i>
+            </button>
+        </div>
+    </td>
+    <td>
+        @Index
+    </td>
+    <td class="text-truncate" style="overflow: hidden; white-space: nowrap; max-width: 200px; min-width: 100px; width: auto;">
+        @InvoiceLine.Name
+    </td>
+    <td>
+        @InvoiceLine.LineTotal.ToString("N2")
+    </td>
+    <td>
+        <div id="@_id" class="btn-group">
+            <button type="button" class="btn btn-outline-warning"
+                    @onclick="e => EditLine(Index)"
+                    data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="@Loc["Edit"]">
+                <i class="bi bi-pencil-square"></i>
+            </button>
+            <button type="button" class="btn btn-outline-danger"
+                    @onclick="e => RemoveLine(Index)" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="@Loc["Delete"]">
+                <i class="bi bi-trash"></i>
+            </button>
+        </div>
+    </td>
+</tr>
+
+@code {
+    [Parameter, EditorRequired]
+    public InvoiceLineAnnotationDto InvoiceLine { get; set; } = default!;
+
+    [Parameter, EditorRequired]
+    public int Index { get; set; }
+
+    [Parameter]
+    public EventCallback<(int, bool)> OnMoveLine { get; set; }
+
+    [Parameter]
+    public EventCallback<int> OnEditLine { get; set; }
+
+    [Parameter]
+    public EventCallback<int> OnRemoveLine { get; set; }
+
+    private Guid _id = Guid.NewGuid();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JSRuntime.InvokeVoidAsync("enableTooltips", _id);
+        }
+    }
+
+    public override void UpdateState(object? sender)
+    {
+        try
+        {
+            JSRuntime.InvokeVoidAsync("enableTooltips", _id);
+        }
+        finally
+        {
+            base.UpdateState(sender);
+        }
+    }
+
+    private void EditLine(int index)
+    {
+        OnEditLine.InvokeAsync(index);
+        JSRuntime.InvokeVoidAsync("disableTooltips", _id);
+    }
+
+    private void RemoveLine(int index)
+    {
+        OnRemoveLine.InvokeAsync(index);
+        JSRuntime.InvokeVoidAsync("disableTooltips", _id);
+    }
+
+    public override void Dispose()
+    {
+        try
+        {
+            JSRuntime.InvokeVoidAsync("disableTooltips", _id);
+        }
+        finally
+        {
+            base.Dispose();
+        }
+    }
+}
