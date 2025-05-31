@@ -119,22 +119,25 @@
                     }
                     else
                     {
-                        <div>
-                            <div class="btn-group d-flex flex-wrap btn-group-responsive mb-1">
-                                <button type="button" class="btn btn-outline-info fixed-label-button" disabled style="flex: 0 0 200px;">
+                        <div class="mb-1">
+                            <div class="row">
+                                <button type="button" class="btn btn-sm btn-outline-info col-3" disabled style="width: 150px;">
                                     @Loc["Seller"]
                                 </button>
-                                <button type="button" class="btn btn-outline-light text-truncate flex-grow-1" disabled style="max-width: 300px;">
+
+                                <button type="button" class="btn btn-sm btn-outline-light text-truncate col-auto me-auto flex-grow-1" disabled style="max-width: 250px;">
                                     @invoiceDto.SellerParty.Name
                                 </button>
-                                <button type="button" class="btn btn-outline-warning" style="flex: 0 0 125px;"
-                                        @onclick="e => ShowSellerCreation = true">
-                                    @Loc["Edit"]
-                                </button>
-                                <button type="button" class="btn btn-outline-danger" style="flex: 0 0 125px;"
-                                        @onclick="e => RemoveSeller()">
-                                    @Loc["Remove"]
-                                </button>
+                                <div class="col-auto">
+                                    <button type="button" class="btn btn-sm btn-outline-warning"
+                                            @onclick="e => ShowSellerCreation = true">
+                                        @Loc["Edit"]
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-danger"
+                                            @onclick="e => RemoveSeller()">
+                                        @Loc["Remove"]
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     }
@@ -160,22 +163,24 @@
                     }
                     else
                     {
-                        <div>
-                            <div class="btn-group d-flex flex-wrap btn-group-responsive mb-1">
-                                <button type="button" class="btn btn-outline-info fixed-label-button" disabled style="flex: 0 0 200px;">
+                        <div class="mb-1">
+                            <div class="row">
+                                <button type="button" class="btn btn-sm btn-outline-info col-3" disabled style="width: 150px;">
                                     @Loc["Buyer"]
                                 </button>
-                                <button type="button" class="btn btn-outline-light text-truncate flex-grow-1" disabled style="max-width: 300px;">
+                                <button type="button" class="btn btn-sm btn-outline-light text-truncate col-auto me-auto flex-grow-1" disabled style="max-width: 250px;">
                                     @invoiceDto.BuyerParty.Name
                                 </button>
-                                <button type="button" class="btn btn-outline-warning" style="flex: 0 0 125px;"
-                                        @onclick="e => ShowBuyerCreation = true">
-                                    @Loc["Edit"]
-                                </button>
-                                <button type="button" class="btn btn-outline-danger" style="flex: 0 0 125px;"
-                                        @onclick="e => RemoveBuyer()">
-                                    @Loc["Remove"]
-                                </button>
+                                <div class="col-auto">
+                                    <button type="button" class="btn btn-sm btn-outline-warning"
+                                            @onclick="e => ShowBuyerCreation = true">
+                                        @Loc["Edit"]
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-danger"
+                                            @onclick="e => RemoveBuyer()">
+                                        @Loc["Remove"]
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     }
@@ -201,22 +206,24 @@
                     }
                     else
                     {
-                        <div>
-                            <div class="btn-group d-flex flex-wrap btn-group-responsive mb-1">
-                                <button type="button" class="btn btn-outline-info fixed-label-button" disabled style="flex: 0 0 200px;">
+                        <div class="mb-1">
+                            <div class="row">
+                                <button type="button" class="btn btn-sm btn-outline-info col-3" disabled style="width: 150px;">
                                     @Loc["Payment Means"]
                                 </button>
-                                <button type="button" class="btn btn-outline-light text-truncate flex-grow-1" disabled style="max-width: 300px;">
+                                <button type="button" class="btn btn-sm btn-outline-light text-truncate col-auto me-auto flex-grow-1" disabled style="max-width: 250px;">
                                     @invoiceDto.PaymentMeans.Name
                                 </button>
-                                <button type="button" class="btn btn-outline-warning" style="flex: 0 0 125px;"
-                                        @onclick="e => ShowPaymentCreation = true">
-                                    @Loc["Edit"]
-                                </button>
-                                <button type="button" class="btn btn-outline-danger" style="flex: 0 0 125px;"
-                                        @onclick="e => RemovePayment()">
-                                    @Loc["Remove"]
-                                </button>
+                                <div class="col-auto">
+                                    <button type="button" class="btn btn-sm btn-outline-warning"
+                                            @onclick="e => ShowPaymentCreation = true">
+                                        @Loc["Edit"]
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-danger"
+                                            @onclick="e => RemovePayment()">
+                                        @Loc["Remove"]
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     }

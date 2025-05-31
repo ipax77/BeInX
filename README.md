@@ -38,6 +38,7 @@ BeInX does not collect or transmit any personal data. See our full [privacy poli
 
 >- Add ZUGFeRD PDF export (PDF/A3b)
 >- Fix Invoice Lines ux
+>- Invoice Lines import with Clear/Parse buttons
 >- Update msix cert
 
 </details>
