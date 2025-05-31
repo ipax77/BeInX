@@ -23,7 +23,7 @@ export class PdfA3Converter {
     }
 
     protected async loadIccProfile(): Promise<Uint8Array> {
-        const response = await fetch('_content/Blazorinvoice.Pdf/colorprofiles/sRGB2014.icc');
+        const response = await fetch('./_content/Blazorinvoice.Pdf/colorprofiles/sRGB2014.icc');
         const buffer = await response.arrayBuffer();
         return new Uint8Array(buffer);
     }
@@ -40,7 +40,9 @@ export class PdfA3Converter {
     }
 
     private embedXmlInvoice(doc: PDFDocument, xml: string): void {
-        const xmlBuffer = Buffer.from(xml, "utf8");
+        const encoder = new TextEncoder();
+        const xmlBuffer = encoder.encode(xml);
+        //const xmlBuffer = Buffer.from(xml, "utf8");
         const embeddedFileStream = doc.context.flateStream(xmlBuffer, {
             Type: PDFName.of("EmbeddedFile"),
             Subtype: PDFName.of("application/xml"),
@@ -87,6 +89,8 @@ export class PdfA3Converter {
     }
 
     private addMetadata(doc: PDFDocument, invoiceDto: InvoiceDto): void {
+        const date = new Date(invoiceDto.issueDate);
+        const issueDateUTC = date.toISOString();
         const metadataXML = `
             <?xpacket begin="" id="W5M0MpCehiHzreSzNTczkc9d"?>
             <x:xmpmeta xmlns:x="adobe:ns:meta/" x:xmptk="Adobe XMP Core 5.2-c001 63.139439, 2010/09/27-13:37:26        ">
@@ -108,9 +112,9 @@ export class PdfA3Converter {
         
                 <rdf:Description rdf:about="" xmlns:xmp="http://ns.adobe.com/xap/1.0/">
                     <xmp:CreatorTool>${invoiceDto.sellerParty.name}</xmp:CreatorTool>
-                    <xmp:CreateDate>${invoiceDto.issueDate}</xmp:CreateDate>
-                    <xmp:ModifyDate>${invoiceDto.issueDate}</xmp:ModifyDate>
-                    <xmp:MetadataDate>${invoiceDto.issueDate}</xmp:MetadataDate>
+                    <xmp:CreateDate>${issueDateUTC}</xmp:CreateDate>
+                    <xmp:ModifyDate>${issueDateUTC}</xmp:ModifyDate>
+                    <xmp:MetadataDate>${issueDateUTC}</xmp:MetadataDate>
                 </rdf:Description>
         
                 <rdf:Description rdf:about="" xmlns:pdf="http://ns.adobe.com/pdf/1.3/">

@@ -712,9 +712,9 @@ async function embedA3Fonts(pdfDoc: PDFDocument): Promise<{
     pdfDoc.registerFontkit(fontkit as Fontkit);
 
     const fontUrls = [
-        '_content/Blazorinvoice.Pdf/fonts/Inter-Light.ttf',
-        '_content/Blazorinvoice.Pdf/fonts/Inter-Bold.ttf',
-        '_content/Blazorinvoice.Pdf/fonts/Inter-MediumItalic.ttf'
+        './_content/Blazorinvoice.Pdf/fonts/Inter-Light.ttf',
+        './_content/Blazorinvoice.Pdf/fonts/Inter-Bold.ttf',
+        './_content/Blazorinvoice.Pdf/fonts/Inter-MediumItalic.ttf'
     ];
 
     const fontResponses = await Promise.all(fontUrls.map(url => fetch(url)));

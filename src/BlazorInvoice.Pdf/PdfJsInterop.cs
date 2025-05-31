@@ -1,9 +1,10 @@
 using BlazorInvoice.Shared;
+using BlazorInvoice.Shared.Interfaces;
 using Microsoft.JSInterop;
 
 namespace BlazorInvoice.Pdf
 {
-    public class PdfJsInterop : IAsyncDisposable
+    public class PdfJsInterop : IAsyncDisposable, IPdfJsInterop
     {
         private readonly Lazy<Task<IJSObjectReference>> moduleTask;
         private static readonly HashSet<string> SupportedCultures = ["en", "fr", "es", "de"];

@@ -160,3 +160,7 @@ Update Available;Update Available;Update verfügbar;Actualización disponible;Mi
 UpdateAvailable;A new version is available. Do you want to update?;Eine neue Version ist verfügbar. Möchten Sie aktualisieren?;Hay una nueva versión disponible. ¿Desea actualizar?;Une nouvelle version est disponible. Voulez-vous mettre à jour ?
 Yes;Yes;Ja;Sí;Oui
 No;No;Nein;No;Non
+ExportXmlAndPdf;Export both XML and PDF as zip file.;XML und PDF gemeinsam als ZIP-Datei exportieren.;Exportar tanto XML como PDF como archivo zip.;Exporter à la fois le XML et le PDF en fichier zip.
+ExportXml;Export only XML file.;Nur XML-Datei exportieren.;Exportar solo archivo XML.;Exporter uniquement le fichier XML.
+ExportPdf;Export only PDF file.;Nur PDF-Datei exportieren.;Exportar solo archivo PDF.;Exporter uniquement le fichier PDF.
+ExportPdfA3;Export PDF with embedded XML for ZUGFeRD compatibility (PDF/A3b).;PDF mit eingebettetem XML für ZUGFeRD-Kompatibilität exportieren (PDF/A3b).;Exportar PDF con XML incrustado para compatibilidad con ZUGFeRD (PDF/A3b).;Exporter le PDF avec XML intégré pour compatibilité ZUGFeRD (PDF/A3b).

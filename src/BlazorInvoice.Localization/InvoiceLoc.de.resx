@@ -541,4 +541,16 @@
   <data name="No" xml:space="preserve">
     <value>Nein</value>
   </data>
+  <data name="ExportXmlAndPdf" xml:space="preserve">
+    <value>XML und PDF gemeinsam als ZIP-Datei exportieren.</value>
+  </data>
+  <data name="ExportXml" xml:space="preserve">
+    <value>Nur XML-Datei exportieren.</value>
+  </data>
+  <data name="ExportPdf" xml:space="preserve">
+    <value>Nur PDF-Datei exportieren.</value>
+  </data>
+  <data name="ExportPdfA3" xml:space="preserve">
+    <value>PDF mit eingebettetem XML für ZUGFeRD-Kompatibilität exportieren (PDF/A3b).</value>
+  </data>
 </root>
