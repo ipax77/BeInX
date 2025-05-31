@@ -1,11 +1,12 @@
 import { PDFDict, PDFDocument, PDFHexString, PDFName, PDFString } from "pdf-lib";
 import { InvoiceDto } from "./dtos/invoice-dto";
-import {v4 as uuidv4} from 'uuid';
+import { randomBytes } from 'crypto';
 
 export class PdfA3Converter {
-    public async createA3Pdf(doc: PDFDocument, invoiceDto: InvoiceDto, culture: string, xmlInvoice: string): Promise<Uint8Array> {
-        const documentId = this.hexEncode(uuidv4());
-        this.setDocumentId(doc, documentId);
+    public async createA3Pdf(doc: PDFDocument, invoiceDto: InvoiceDto, culture: string, xmlInvoice: string)
+        : Promise<Uint8Array> {
+        
+        this.setDocumentId(doc);
         const iccBuffer = await this.loadIccProfile();
         this.setColorProfile(doc, iccBuffer);
         doc.setAuthor(invoiceDto.sellerParty.name)
@@ -14,7 +15,7 @@ export class PdfA3Converter {
         doc.setTitle(invoiceDto.id)
         doc.setCreationDate(new Date(invoiceDto.issueDate))
         doc.setModificationDate(new Date(invoiceDto.issueDate))
-        this.addMetadata(doc, invoiceDto, documentId);
+        this.addMetadata(doc, invoiceDto);
         this.setCatalog(doc, culture);
         this.embedXmlInvoice(doc, xmlInvoice);
         this.setCMAPS(doc);
@@ -86,9 +87,9 @@ export class PdfA3Converter {
         doc.catalog.set(PDFName.of("Lang"), PDFString.of(culture));
     }
 
-    private addMetadata(doc: PDFDocument, invoiceDto: InvoiceDto, uuid: string): void {
+    private addMetadata(doc: PDFDocument, invoiceDto: InvoiceDto): void {
         const metadataXML = `
-            <?xpacket begin="" id="${uuid}"?>
+            <?xpacket begin="" id="W5M0MpCehiHzreSzNTczkc9d"?>
             <x:xmpmeta xmlns:x="adobe:ns:meta/" x:xmptk="Adobe XMP Core 5.2-c001 63.139439, 2010/09/27-13:37:26        ">
                 <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
         
@@ -150,20 +151,9 @@ export class PdfA3Converter {
         doc.catalog.set(PDFName.of("OutputIntents"), doc.context.obj([outputIntentRef]))
     }
 
-    private setDocumentId(doc: PDFDocument, hexId: string): void {
-        const hexBuffer = PDFHexString.of(hexId)
+    private setDocumentId(doc: PDFDocument): void {
+        const documentId = randomBytes(16).toString("hex");
+        const hexBuffer = PDFHexString.of(documentId)
         doc.context.trailerInfo.ID = doc.context.obj([hexBuffer, hexBuffer])
-    }
-
-    private hexEncode(value: string): string {
-        var hex: string, i: number;
-
-        var result = "";
-        for (i=0; i<value.length; i++) {
-            hex = value.charCodeAt(i).toString(16);
-            result += ("000"+hex).slice(-4);
-        }
-
-        return result
     }
 }

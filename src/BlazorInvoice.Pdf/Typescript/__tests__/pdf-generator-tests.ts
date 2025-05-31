@@ -3,6 +3,8 @@ import { PdfGenerator, sampleInvoice } from "../pdf-generator";
 import { PDFDocument, StandardFonts } from 'pdf-lib';
 import { PdfA3Converter } from '../pdf-a3-converter';
 import path from 'path';
+import fontkit from "@pdf-lib/fontkit";
+import { Fontkit } from "pdf-lib/cjs/types/fontkit";
 
 describe('PdfGenerator', () => {
     it('should create a valid PDF file', async () => {
@@ -14,27 +16,28 @@ describe('PdfGenerator', () => {
         const pdfGenerator = new PdfGenerator(pdfDoc, defaultFont, boldFont, italicFont, "fr");
 
         const invoice = sampleInvoice();
-        const logo = "iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==";
-        // invoice.sellerParty.logo = { base64String: logo };
         const pdf = await pdfGenerator.generateInvoice(invoice);
         fs.writeFileSync('testinvoice.pdf', pdf);
     });
 
     it('should create a valid PDF/A3 file', async () => {
         const pdfDoc = await PDFDocument.create();
-        const defaultFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
-        const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
-        const italicFont = await pdfDoc.embedFont(StandardFonts.HelveticaOblique);
-
-        const pdfGenerator = new PdfGenerator(pdfDoc, defaultFont, boldFont, italicFont, "fr");
+        pdfDoc.registerFontkit(fontkit as Fontkit);
+        const regularFontBytes = fs.readFileSync(path.join(__dirname, '../../wwwroot/fonts/Inter-Light.ttf'));
+        const boldFontBytes = fs.readFileSync(path.join(__dirname, '../../wwwroot/fonts/Inter-Bold.ttf'));
+        const italicFontBytes = fs.readFileSync(path.join(__dirname, '../../wwwroot/fonts/Inter-MediumItalic.ttf'));
+        const defaultFont = await pdfDoc.embedFont(regularFontBytes, { subset: true });
+        const boldFont = await pdfDoc.embedFont(boldFontBytes, { subset: true });
+        const italicFont = await pdfDoc.embedFont(italicFontBytes, { subset: true });
+        const culture = "de";
+        const pdfGenerator = new PdfGenerator(pdfDoc, defaultFont, boldFont, italicFont, culture);
 
         const invoice = sampleInvoice();
-        const logo = "iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==";
-        // invoice.sellerParty.logo = { base64String: logo };
         await pdfGenerator.generateInvoice(invoice);
         
+        const xmlInvoice = fs.readFileSync("./__tests__/data/sample.xml",'utf8');
         const pdfA3Converter = new MockPdfA3Converter();
-        const pdf = await pdfA3Converter.createA3Pdf(pdfDoc, invoice, "de", "<invoice>Test</invoice>");
+        const pdf = await pdfA3Converter.createA3Pdf(pdfDoc, invoice, culture, xmlInvoice);
 
         fs.writeFileSync('testinvoiceA3.pdf', pdf);
     });

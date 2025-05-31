@@ -14,12 +14,6 @@ namespace BlazorInvoice.Pdf
                 "import", "./_content/BlazorInvoice.Pdf/dist/pdf-generator.js").AsTask());
         }
 
-        public async ValueTask<string> CreatePdf()
-        {
-            var module = await moduleTask.Value;
-            return await module.InvokeAsync<string>("createPdf");
-        }
-
         public async ValueTask<string> CreateInvoicePdf(BlazorInvoiceDto invoice, string cultureName)
         {
             var module = await moduleTask.Value;
@@ -30,6 +24,18 @@ namespace BlazorInvoice.Pdf
         {
             var module = await moduleTask.Value;
             return await module.InvokeAsync<byte[]>("createInvoicePdfBytes", invoice, GetCultureName(cultureName));
+        }
+
+        public async ValueTask<string> CreateInvoicePdfA3(BlazorInvoiceDto invoice, string cultureName, string xmlText)
+        {
+            var module = await moduleTask.Value;
+            return await module.InvokeAsync<string>("createInvoicePdfA3", invoice, GetCultureName(cultureName), xmlText);
+        }
+
+        public async ValueTask<byte[]> CreateInvoicePdfA3Bytes(BlazorInvoiceDto invoice, string cultureName, string xmlText)
+        {
+            var module = await moduleTask.Value;
+            return await module.InvokeAsync<byte[]>("createInvoicePdfA3Bytes", invoice, GetCultureName(cultureName), xmlText);
         }
 
         private static string GetCultureName(string cultureName)
