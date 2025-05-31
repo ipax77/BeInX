@@ -338,6 +338,7 @@ public partial class InvoiceComponent
             ToastService.ShowSuccess("Invoice successfully updated.");
         }
         await InvoiceRepository.DeleteTempInvoice();
+        hasTempInvoice = false;
         await InvokeAsync(StateHasChanged);
     }
 
