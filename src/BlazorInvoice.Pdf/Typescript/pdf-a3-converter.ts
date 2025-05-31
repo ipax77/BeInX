@@ -1,12 +1,11 @@
 import { PDFDict, PDFDocument, PDFHexString, PDFName, PDFString } from "pdf-lib";
 import { InvoiceDto } from "./dtos/invoice-dto";
-import { randomBytes } from 'crypto';
 
 export class PdfA3Converter {
-    public async createA3Pdf(doc: PDFDocument, invoiceDto: InvoiceDto, culture: string, xmlInvoice: string)
+    public async createA3Pdf(doc: PDFDocument, invoiceDto: InvoiceDto, culture: string, hexId: string, xmlInvoice: string)
         : Promise<Uint8Array> {
         
-        this.setDocumentId(doc);
+        this.setDocumentId(doc, hexId);
         const iccBuffer = await this.loadIccProfile();
         this.setColorProfile(doc, iccBuffer);
         doc.setAuthor(invoiceDto.sellerParty.name)
@@ -151,9 +150,8 @@ export class PdfA3Converter {
         doc.catalog.set(PDFName.of("OutputIntents"), doc.context.obj([outputIntentRef]))
     }
 
-    private setDocumentId(doc: PDFDocument): void {
-        const documentId = randomBytes(16).toString("hex");
-        const hexBuffer = PDFHexString.of(documentId)
+    private setDocumentId(doc: PDFDocument, hexId: string): void {
+        const hexBuffer = PDFHexString.of(hexId)
         doc.context.trailerInfo.ID = doc.context.obj([hexBuffer, hexBuffer])
     }
 }

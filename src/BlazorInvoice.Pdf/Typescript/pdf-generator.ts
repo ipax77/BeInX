@@ -730,7 +730,8 @@ async function embedA3Fonts(pdfDoc: PDFDocument): Promise<{
   };
 }
 
-export async function createInvoicePdfA3Bytes(invoice: InvoiceDto, locale: string, xmlText: string): Promise<Uint8Array> {
+export async function createInvoicePdfA3Bytes(invoice: InvoiceDto, locale: string, hexId: string, xmlText: string)
+  : Promise<Uint8Array> {
     const pdfDoc = await PDFDocument.create();
     const fonts = await embedA3Fonts(pdfDoc);
 
@@ -743,11 +744,12 @@ export async function createInvoicePdfA3Bytes(invoice: InvoiceDto, locale: strin
     );
     await pdfGenerator.generateInvoice(invoice);
     const pdfA3Converter = new PdfA3Converter();
-    return await pdfA3Converter.createA3Pdf(pdfDoc, invoice, locale, xmlText);
+    return await pdfA3Converter.createA3Pdf(pdfDoc, invoice, locale, hexId, xmlText);
 }
 
-export async function createInvoicePdfA3(invoice: InvoiceDto, locale: string, xmlText: string): Promise<string> {
-  const pdf = await createInvoicePdfA3Bytes(invoice, locale, xmlText);
+export async function createInvoicePdfA3(invoice: InvoiceDto, locale: string, hexId: string, xmlText: string)
+  : Promise<string> {
+  const pdf = await createInvoicePdfA3Bytes(invoice, locale, hexId, xmlText);
   return generateObjectUrl(pdf);
 }
 

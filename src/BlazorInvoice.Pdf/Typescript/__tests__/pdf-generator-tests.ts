@@ -5,6 +5,7 @@ import { PdfA3Converter } from '../pdf-a3-converter';
 import path from 'path';
 import fontkit from "@pdf-lib/fontkit";
 import { Fontkit } from "pdf-lib/cjs/types/fontkit";
+import { randomBytes } from 'crypto';
 
 describe('PdfGenerator', () => {
     it('should create a valid PDF file', async () => {
@@ -37,7 +38,8 @@ describe('PdfGenerator', () => {
         
         const xmlInvoice = fs.readFileSync("./__tests__/data/sample.xml",'utf8');
         const pdfA3Converter = new MockPdfA3Converter();
-        const pdf = await pdfA3Converter.createA3Pdf(pdfDoc, invoice, culture, xmlInvoice);
+        const documentId = randomBytes(16).toString("hex");
+        const pdf = await pdfA3Converter.createA3Pdf(pdfDoc, invoice, culture, documentId, xmlInvoice);
 
         fs.writeFileSync('testinvoiceA3.pdf', pdf);
     });

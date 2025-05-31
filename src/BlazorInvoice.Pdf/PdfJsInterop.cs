@@ -26,16 +26,16 @@ namespace BlazorInvoice.Pdf
             return await module.InvokeAsync<byte[]>("createInvoicePdfBytes", invoice, GetCultureName(cultureName));
         }
 
-        public async ValueTask<string> CreateInvoicePdfA3(BlazorInvoiceDto invoice, string cultureName, string xmlText)
+        public async ValueTask<string> CreateInvoicePdfA3(BlazorInvoiceDto invoice, string cultureName, string hexId, string xmlText)
         {
             var module = await moduleTask.Value;
-            return await module.InvokeAsync<string>("createInvoicePdfA3", invoice, GetCultureName(cultureName), xmlText);
+            return await module.InvokeAsync<string>("createInvoicePdfA3", invoice, GetCultureName(cultureName), hexId, xmlText);
         }
 
-        public async ValueTask<byte[]> CreateInvoicePdfA3Bytes(BlazorInvoiceDto invoice, string cultureName, string xmlText)
+        public async ValueTask<byte[]> CreateInvoicePdfA3Bytes(BlazorInvoiceDto invoice, string cultureName, string hexId, string xmlText)
         {
             var module = await moduleTask.Value;
-            return await module.InvokeAsync<byte[]>("createInvoicePdfA3Bytes", invoice, GetCultureName(cultureName), xmlText);
+            return await module.InvokeAsync<byte[]>("createInvoicePdfA3Bytes", invoice, GetCultureName(cultureName), hexId, xmlText);
         }
 
         private static string GetCultureName(string cultureName)
