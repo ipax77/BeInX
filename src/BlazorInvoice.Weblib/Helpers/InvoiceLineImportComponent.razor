@@ -28,7 +28,11 @@ Date&#09;Description&#09;Start&#09;End&#09;Duration&#09;€/h Sum
             <InputTextArea id="invoicelinetext" class="form-control" rows="6" placeholder="@($"{DateTime.Today.ToShortDateString()}\tProject A\t08:00\t12:00\t4:00\t50\t{200.ToString("N2")} €")" @bind-Value="text" />
         </div>
         <div class="mt-2">
-            <button type="submit" class="btn btn-outline-warning">@Loc["Import"]</button>
+            <div class="btn-group">
+                <button type="submit" class="btn btn-outline-warning">@Loc["Import"]</button>
+                <button type="button" class="btn btn-outline-primary" @onclick="e => Import(true)">@Loc["Parse"]</button>
+                <button type="button" class="btn btn-outline-secondary" @onclick="Clear">@Loc["Clear"]</button>
+            </div>
         </div>
     </EditForm>
     <div class="mt-1">
@@ -103,6 +107,11 @@ Date&#09;Description&#09;Start&#09;End&#09;Duration&#09;€/h Sum
             result = null;
             text = string.Empty;
         }
+    }
+
+    private void Clear()
+    {
+        result = null;
     }
 
     public void Dispose()

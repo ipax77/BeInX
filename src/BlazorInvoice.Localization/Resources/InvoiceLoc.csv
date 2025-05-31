@@ -164,3 +164,5 @@ ExportXmlAndPdf;Export both XML and PDF as zip file.;XML und PDF gemeinsam als Z
 ExportXml;Export only XML file.;Nur XML-Datei exportieren.;Exportar solo archivo XML.;Exporter uniquement le fichier XML.
 ExportPdf;Export only PDF file.;Nur PDF-Datei exportieren.;Exportar solo archivo PDF.;Exporter uniquement le fichier PDF.
 ExportPdfA3;Export PDF with embedded XML for ZUGFeRD compatibility (PDF/A3b).;PDF mit eingebettetem XML für ZUGFeRD-Kompatibilität exportieren (PDF/A3b).;Exportar PDF con XML incrustado para compatibilidad con ZUGFeRD (PDF/A3b).;Exporter le PDF avec XML intégré pour compatibilité ZUGFeRD (PDF/A3b).
+Parse;Parse;Parsen;Analizar;Analyser
+Clear;Clear;Löschen;Limpiar;Effacer

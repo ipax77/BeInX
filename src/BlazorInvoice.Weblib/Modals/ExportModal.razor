@@ -37,9 +37,11 @@
                             <InputCheckbox id="finalize" class="form-check-input" @bind-Value="config.ExportFinalize" />
                             <label for="finalize" class="form-check-label">@Loc["Finalize"]</label>
                         </div>
-                        <div class="mb-3" id="exportTypeSelect" data-bs-toggle="tooltip" data-bs-html="true"
-                             title="@AllExportTypeDescriptionsHtml">
-                            <label for="typeselect" class="form-label">Export Type</label>
+                        <div class="mb-3" id="exportTypeSelect">
+                            <label for="typeselect" class="form-label">
+                                Export Type <i class="bi bi-info-circle" data-bs-toggle="tooltip" data-bs-html="true"
+                                               data-bs-title="@((MarkupString)AllExportTypeDescriptionsHtml)"></i>
+                            </label>
                             <InputSelect id="typeselect" class="form-select" @bind-Value="config.ExportType">
                                 @foreach (ExportType ent in Enum.GetValues(typeof(ExportType)))
                                 {
@@ -93,7 +95,7 @@
     private MarkupString AllExportTypeDescriptionsHtml => new MarkupString(
         string.Join("<br/>", Enum.GetValues(typeof(ExportType))
         .Cast<ExportType>()
-        .Select(e => $"<b>{e.Desc()}:</b> {e.LongDesc()}"))
+        .Select(e => $"<b>{e.Desc()}:</b> {Loc[$"Export{e.ToString()}"]}"))
     );
 
     protected override async Task OnInitializedAsync()

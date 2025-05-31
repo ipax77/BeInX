@@ -553,4 +553,10 @@
   <data name="ExportPdfA3" xml:space="preserve">
     <value>Export PDF with embedded XML for ZUGFeRD compatibility (PDF/A3b).</value>
   </data>
+  <data name="Parse" xml:space="preserve">
+    <value>Parse</value>
+  </data>
+  <data name="Clear" xml:space="preserve">
+    <value>Clear</value>
+  </data>
 </root>
