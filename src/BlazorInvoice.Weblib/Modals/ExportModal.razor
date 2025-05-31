@@ -10,7 +10,6 @@
 @inherits InvoiceBaseComponent
 @inject IJSRuntime JSRuntime
 @inject IInvoiceRepository InvoiceRepository
-@inject PdfJsInterop PdfJsInterop
 @inject IToastService ToastService
 
 <div class="modal fade" id="@_modalId" tabindex="-1" aria-labelledby="codeListModalLabel" aria-hidden="true">
@@ -38,12 +37,15 @@
                             <InputCheckbox id="finalize" class="form-check-input" @bind-Value="config.ExportFinalize" />
                             <label for="finalize" class="form-check-label">@Loc["Finalize"]</label>
                         </div>
-                        <div class="mb-3">
-                            <label for="typeselect" class="form-label">Export Type</label>
+                        <div class="mb-3" id="exportTypeSelect">
+                            <label for="typeselect" class="form-label">
+                                Export Type <i class="bi bi-info-circle" data-bs-toggle="tooltip" data-bs-html="true"
+                                               data-bs-title="@((MarkupString)AllExportTypeDescriptionsHtml)"></i>
+                            </label>
                             <InputSelect id="typeselect" class="form-select" @bind-Value="config.ExportType">
                                 @foreach (ExportType ent in Enum.GetValues(typeof(ExportType)))
                                 {
-                                    <option value="@ent">@ent</option>
+                                    <option value="@ent">@ent.Desc()</option>
                                 }
                             </InputSelect>
                         </div>
@@ -90,6 +92,12 @@
     private InvoiceListDto? _invoiceInfo;
     private EditContext editContext = null!;
 
+    private MarkupString AllExportTypeDescriptionsHtml => new MarkupString(
+        string.Join("<br/>", Enum.GetValues(typeof(ExportType))
+        .Cast<ExportType>()
+        .Select(e => $"<b>{e.Desc()}:</b> {Loc[$"Export{e.ToString()}"]}"))
+    );
+
     protected override async Task OnInitializedAsync()
     {
         config = await ConfigService.GetConfig();
@@ -102,11 +110,13 @@
         _finalizeResult = null;
         _invoiceInfo = invoiceInfo;
         JSRuntime.InvokeVoidAsync("openModalById", _modalId);
+        JSRuntime.InvokeVoidAsync("enableTooltips", "exportTypeSelect");
     }
 
     public void Close()
     {
         JSRuntime.InvokeVoidAsync("closeModalById", _modalId);
+        JSRuntime.InvokeVoidAsync("disableTooltips", "exportTypeSelect");
     }
 
     private async void OnFieldChanged(object? sender, FieldChangedEventArgs e)
@@ -124,17 +134,10 @@
         }
         try
         {
-            var invoice = await InvoiceRepository.GetInvoice(_invoiceInfo.InvoiceId);
-            if (invoice is null)
+            var exportResult = await InvoiceRepository.ExportInvoice(_invoiceInfo.InvoiceId);
+            if (exportResult.FinalizeResult is null)
             {
-                ToastService.ShowError("Invoice not found.");
-                return;
-            }
-            var pdfBytes = await PdfJsInterop.CreateInvoicePdfBytes(invoice.InvoiceDto, config.CultureName);
-            var exportResult = await InvoiceRepository.ExportInvoice(_invoiceInfo.InvoiceId, pdfBytes);
-            if (!string.IsNullOrEmpty(exportResult.Error))
-            {
-                ToastService.ShowError(exportResult.Error);
+                ToastService.ShowError(exportResult.Error ?? "Unexpected Erro");
                 return;
             }
             _finalizeResult = exportResult.FinalizeResult;

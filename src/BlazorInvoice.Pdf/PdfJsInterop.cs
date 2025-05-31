@@ -1,9 +1,10 @@
 using BlazorInvoice.Shared;
+using BlazorInvoice.Shared.Interfaces;
 using Microsoft.JSInterop;
 
 namespace BlazorInvoice.Pdf
 {
-    public class PdfJsInterop : IAsyncDisposable
+    public class PdfJsInterop : IAsyncDisposable, IPdfJsInterop
     {
         private readonly Lazy<Task<IJSObjectReference>> moduleTask;
         private static readonly HashSet<string> SupportedCultures = ["en", "fr", "es", "de"];
@@ -12,12 +13,6 @@ namespace BlazorInvoice.Pdf
         {
             moduleTask = new(() => jsRuntime.InvokeAsync<IJSObjectReference>(
                 "import", "./_content/BlazorInvoice.Pdf/dist/pdf-generator.js").AsTask());
-        }
-
-        public async ValueTask<string> CreatePdf()
-        {
-            var module = await moduleTask.Value;
-            return await module.InvokeAsync<string>("createPdf");
         }
 
         public async ValueTask<string> CreateInvoicePdf(BlazorInvoiceDto invoice, string cultureName)
@@ -30,6 +25,18 @@ namespace BlazorInvoice.Pdf
         {
             var module = await moduleTask.Value;
             return await module.InvokeAsync<byte[]>("createInvoicePdfBytes", invoice, GetCultureName(cultureName));
+        }
+
+        public async ValueTask<string> CreateInvoicePdfA3(BlazorInvoiceDto invoice, string cultureName, string hexId, string xmlText)
+        {
+            var module = await moduleTask.Value;
+            return await module.InvokeAsync<string>("createInvoicePdfA3", invoice, GetCultureName(cultureName), hexId, xmlText);
+        }
+
+        public async ValueTask<byte[]> CreateInvoicePdfA3Bytes(BlazorInvoiceDto invoice, string cultureName, string hexId, string xmlText)
+        {
+            var module = await moduleTask.Value;
+            return await module.InvokeAsync<byte[]>("createInvoicePdfA3Bytes", invoice, GetCultureName(cultureName), hexId, xmlText);
         }
 
         private static string GetCultureName(string cultureName)

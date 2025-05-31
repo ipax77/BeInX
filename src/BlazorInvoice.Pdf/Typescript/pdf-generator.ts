@@ -6,11 +6,14 @@ import {
   PageSizes,
   StandardFonts,
 } from "pdf-lib";
+import fontkit from "@pdf-lib/fontkit";
+import { Fontkit } from "pdf-lib/cjs/types/fontkit";
 import { InvoiceDto } from "./dtos/invoice-dto";
 import { InvoiceLineDto } from "./dtos/invoice-line-dto";
 import { PartyDto } from "./dtos/party-dto";
 import { PaymentMeansDto } from "./dtos/payment-means-dto";
 import { PdfFontCache } from "./pdf-font-cache";
+import { PdfA3Converter } from "./pdf-a3-converter";
 
 const TRANSLATIONS = {
   de: {
@@ -698,6 +701,55 @@ export async function createInvoicePdfBytes(invoice: InvoiceDto, locale: string)
 
 export async function createInvoicePdf(invoice: InvoiceDto, locale: string): Promise<string> {
   const pdf = await createInvoicePdfBytes(invoice, locale);
+  return generateObjectUrl(pdf);
+}
+
+async function embedA3Fonts(pdfDoc: PDFDocument): Promise<{
+  regular: PDFFont;
+  bold: PDFFont;
+  italic: PDFFont;
+}> {
+    pdfDoc.registerFontkit(fontkit as Fontkit);
+
+    const fontUrls = [
+        './_content/Blazorinvoice.Pdf/fonts/Inter-Light.ttf',
+        './_content/Blazorinvoice.Pdf/fonts/Inter-Bold.ttf',
+        './_content/Blazorinvoice.Pdf/fonts/Inter-MediumItalic.ttf'
+    ];
+
+    const fontResponses = await Promise.all(fontUrls.map(url => fetch(url)));
+    const fontBuffers = await Promise.all(fontResponses.map(res => res.arrayBuffer()));
+
+    const regularFont = await pdfDoc.embedFont(fontBuffers[0], { subset: true });
+    const boldFont = await pdfDoc.embedFont(fontBuffers[1], { subset: true });
+    const italicFont = await pdfDoc.embedFont(fontBuffers[2], { subset: true });
+    return {
+      regular: regularFont,
+      bold: boldFont,
+      italic: italicFont,
+  };
+}
+
+export async function createInvoicePdfA3Bytes(invoice: InvoiceDto, locale: string, hexId: string, xmlText: string)
+  : Promise<Uint8Array> {
+    const pdfDoc = await PDFDocument.create();
+    const fonts = await embedA3Fonts(pdfDoc);
+
+    const pdfGenerator = new PdfGenerator(
+        pdfDoc,
+        fonts.regular,
+        fonts.bold,
+        fonts.italic,
+        locale,
+    );
+    await pdfGenerator.generateInvoice(invoice);
+    const pdfA3Converter = new PdfA3Converter();
+    return await pdfA3Converter.createA3Pdf(pdfDoc, invoice, locale, hexId, xmlText);
+}
+
+export async function createInvoicePdfA3(invoice: InvoiceDto, locale: string, hexId: string, xmlText: string)
+  : Promise<string> {
+  const pdf = await createInvoicePdfA3Bytes(invoice, locale, hexId, xmlText);
   return generateObjectUrl(pdf);
 }
 

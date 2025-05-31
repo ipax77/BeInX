@@ -1,6 +1,7 @@
 ﻿@using BlazorInvoice.Shared
 @using System.Globalization
-@inject PdfJsInterop pdfJsInterop
+@using BlazorInvoice.Shared.Interfaces
+@inject IPdfJsInterop pdfJsInterop
 
 <div>
     @if (!string.IsNullOrEmpty(ObjectUrl))

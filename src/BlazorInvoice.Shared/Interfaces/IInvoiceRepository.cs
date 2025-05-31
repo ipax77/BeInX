@@ -39,8 +39,8 @@ public interface IInvoiceRepository
     Task SaveTempInvoice(InvoiceDtoInfo request);
     Task<InvoiceDtoInfo?> GetTempInvoice();
     Task<int> ImportInvoice(XmlInvoice invoice, CancellationToken token = default);
-    Task<ExportResult> ExportInvoice(int invoiceId, byte[] pdfBytes);
-    Task SetIsPaid(int invoiceId, bool isPaied, CancellationToken token = default);
+    Task<ExportResult> ExportInvoice(int invoiceId);
+    Task SetIsPaid(int invoiceId, bool isPaid, CancellationToken token = default);
     Task<int> CreateInvoiceCopy(int invoiceId);
     Task SeedTestInvoices(int count);
     Task<int> SeedTestInvoice();

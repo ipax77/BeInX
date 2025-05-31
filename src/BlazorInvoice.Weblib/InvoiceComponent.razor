@@ -5,19 +5,19 @@
 <div class="container-fluid mt-2 mb-5">
     <div class="d-flex">
         <div>
-        @if (InvoiceId is null)
-        {
-            <h2>@Loc["Create New Invoice"]</h2>
-        }
-        else
-        {
-            <h2>@Loc["Edit Invoice"]</h2>
-        }
+            @if (InvoiceId is null)
+            {
+                <h2>@Loc["Create New Invoice"]</h2>
+            }
+            else
+            {
+                <h2>@Loc["Edit Invoice"]</h2>
+            }
         </div>
         <div class="form-check form-switch ms-3 mt-1">
             <label for="showdesc" class="form-check-label">@Loc["Show Descriptions"]</label>
             <input id="showdesc" type="checkbox" class="form-check-input" role="switch"
-                @bind="appConfig.ShowFormDescriptions" @bind:after="() => ConfigService.UpdateConfig(appConfig)" />
+                   @bind="appConfig.ShowFormDescriptions" @bind:after="() => ConfigService.UpdateConfig(appConfig)" />
         </div>
         @if (NoneRequiredSelected)
         {
@@ -83,14 +83,14 @@
             {
                 @if (!isLineEdit)
                 {
-                    <h3>@Loc["Create New Line"] <i class="pointer bi bi-x-lg text-danger" @onclick="e => ShowLineCreation = false"></i></h3>
+                    <h3>@Loc["Create New Line"] <i class="pointer bi bi-x-lg text-danger" @onclick="OnLineClosed"></i></h3>
                 }
                 else
                 {
-                    <h3>@Loc["Edit Line"] <i class="pointer bi bi-x-lg text-danger" @onclick="e => ShowLineCreation = false"></i></h3>
+                    <h3>@Loc["Edit Line"] <i class="pointer bi bi-x-lg text-danger" @onclick="OnLineClosed"></i></h3>
                 }
                 <CascadingValue Value="invoiceEditContext" Name="invoiceEditContext">
-                    <LineForm Invoice="invoiceDto" LineIndex="@SelectedLineIndex" OnCancel="e => ShowLineCreation = false"
+                    <LineForm Invoice="invoiceDto" LineIndex="@SelectedLineIndex" OnCancel="OnLineClosed"
                               OnCodeListRequested="CodeListRequest" ShowDesc="showDesc"
                               OnValidSubmit="OnLineChanged" />
                 </CascadingValue>
@@ -119,22 +119,25 @@
                     }
                     else
                     {
-                        <div>
-                            <div class="btn-group flex-wrap btn-group-responsive mb-2">
-                                <button type="button" class="btn btn-outline-info fixed-label-button" disabled>
+                        <div class="mb-1">
+                            <div class="row">
+                                <button type="button" class="btn btn-sm btn-outline-info col-3" disabled style="width: 150px;">
                                     @Loc["Seller"]
                                 </button>
-                                <button type="button" class="btn btn-outline-light text-truncate flex-grow-1" disabled>
+
+                                <button type="button" class="btn btn-sm btn-outline-light text-truncate col-auto me-auto flex-grow-1" disabled style="max-width: 250px;">
                                     @invoiceDto.SellerParty.Name
                                 </button>
-                                <button type="button" class="btn btn-outline-warning"
-                                        @onclick="e => ShowSellerCreation = true">
-                                    @Loc["Edit"]
-                                </button>
-                                <button type="button" class="btn btn-outline-danger"
-                                        @onclick="e => RemoveSeller()">
-                                    @Loc["Remove"]
-                                </button>
+                                <div class="col-auto">
+                                    <button type="button" class="btn btn-sm btn-outline-warning"
+                                            @onclick="e => ShowSellerCreation = true">
+                                        @Loc["Edit"]
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-danger"
+                                            @onclick="e => RemoveSeller()">
+                                        @Loc["Remove"]
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     }
@@ -160,22 +163,24 @@
                     }
                     else
                     {
-                        <div>
-                            <div class="btn-group flex-wrap btn-group-responsive mb-2">
-                                <button type="button" class="btn btn-outline-info fixed-label-button" disabled>
+                        <div class="mb-1">
+                            <div class="row">
+                                <button type="button" class="btn btn-sm btn-outline-info col-3" disabled style="width: 150px;">
                                     @Loc["Buyer"]
                                 </button>
-                                <button type="button" class="btn btn-outline-light text-truncate flex-grow-1" disabled>
+                                <button type="button" class="btn btn-sm btn-outline-light text-truncate col-auto me-auto flex-grow-1" disabled style="max-width: 250px;">
                                     @invoiceDto.BuyerParty.Name
                                 </button>
-                                <button type="button" class="btn btn-outline-warning"
-                                        @onclick="e => ShowBuyerCreation = true">
-                                    @Loc["Edit"]
-                                </button>
-                                <button type="button" class="btn btn-outline-danger"
-                                        @onclick="e => RemoveBuyer()">
-                                    @Loc["Remove"]
-                                </button>
+                                <div class="col-auto">
+                                    <button type="button" class="btn btn-sm btn-outline-warning"
+                                            @onclick="e => ShowBuyerCreation = true">
+                                        @Loc["Edit"]
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-danger"
+                                            @onclick="e => RemoveBuyer()">
+                                        @Loc["Remove"]
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     }
@@ -201,22 +206,24 @@
                     }
                     else
                     {
-                        <div>
-                            <div class="btn-group flex-wrap btn-group-responsive mb-2">
-                                <button type="button" class="btn btn-outline-info fixed-label-button" disabled>
+                        <div class="mb-1">
+                            <div class="row">
+                                <button type="button" class="btn btn-sm btn-outline-info col-3" disabled style="width: 150px;">
                                     @Loc["Payment Means"]
                                 </button>
-                                <button type="button" class="btn btn-outline-light text-truncate flex-grow-1" disabled>
+                                <button type="button" class="btn btn-sm btn-outline-light text-truncate col-auto me-auto flex-grow-1" disabled style="max-width: 250px;">
                                     @invoiceDto.PaymentMeans.Name
                                 </button>
-                                <button type="button" class="btn btn-outline-warning"
-                                        @onclick="e => ShowPaymentCreation = true">
-                                    @Loc["Edit"]
-                                </button>
-                                <button type="button" class="btn btn-outline-danger"
-                                        @onclick="e => RemovePayment()">
-                                    @Loc["Remove"]
-                                </button>
+                                <div class="col-auto">
+                                    <button type="button" class="btn btn-sm btn-outline-warning"
+                                            @onclick="e => ShowPaymentCreation = true">
+                                        @Loc["Edit"]
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-danger"
+                                            @onclick="e => RemovePayment()">
+                                        @Loc["Remove"]
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     }
@@ -233,47 +240,54 @@
                         <hr />
                         <div class="mt-2 mb-5">
                             <div class="d-flex">
-                            <h4>@Loc["Invoice Lines"] - &sum; @invoiceDto.InvoiceLines.Sum(s => s.LineTotal).ToString("N2")</h4>
-                            <div class="ms-2">
-                                <button type="button" class="btn btn-sm btn-outline-secondary"
-                                        @onclick="e => lineImportModal?.Show(invoiceDto)">
-                                    @Loc["Line Import"]
-                                </button>
-                            </div>
-                            </div>
-                            @for (int i = 0; i < invoiceDto.InvoiceLines.Count; i++)
-                            {
-                                var invoiceLine = invoiceDto.InvoiceLines[i];
-                                var index = i;
-                                <div>
-                                    <div class="btn-group flex-wrap btn-group-responsive mb-1">
-                                        <button type="button" class="btn btn-sm btn-outline-light"
-                                                @onclick="e => MoveLineUp(index)">
-                                            <i class="bi bi-arrow-up"></i>
-                                        </button>
-                                        <button type="button" class="btn btn-sm btn-outline-light"
-                                                @onclick="e => MoveLineDown(index)">
-                                            <i class="bi bi-arrow-down"></i>
-                                        </button>
-                                        <button type="button" class="btn btn-outline-info" disabled>
-                                            @Loc["Line"] @(index + 1):
-                                        </button>
-                                        <button type="button" class="btn btn-sm btn-outline-light text-truncate flex-grow-1" disabled>
-                                            @invoiceLine.Name / @invoiceLine.LineTotal.ToString("N2")
-                                            @invoiceDto.DocumentCurrencyCode
-                                        </button>
-                                        <button type="button" class="btn btn-outline-warning"
-                                                @onclick="e => EditLine(index)">
-                                            @Loc["Edit"]
-                                        </button>
-                                        <button type="button" class="btn btn-outline-danger"
-                                                @onclick="e => RemoveLine(index)">
-                                            @Loc["Remove"]
-                                        </button>
-                                    </div>
+                                <h4>@Loc["Invoice Lines"]</h4>
+                                <div class="ms-2">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary"
+                                            @onclick="e => lineImportModal?.Show(invoiceDto)">
+                                        @Loc["Line Import"]
+                                    </button>
                                 </div>
-                            }
-                            <button class="btn btn-sm btn-secondary mt-2" @onclick="AddLine">+ @Loc["Add New Line"]</button>
+                            </div>
+                            <div class="">
+                                <table class="table table-sm">
+                                    <colgroup>
+                                        <col class="col-1">
+                                        <col class="col-1">
+                                        <col style="width: auto;">
+                                        <col class="col-1">
+                                        <col class="col-1">
+                                    </colgroup>
+                                    <thead>
+                                        <tr>
+                                            <th></th>
+                                            <th>#</th>
+                                            <th>@Loc["Name"]</th>
+                                            <th>@Loc["Total"]</th>
+                                            <th></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @for (int i = 0; i < invoiceDto.InvoiceLines.Count; i++)
+                                        {
+                                            var invoiceLine = invoiceDto.InvoiceLines[i];
+                                            var index = i;
+                                            <InvoiceLineComponent InvoiceLine="invoiceLine" Index="index"
+                                                                  OnMoveLine="e => MoveLine(e)"
+                                                                  OnEditLine="e => EditLine(e)"
+                                                                  OnRemoveLine="e => RemoveLine(e)" />
+                                        }
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <td colspan="3">
+                                                <button class="btn btn-sm btn-secondary mt-2" @onclick="AddLine">+ @Loc["Add New Line"]</button>
+                                            </td>
+                                            <td class="text-end"><strong>@Loc["Total"]:</strong></td>
+                                            <td><strong>@invoiceDto.InvoiceLines.Sum(s => s.LineTotal).ToString("N2")</strong></td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 }
@@ -282,7 +296,7 @@
         <div class="col-7">
             @if (AllRequiredSelected)
             {
-                <div class="sticky-top mt-2 mb-2">
+                <div class="sticky-top mt-2">
                     <div class="btn-group p-1 border rounded bg-dark-subtle">
                         <button type="button" class="btn btn-outline-success"
                                 @onclick="e => OnInvoiceChanged(invoiceDto)">
@@ -291,112 +305,113 @@
                         @if (InvoiceId != null && InvoiceId > 0)
                         {
                             <button type="button" class="btn btn-outline-warning" @onclick="e => exportModal?.Show(new() { Id = invoiceDto.Id, InvoiceId = InvoiceId.Value })">@Loc["Export"]</button>
-                        } else
+                        }
+                        else
                         {
                             <button type="button" class="btn btn-outline-warning" disabled>@Loc["Export"]</button>
                         }
                     </div>
-                </div>
 
-                <div class="mb-2">
-                    <button class="btn btn-outline-light" type="button" @onclick="e => ShowPdfComponent = !ShowPdfComponent">
-                        @if (ShowPdfComponent)
-                        {
-                            <i class="bi bi-chevron-double-up"></i>
-                            <span>Hide PDF</span>
-                        }
-                        else
-                        {
-                            <i class="bi bi-chevron-double-down"></i>
-                            <span>Show PDF</span>
-                        }
-                    </button>
-                </div>
-
-                @if (ShowPdfComponent)
-                {
-                    <div class="mt-2" style="width: 800px;">
-                        <InvoicePdfComponent @ref="invoicePdfComponent" Invoice="invoiceDto" />
+                    <div class="mb-2">
+                        <button class="btn btn-outline-light" type="button" @onclick="e => ShowPdfComponent = !ShowPdfComponent">
+                            @if (ShowPdfComponent)
+                            {
+                                <i class="bi bi-chevron-double-up"></i>
+                                <span>Hide PDF</span>
+                            }
+                            else
+                            {
+                                <i class="bi bi-chevron-double-down"></i>
+                                <span>Show PDF</span>
+                            }
+                        </button>
                     </div>
-                }
 
-                <div class="mb-2">
-                    <button class="btn btn-outline-light" type="button" data-bs-toggle="collapse" data-bs-target="#xmlText"
-                            aria-expanded="false" aria-controls="xmlText" @onclick="e => ShowXmlText = !ShowXmlText">
+                    @if (ShowPdfComponent)
+                    {
+                        <div class="mt-2" style="width: 800px;">
+                            <InvoicePdfComponent @ref="invoicePdfComponent" Invoice="invoiceDto" />
+                        </div>
+                    }
+
+                    <div class="mb-2">
+                        <button class="btn btn-outline-light" type="button" data-bs-toggle="collapse" data-bs-target="#xmlText"
+                                aria-expanded="false" aria-controls="xmlText" @onclick="e => ShowXmlText = !ShowXmlText">
+                            @if (ShowXmlText)
+                            {
+                                <i class="bi bi-chevron-double-up"></i>
+                                <span>Hide Xml</span>
+                            }
+                            else
+                            {
+                                <i class="bi bi-chevron-double-down"></i>
+                                <span>Show Xml</span>
+                            }
+                        </button>
+                    </div>
+                    <div class="collapse" id="xmlText">
                         @if (ShowXmlText)
                         {
-                            <i class="bi bi-chevron-double-up"></i>
-                            <span>Hide Xml</span>
+                            <XmlTextComponent @ref="xmlTextComponent" Invoice="invoiceDto" />
                         }
-                        else
-                        {
-                            <i class="bi bi-chevron-double-down"></i>
-                            <span>Show Xml</span>
-                        }
-                    </button>
-                </div>
-                <div class="collapse" id="xmlText">
-                    @if (ShowXmlText)
-                    {
-                        <XmlTextComponent @ref="xmlTextComponent" Invoice="invoiceDto" />
-                    }
-                </div>
-                <div class="mb-2">
-                     <button class="btn btn-outline-light" type="button" data-bs-toggle="collapse" data-bs-target="#chatgpt"
-                            aria-expanded="false" aria-controls="validation" @onclick="e => ShowChatGpt = !ShowChatGpt">
+                    </div>
+                    <div class="mb-2">
+                        <button class="btn btn-outline-light" type="button" data-bs-toggle="collapse" data-bs-target="#chatgpt"
+                                aria-expanded="false" aria-controls="validation" @onclick="e => ShowChatGpt = !ShowChatGpt">
+                            @if (ShowChatGpt)
+                            {
+                                <i class="bi bi-chevron-double-up"></i>
+                                <span>Hide Json</span>
+                            }
+                            else
+                            {
+                                <i class="bi bi-chevron-double-down"></i>
+                                <span>Show Json</span>
+                            }
+                        </button>
+                    </div>
+                    <div class="collapse" id="chatgpt">
                         @if (ShowChatGpt)
                         {
-                            <i class="bi bi-chevron-double-up"></i>
-                            <span>Hide Json</span>
+                            <ChatGptComponent @ref="chatGptComponent" Invoice="invoiceDto" />
                         }
-                        else
-                        {
-                            <i class="bi bi-chevron-double-down"></i>
-                            <span>Show Json</span>
-                        }
-                    </button>
-                </div>
-                <div class="collapse" id="chatgpt">
-                    @if (ShowChatGpt)
-                    {
-                        <ChatGptComponent @ref="chatGptComponent" Invoice="invoiceDto" />
-                    }
-                </div>
-                <div class="mb-2">
-                     <button class="btn btn-outline-light" type="button" data-bs-toggle="collapse" data-bs-target="#validation"
-                            aria-expanded="false" aria-controls="validation" @onclick="e => ShowValidation = !ShowValidation">
-                        @if (ShowValidation)
-                        {
-                            <i class="bi bi-chevron-double-up"></i>
-                            <span>Hide @Loc["Validation"]</span>
-                        }
-                        else
-                        {
-                            <i class="bi bi-chevron-double-down"></i>
-                            <span>Show @Loc["Validation"]</span>
-                        }
-                    </button>
-                </div>
-                 <div class="collapse" id="validation">
-                    <div class="btn-group mt-2">
-                        <button type="button" class="btn btn-outline-primary" @onclick="ValidateInvoiceSchema">
-                            Validate
-                            XML
-                        </button>
-                        <button type="button" class="btn btn-outline-primary" @onclick="ValidateInvoiceSchematron">
-                            Validate
-                            Schematron
-                        </button>
-                        <div class="form-check form-switch ms-2 mt-1">
-                            <label for="xmlvalidation" class="form-check-label">Show Warnings</label>
-                            <input id="xmlvalidation" type="checkbox" class="form-check-input" role="switch" @bind="appConfig.ShowValidationWarnings" @bind:after="() => ConfigService.UpdateConfig(appConfig)" />
-                        </div>
                     </div>
-                    <div class="mt-2">
-                        @if (invoiceValidationResult is not null && ShowValidation)
-                        {
-                            <ValidationResultComponent Result="invoiceValidationResult" ShowWarnings="appConfig.ShowValidationWarnings" />
-                        }
+                    <div class="mb-2">
+                        <button class="btn btn-outline-light" type="button" data-bs-toggle="collapse" data-bs-target="#validation"
+                                aria-expanded="false" aria-controls="validation" @onclick="e => ShowValidation = !ShowValidation">
+                            @if (ShowValidation)
+                            {
+                                <i class="bi bi-chevron-double-up"></i>
+                                <span>Hide @Loc["Validation"]</span>
+                            }
+                            else
+                            {
+                                <i class="bi bi-chevron-double-down"></i>
+                                <span>Show @Loc["Validation"]</span>
+                            }
+                        </button>
+                    </div>
+                    <div class="collapse" id="validation">
+                        <div class="btn-group mt-2">
+                            <button type="button" class="btn btn-outline-primary" @onclick="ValidateInvoiceSchema">
+                                Validate
+                                XML
+                            </button>
+                            <button type="button" class="btn btn-outline-primary" @onclick="ValidateInvoiceSchematron">
+                                Validate
+                                Schematron
+                            </button>
+                            <div class="form-check form-switch ms-2 mt-1">
+                                <label for="xmlvalidation" class="form-check-label">Show Warnings</label>
+                                <input id="xmlvalidation" type="checkbox" class="form-check-input" role="switch" @bind="appConfig.ShowValidationWarnings" @bind:after="() => ConfigService.UpdateConfig(appConfig)" />
+                            </div>
+                        </div>
+                        <div class="mt-2">
+                            @if (invoiceValidationResult is not null && ShowValidation)
+                            {
+                                <ValidationResultComponent Result="invoiceValidationResult" ShowWarnings="appConfig.ShowValidationWarnings" />
+                            }
+                        </div>
                     </div>
                 </div>
             }

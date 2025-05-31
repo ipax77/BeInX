@@ -81,7 +81,7 @@
                 <InputSelect id="exporttype" class="form-select" @bind-Value="appConfig.ExportType">
                     @foreach (ExportType exportType in Enum.GetValues(typeof(ExportType)))
                     {
-                        <option value="@exportType">@exportType</option>
+                        <option value="@exportType">@exportType.Desc()</option>
                     }
                 </InputSelect>
             </div>

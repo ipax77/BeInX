@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 namespace BlazorInvoice.Db.Repository;
 
-public partial class InvoiceRepository(InvoiceContext context, IConfigService configService) : IInvoiceRepository
+public partial class InvoiceRepository(InvoiceContext context, IConfigService configService, IPdfJsInterop pdfJsInterop) : IInvoiceRepository
 {
     public async Task<int> GetInvoicesCount(InvoiceListRequest request, CancellationToken token = default)
     {

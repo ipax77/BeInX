@@ -5,6 +5,7 @@ using BlazorInvoice.Weblib.Modals;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Routing;
+using Microsoft.JSInterop;
 using pax.BBToast;
 using pax.XRechnung.NET;
 using pax.XRechnung.NET.AnnotatedDtos;
@@ -25,6 +26,9 @@ public partial class InvoiceComponent
 
     [Inject]
     public IMauiPopupService PopupService { get; set; } = null!;
+
+    [Inject]
+    public IJSRuntime JSRuntime { get; set; } = null!;
 
     [Parameter]
     public int? InvoiceId { get; set; }
@@ -206,11 +210,21 @@ public partial class InvoiceComponent
         _ = SaveTempInvoice();
     }
 
+    private async Task OnLineClosed()
+    {
+        ShowLineCreation = false;
+        await InvokeAsync(StateHasChanged);
+        await Task.Delay(100);
+        await JSRuntime.InvokeVoidAsync("scrollToElement", $"line{SelectedLineIndex}");
+    }
+
     private async Task OnLineChanged(InvoiceLineAnnotationDto args)
     {
         ShowLineCreation = false;
         await InvokeAsync(StateHasChanged);
         await SaveTempInvoice();
+        await Task.Delay(100);
+        await JSRuntime.InvokeVoidAsync("scrollToElement", $"line{SelectedLineIndex}");
     }
 
     private async Task OnSellerChanged(SellerAnnotationDto args)
@@ -324,6 +338,7 @@ public partial class InvoiceComponent
             ToastService.ShowSuccess("Invoice successfully updated.");
         }
         await InvoiceRepository.DeleteTempInvoice();
+        hasTempInvoice = false;
         await InvokeAsync(StateHasChanged);
     }
 
@@ -350,6 +365,18 @@ public partial class InvoiceComponent
         invoiceEditContext.OnFieldChanged += FieldChanged;
         ShowLineCreation = false;
         SetLineIds();
+    }
+
+    private void MoveLine((int, bool) e)
+    {
+        if (e.Item2)
+        {
+            MoveLineUp(e.Item1);
+        }
+        else
+        {
+            MoveLineDown(e.Item1);
+        }
     }
 
     private void MoveLineUp(int index)
