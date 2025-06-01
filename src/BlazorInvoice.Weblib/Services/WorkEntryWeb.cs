@@ -33,6 +33,16 @@ public record WorkEntryWeb : WorkEntryDto
         };
     }
 
+    public void Update(WorkEntryDto workEntryDto)
+    {
+        PartyId = workEntryDto.PartyId;
+        Date = workEntryDto.Date;
+        Job = workEntryDto.Job;
+        StartTime = workEntryDto.StartTime;
+        EndTime = workEntryDto.EndTime;
+        HourlyRate = workEntryDto.HourlyRate;
+    }
+
     public void UpdateDto(WorkEntryDto entryDto)
     {
         entryDto.EntryGuid = EntryGuid;

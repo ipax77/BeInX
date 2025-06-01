@@ -34,7 +34,8 @@
                 var entry = WorkEntries[row];
                 var rowIndex = row;
                 entry.Row = rowIndex;
-                <WorkListRow Entry="@entry" RowIndex="@rowIndex"
+                <WorkListRow @key="entry"
+                             Entry="@entry" RowIndex="@rowIndex"
                              OnKeyPressed="KeyPressed"
                              OnFieldChanged="OnFieldChanged"
                              OnFocus="Focus"
@@ -86,8 +87,33 @@
         WorkEntries = DtoWorkEntries.Select(x => new WorkEntryWeb(x, ColumnCount)).ToList();
         for (int i = 0; i < 10; i++)
         {
-            WorkEntries.Add(WorkEntryWeb.Empty(PartyId, ColumnCount) );
+            WorkEntries.Add(WorkEntryWeb.Empty(PartyId, ColumnCount));
         }
+    }
+
+    public void Update(WorkEntryDelta delta)
+    {
+        if (delta.PartyId != PartyId) return;
+
+        switch (delta.ChangeType)
+        {
+            case WorkEntryChangeType.Create:
+                WorkEntries.Insert(0, new WorkEntryWeb(delta.After!, ColumnCount));
+                break;
+
+            case WorkEntryChangeType.Edit:
+                var index = WorkEntries.FindIndex(w => w.EntryGuid == delta.After!.EntryGuid);
+                if (index >= 0)
+                {
+                    WorkEntries[index].Update(delta.After!);
+                }
+                break;
+
+            case WorkEntryChangeType.Delete:
+                WorkEntries.RemoveAll(w => w.EntryGuid == delta.Before!.EntryGuid);
+                break;
+        }
+        InvokeAsync(StateHasChanged);
     }
 
     private void AddLine()

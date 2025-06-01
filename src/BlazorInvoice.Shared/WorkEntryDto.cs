@@ -16,3 +16,18 @@ public record WorkEntrySnapShot
 {
     public Dictionary<int, List<WorkEntryDto>> EntriesByParty { get; set; } = [];
 }
+
+public enum WorkEntryChangeType
+{
+    Create,
+    Edit,
+    Delete
+}
+
+public record WorkEntryDelta
+{
+    public WorkEntryChangeType ChangeType { get; init; }
+    public WorkEntryDto? Before { get; init; }
+    public WorkEntryDto? After { get; init; }
+    public int PartyId { get; init; }
+}

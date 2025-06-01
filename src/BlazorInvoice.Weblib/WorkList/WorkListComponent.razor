@@ -11,6 +11,18 @@
 @inject IToastService ToastService
 
 <h3>Work List</h3>
+@if (workListService.CanUndoParty(partyId))
+{
+    <i class="bi bi-arrow-90deg-left ms-2 text-warning pointer"
+       title="Undo"
+       @onclick="() => UndoParty(partyId)"></i>
+}
+@if (workListService.CanRedoParty(partyId))
+{
+    <i class="bi bi-arrow-90deg-right ms-2 text-success pointer"
+       title="Redo"
+       @onclick="() => RedoParty(partyId)"></i>
+}
 
 <div>
     <div>
@@ -23,6 +35,7 @@
                         @party.Name
                         <i class="bi bi-x text-danger pointer" @onclick:stopPropagation @onclick="e => RemoveParty(party)"></i>
                     </button>
+
                 </li>
             }
             @if (tabParties.Count == 0)
@@ -44,14 +57,12 @@
     @foreach (var party in tabParties)
     {
         <div class="tab-content @(party.PartyId == partyId ? "show active" : "visually-hidden")">
-            @if (workEntrySnapShot != null && workEntrySnapShot.EntriesByParty.ContainsKey(party.PartyId))
-            {
-                <WorkEntriesComponent DtoWorkEntries="workEntrySnapShot.EntriesByParty[party.PartyId]"
-                                      PartyId="@party.PartyId"
-                                      ColumnCount="@columnCount"
-                                      OnFieldChanged="FieldChanged"
-                                      OnDelete="DeleteEntry" />
-            }
+            <WorkEntriesComponent @ref="workEntriesComponents[party.PartyId]"
+                                  DtoWorkEntries="workListService.GetEntriesByParty(party.PartyId)"
+                                  PartyId="@party.PartyId"
+                                  ColumnCount="@columnCount"
+                                  OnFieldChanged="FieldChanged"
+                                  OnDelete="DeleteEntry" />
         </div>
     }
 </div>
@@ -72,12 +83,11 @@
     bool hasTempEntries;
     Lock updateLock = new();
 
-    WorkEntrySnapShot? workEntrySnapShot;
-
-    Dictionary<int, List<WorkEntryWeb>> tempEntries = new();
     HashSet<Guid> savedGuids = [];
     BuyerSelectModal? buyerSelectModal;
     DebugWorkList? debugWorkList;
+    WorkListService workListService = new(new());
+    Dictionary<int, WorkEntriesComponent?> workEntriesComponents = [];
 
     protected override async Task OnInitializedAsync()
     {
@@ -95,7 +105,8 @@
 
     private async Task LoadSnapShot()
     {
-        workEntrySnapShot = await WorkListRepository.GetWorkEntries();
+        var workEntrySnapShot = await WorkListRepository.GetWorkEntries();
+        workListService.SetSnapshot(workEntrySnapShot);
     }
 
     private void PartySelected(int selectedPartyId)
@@ -108,11 +119,11 @@
         var tabParty = tabParties.FirstOrDefault(p => p.PartyId == selectedPartyId);
         if (tabParty == null)
         {
+            if (!workEntriesComponents.ContainsKey(selectedPartyId))
+            {
+                workEntriesComponents.Add(selectedPartyId, null);
+            }
             tabParties.Add(party);
-        }
-        if (!workEntrySnapShot?.EntriesByParty.ContainsKey(selectedPartyId) ?? false)
-        {
-            workEntrySnapShot?.EntriesByParty.Add(selectedPartyId, []);
         }
         partyId = selectedPartyId;
         InvokeAsync(StateHasChanged);
@@ -132,52 +143,71 @@
 
     private async Task FieldChanged(WorkEntryWeb entry)
     {
-        if (workEntrySnapShot == null)
-        {
-            return;
-        }
+        var dto = entry.GetDto();
+
         lock (updateLock)
         {
-            if (workEntrySnapShot.EntriesByParty.TryGetValue(entry.PartyId, out var entries))
+            var existingEntries = workListService.GetEntriesByParty(dto.PartyId);
+            var existing = existingEntries.FirstOrDefault(e => e.EntryGuid == dto.EntryGuid);
+
+            if (existing == null)
             {
-                var existingEntry = entries.FirstOrDefault(f => f.EntryGuid == entry.EntryGuid);
-                if (existingEntry != null)
-                {
-                    entry.UpdateDto(existingEntry);
-                }
-                else
-                {
-                    entries.Add(entry.GetDto());
-                }
+                workListService.EntryCreated(dto);
             }
             else
             {
-                workEntrySnapShot.EntriesByParty[entry.PartyId] = [entry.GetDto()];
+                workListService.EntryChanged(dto);
             }
         }
-        debugWorkList?.Update(workEntrySnapShot.EntriesByParty[entry.PartyId]);
+        Debug();
     }
 
     private void DeleteEntry(WorkEntryWeb entry)
     {
-        if (workEntrySnapShot?.EntriesByParty.TryGetValue(partyId, out var entries) == true)
+        var dto = entry.GetDto();
+        workListService.EntryDeleted(dto);
+        Debug();
+    }
+
+    private void UndoParty(int partyId)
+    {
+        var delta = workListService.UndoLastChange(partyId);
+        if (delta is not null)
         {
-            var entryToRemove = entries.FirstOrDefault(e => e.EntryGuid == entry.EntryGuid);
-            if (entryToRemove != null)
+            if (workEntriesComponents.TryGetValue(partyId, out var component))
             {
-                entries.Remove(entryToRemove);
+                component?.Update(delta);
+            }
+            StateHasChanged();
+        }
+        Debug();
+    }
+
+    private void RedoParty(int partyId)
+    {
+        var delta = workListService.RedoLastChange(partyId);
+        if (delta is not null)
+        {
+            if (workEntriesComponents.TryGetValue(partyId, out var component))
+            {
+                component?.Update(delta);
             }
         }
+        Debug();
+    }
+
+    private void Debug()
+    {
+        var snapshot = workListService.GetSnapshot();
+        var entries = snapshot.EntriesByParty
+            .SelectMany(kvp => kvp.Value)
+            .ToList();
+        debugWorkList?.Update(entries);
     }
 
     private async Task SaveEntries()
     {
-        if (workEntrySnapShot == null)
-        {
-            ToastService.ShowError(Loc["No work entries loaded."]);
-            return;
-        }
-        await WorkListRepository.SaveWorkEntries(workEntrySnapShot);
+        await WorkListRepository.SaveWorkEntries(workListService.GetSnapshot());
         ToastService.ShowSuccess(Loc["Work entries saved successfully."]);
     }
 }
