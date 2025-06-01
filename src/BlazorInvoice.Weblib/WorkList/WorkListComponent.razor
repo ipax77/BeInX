@@ -1,5 +1,6 @@
 @using BlazorInvoice.Shared
 @using BlazorInvoice.Shared.Interfaces
+@using BlazorInvoice.Weblib.Modals
 @using BlazorInvoice.Weblib.Services
 @using Microsoft.JSInterop
 @using pax.BBToast;
@@ -10,44 +11,58 @@
 @inject IToastService ToastService
 
 <h3>Work List</h3>
-<div class="mb-4" style="max-width: 400px;">
-    <h5>@Loc["Select or Create Buyer"]</h5>
-    <select class="form-select" @bind="partyId" @bind:after="OnPartySelected">
-        <option value="0">-- Select party --</option>
-        @foreach (var party in parties)
-        {
-            <option value="@party.PartyId">@party.Name</option>
-        }
-    </select>
-</div>
 
 <div>
-    <ul class="nav nav-tabs">
-        @foreach (var party in parties)
-        {
-            <li class="nav-item">
-                <button class="nav-link @(party.PartyId == partyId ? "active" : "")"
-                        @onclick="() => partyId = party.PartyId">
-                    @party.Name
-                </button>
-            </li>
-        }
-    </ul>
+    <div>
+        <ul class="nav nav-tabs">
+            @foreach (var party in tabParties)
+            {
+                <li class="nav-item">
+                    <button class="nav-link @(party.PartyId == partyId ? "active" : "")"
+                            @onclick="() => partyId = party.PartyId">
+                        @party.Name
+                        <i class="bi bi-x text-danger pointer" @onclick:stopPropagation @onclick="e => RemoveParty(party)"></i>
+                    </button>
+                </li>
+            }
+            @if (tabParties.Count == 0)
+            {
+                <li>
+                    <button type="button" class="btn btn-outline-light" @onclick="e => buyerSelectModal?.Show()">
+                        <i class="bi bi-plus-circle pointer ms-2"></i>
+                        @Loc["Add Party Tab"]"
+                    </button>
+                </li>
+            }
+            else
+            {
+                <li><i class="bi bi-plus-circle pointer ms-2" @onclick="e => buyerSelectModal?.Show()"></i></li>
+            }
+        </ul>
+    </div>
 
-    @foreach (var party in parties)
+    @foreach (var party in tabParties)
     {
         <div class="tab-content @(party.PartyId == partyId ? "show active" : "visually-hidden")">
-            <WorkEntriesComponent WorkEntries="GetEntriesByParty(party.PartyId)"
-                                  PartyId="@party.PartyId"
-                                  ColumnCount="@columnCount"
-                                  OnFieldChanged="FieldChanged" />
+            @if (workEntrySnapShot != null && workEntrySnapShot.EntriesByParty.ContainsKey(party.PartyId))
+            {
+                <WorkEntriesComponent DtoWorkEntries="workEntrySnapShot.EntriesByParty[party.PartyId]"
+                                      PartyId="@party.PartyId"
+                                      ColumnCount="@columnCount"
+                                      OnFieldChanged="FieldChanged"
+                                      OnDelete="DeleteEntry" />
+            }
         </div>
     }
 </div>
 
+<BuyerSelectModal @ref="buyerSelectModal" Parties="parties"
+                  OnSelected="PartySelected" />
+
 @code {
     int columnCount = 5;
     List<PartyListDto> parties = [];
+    List<PartyListDto> tabParties = [];
     int partyId = 0;
     int currentPartyId = 0;
     bool hasTempEntries;
@@ -57,6 +72,7 @@
 
     Dictionary<int, List<WorkEntryWeb>> tempEntries = new();
     HashSet<Guid> savedGuids = [];
+    BuyerSelectModal? buyerSelectModal;
 
     protected override async Task OnInitializedAsync()
     {
@@ -77,18 +93,36 @@
         workEntrySnapShot = await WorkListRepository.GetWorkEntries();
     }
 
-    private List<WorkEntryWeb> GetEntriesByParty(int partyId)
+    private void PartySelected(int selectedPartyId)
     {
-        if (workEntrySnapShot == null || !workEntrySnapShot.EntriesByParty.ContainsKey(partyId))
+        var party = parties.FirstOrDefault(p => p.PartyId == selectedPartyId);
+        if (party is null)
         {
-            return new List<WorkEntryWeb>();
+            return;
         }
-        return workEntrySnapShot.EntriesByParty[partyId].Select(s => new WorkEntryWeb(s, columnCount)).ToList();
+        var tabParty = tabParties.FirstOrDefault(p => p.PartyId == selectedPartyId);
+        if (tabParty == null)
+        {
+            tabParties.Add(party);
+        }
+        if (!workEntrySnapShot?.EntriesByParty.ContainsKey(selectedPartyId) ?? false)
+        {
+            workEntrySnapShot?.EntriesByParty.Add(selectedPartyId, []);
+        }
+        partyId = selectedPartyId;
+        InvokeAsync(StateHasChanged);
     }
 
-    private async Task OnPartySelected()
+    private void RemoveParty(PartyListDto party)
     {
-
+        if (tabParties.Contains(party))
+        {
+            tabParties.Remove(party);
+            if (partyId == party.PartyId)
+            {
+                partyId = tabParties.FirstOrDefault()?.PartyId ?? 0;
+            }
+        }
     }
 
     private async Task FieldChanged(WorkEntryWeb entry)
@@ -118,18 +152,17 @@
         }
     }
 
-    private void DeleteEntry(Guid entryGuid, int partyId)
+    private void DeleteEntry(WorkEntryWeb entry)
     {
         if (workEntrySnapShot?.EntriesByParty.TryGetValue(partyId, out var entries) == true)
         {
-            var entryToRemove = entries.FirstOrDefault(e => e.EntryGuid == entryGuid);
+            var entryToRemove = entries.FirstOrDefault(e => e.EntryGuid == entry.EntryGuid);
             if (entryToRemove != null)
             {
                 entries.Remove(entryToRemove);
             }
         }
     }
-
 
     private async Task SaveEntries()
     {

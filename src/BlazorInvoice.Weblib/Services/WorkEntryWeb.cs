@@ -48,4 +48,7 @@ public record WorkEntryWeb : WorkEntryDto
         StartTime == default &&
         EndTime == default &&
         HourlyRate == default;
+
+    public static WorkEntryWeb Empty(int columnCount) =>
+        new(new WorkEntryDto() { Date = DateOnly.FromDateTime(DateTime.Today) }, columnCount);
 }

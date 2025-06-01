@@ -6,7 +6,7 @@
 @inherits InvoiceBaseComponent
 @inject IToastService ToastService
 
-<div class="table-responsive">
+<div class="table-responsive" style="max-height: 80vh;">
     <table class="table table-bordered table-sm align-middle text-center">
         <colgroup>
             <col class="col-1">
@@ -14,7 +14,8 @@
             <col class="col-1">
             <col class="col-1">
             <col class="col-1">
-            <col class="col-2">
+            <col class="col-1">
+            <col class="col" style="width: 50px;">
         </colgroup>
         <thead class="table-light">
             <tr>
@@ -23,7 +24,8 @@
                 <th>Start</th>
                 <th>End</th>
                 <th>€/h</th>
-                <th>Summary</th>
+                <th>Sum</th>
+                <th></th>
             </tr>
         </thead>
         <tbody @onfocusout="HandleFocusOut" tabindex="0">
@@ -35,7 +37,8 @@
                 <WorkListRow Entry="@entry" RowIndex="@rowIndex"
                              OnKeyPressed="KeyPressed"
                              OnFieldChanged="OnFieldChanged"
-                             OnFocus="Focus" />
+                             OnFocus="Focus"
+                             OnDelete="DeleteLine" />
             }
         </tbody>
         <tfoot>
@@ -50,7 +53,7 @@
 
 @code {
     [Parameter, EditorRequired]
-    public List<WorkEntryWeb> WorkEntries { get; set; } = [];
+    public List<WorkEntryDto> DtoWorkEntries { get; set; } = [];
 
     [Parameter, EditorRequired]
     public int PartyId { get; set; }
@@ -60,6 +63,9 @@
 
     [Parameter]
     public EventCallback<WorkEntryWeb> OnFieldChanged { get; set; }
+
+    [Parameter]
+    public EventCallback<WorkEntryWeb> OnDelete { get; set; }
 
     private FrozenDictionary<string, bool> interestKeys = new Dictionary<string, bool>() {
         { "ArrowUp", false },
@@ -72,6 +78,18 @@
     int focusedRow = -1;
     int focusedColumn = -1;
 
+    private List<WorkEntryWeb> WorkEntries { get; set; } = [];
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        WorkEntries = DtoWorkEntries.Select(x => new WorkEntryWeb(x, ColumnCount)).ToList();
+        for (int i = 0; i < 10; i++)
+        {
+            WorkEntries.Add(WorkEntryWeb.Empty(ColumnCount));
+        }
+    }
+
     private void AddLine()
     {
         if (PartyId == 0)
@@ -79,7 +97,13 @@
             ToastService.ShowError(Loc["Please select a party first."]);
             return;
         }
-        WorkEntries.Add(new(new() { Date = DateOnly.FromDateTime(DateTime.Today), PartyId = PartyId }, ColumnCount));
+        WorkEntries.Add(WorkEntryWeb.Empty(ColumnCount));
+    }
+
+    private void DeleteLine(WorkEntryWeb entry)
+    {
+        WorkEntries.Remove(entry);
+        OnDelete.InvokeAsync(entry);
     }
 
     private void Focus((int, int) info)

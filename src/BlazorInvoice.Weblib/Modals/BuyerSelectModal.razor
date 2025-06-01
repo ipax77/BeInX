@@ -1,0 +1,55 @@
+﻿@using BlazorInvoice.Shared
+@using Microsoft.JSInterop
+@inherits InvoiceBaseComponent
+@inject IJSRuntime JSRuntime
+
+<div class="modal fade" id="@_modalId" tabindex="-1" aria-labelledby="tempInvoiceModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="tempInvoiceModalLabel">@Loc["Add Party Tab"]</h1>
+            </div>
+            <div class="modal-body">
+                <select class="form-select" @bind="partyId" @bind:after="Select">
+                    <option value="0">-- Select party --</option>
+                    @foreach (var party in Parties)
+                    {
+                        <option value="@party.PartyId">@party.Name</option>
+                    }
+                </select>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@Loc["Close"]</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private readonly string _modalId = "buyerSelectModal";
+
+    [Parameter, EditorRequired]
+    public List<PartyListDto> Parties { get; set; } = [];
+
+    [Parameter]
+    public EventCallback<int> OnSelected { get; set; }
+
+    private int partyId = 0;
+
+    public void Show()
+    {
+        partyId = 0;
+        JSRuntime.InvokeVoidAsync("openModalById", _modalId);
+    }
+
+    public void Close()
+    {
+        JSRuntime.InvokeVoidAsync("closeModalById", _modalId);
+    }
+
+    public void Select()
+    {
+        OnSelected.InvokeAsync(partyId);
+        Close();
+    }
+}

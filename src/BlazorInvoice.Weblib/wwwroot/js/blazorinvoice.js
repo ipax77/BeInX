@@ -112,6 +112,9 @@ function cleanupOrphanedTooltips() {
 }
 
 function registerCustomKeydownEvent() {
+    if (window.customKeydownEventRegistered) {
+        return; // TODO: register on Blazor startup instead of here
+    }
     Blazor.registerCustomEventType('customkeydown', {
         browserEventName: 'keydown',
         createEventArgs: event => {
@@ -130,4 +133,5 @@ function registerCustomKeydownEvent() {
             };
         }
     });
+    window.customKeydownEventRegistered = true;
 }

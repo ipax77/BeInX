@@ -56,7 +56,7 @@ namespace BlazorInvoice.Web
 
             using var scope = app.Services.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<InvoiceContext>();
-            context.Database.EnsureDeleted();
+            // context.Database.EnsureDeleted();
             context.Database.Migrate();
 
             var configService = scope.ServiceProvider.GetRequiredService<IConfigService>();
