@@ -86,7 +86,7 @@
         WorkEntries = DtoWorkEntries.Select(x => new WorkEntryWeb(x, ColumnCount)).ToList();
         for (int i = 0; i < 10; i++)
         {
-            WorkEntries.Add(WorkEntryWeb.Empty(ColumnCount));
+            WorkEntries.Add(WorkEntryWeb.Empty(PartyId, ColumnCount) );
         }
     }
 
@@ -97,7 +97,7 @@
             ToastService.ShowError(Loc["Please select a party first."]);
             return;
         }
-        WorkEntries.Add(WorkEntryWeb.Empty(ColumnCount));
+        WorkEntries.Add(WorkEntryWeb.Empty(PartyId, ColumnCount));
     }
 
     private void DeleteLine(WorkEntryWeb entry)

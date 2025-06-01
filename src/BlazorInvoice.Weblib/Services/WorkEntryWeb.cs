@@ -8,6 +8,7 @@ public record WorkEntryWeb : WorkEntryDto
     public WorkEntryWeb(WorkEntryDto entryDto, int columnCount)
     {
         EntryGuid = entryDto.EntryGuid;
+        PartyId = entryDto.PartyId;
         Date = entryDto.Date;
         Job = entryDto.Job;
         StartTime = entryDto.StartTime;
@@ -23,12 +24,12 @@ public record WorkEntryWeb : WorkEntryDto
         return new WorkEntryDto
         {
             EntryGuid = EntryGuid,
+            PartyId = PartyId,
             Date = Date,
             Job = Job,
             StartTime = StartTime,
             EndTime = EndTime,
             HourlyRate = HourlyRate,
-            PartyId = PartyId,
         };
     }
 
@@ -40,7 +41,6 @@ public record WorkEntryWeb : WorkEntryDto
         entryDto.StartTime = StartTime;
         entryDto.EndTime = EndTime;
         entryDto.HourlyRate = HourlyRate;
-        entryDto.PartyId = PartyId;
     }
 
     public bool IsEmpty() =>
@@ -49,6 +49,6 @@ public record WorkEntryWeb : WorkEntryDto
         EndTime == default &&
         HourlyRate == default;
 
-    public static WorkEntryWeb Empty(int columnCount) =>
-        new(new WorkEntryDto() { Date = DateOnly.FromDateTime(DateTime.Today) }, columnCount);
+    public static WorkEntryWeb Empty(int partyId, int columnCount) =>
+        new(new WorkEntryDto() { Date = DateOnly.FromDateTime(DateTime.Today), PartyId = partyId }, columnCount);
 }
