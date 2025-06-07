@@ -9,15 +9,11 @@ public static class ZugferdMapper
 {
     public static string MapToZugferd(BlazorInvoiceDto invoice)
     {
-        decimal taxRate = InvoiceMapperUtils.RoundAmount(invoice.GlobalTax / 100.0);
-        decimal taxExclusiveAmount = InvoiceMapperUtils.RoundAmount(invoice.InvoiceLines
-            .Sum(s => InvoiceMapperUtils
-                .RoundAmount(InvoiceMapperUtils.RoundAmount(s.Quantity)
-                    * InvoiceMapperUtils.RoundAmount(s.UnitPrice))));
-
-        decimal payableAmount = InvoiceMapperUtils.RoundAmount(taxExclusiveAmount + taxExclusiveAmount * taxRate);
+        decimal taxRate = (decimal)invoice.GlobalTax / 100.0m;
+        decimal taxExclusiveAmount = Math.Round((decimal)invoice.InvoiceLines.Sum(s => s.LineTotal), 2);
+        decimal payableAmount = Math.Round(taxExclusiveAmount + taxExclusiveAmount * taxRate, 2);
         bool isSmallBusiness = taxRate == 0; // keine Umsatzsteuer nach § 19 UStG
-        decimal taxAmount = isSmallBusiness ? 0 : InvoiceMapperUtils.RoundAmount(payableAmount - taxExclusiveAmount);
+        decimal taxAmount = isSmallBusiness ? 0 : Math.Round(payableAmount - taxExclusiveAmount, 2);
 
 
         InvoiceDescriptor desc = InvoiceDescriptor.CreateInvoice(
@@ -68,8 +64,8 @@ public static class ZugferdMapper
             percent: (decimal)invoice.GlobalTax,
             taxAmount: taxAmount,
             typeCode: GetEnum<TaxTypes>(invoice.GlobalTaxScheme),
-            categoryCode: invoice.GlobalTax == 0 ? TaxCategoryCodes.E : GetEnum<TaxCategoryCodes>(invoice.GlobalTaxCategory),
-            exemptionReason: invoice.GlobalTax == 0 ? "Kein Ausweis von Umsatzsteuer, da Kleinunternehmer gemäß § 19UStG" : null
+            categoryCode: isSmallBusiness ? TaxCategoryCodes.E : GetEnum<TaxCategoryCodes>(invoice.GlobalTaxCategory),
+            exemptionReason: isSmallBusiness ? "Kein Ausweis von Umsatzsteuer, da Kleinunternehmer gemäß § 19UStG" : null
         );
 
         desc.AddTradePaymentTerms(
