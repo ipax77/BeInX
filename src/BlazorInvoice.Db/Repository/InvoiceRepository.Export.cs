@@ -1,4 +1,5 @@
 ﻿using BlazorInvoice.Shared;
+using BlazorInvoice.Shared.ZUGFeRD;
 using pax.XRechnung.NET;
 using pax.XRechnung.NET.XmlModels;
 using System.IO.Compression;
@@ -27,7 +28,7 @@ public partial class InvoiceRepository
             ArgumentNullException.ThrowIfNull(xmlInvoice, nameof(xmlInvoice));
 
 
-            var xmlText = GetXmlText(xmlInvoice, config.ExportType);
+            var xmlText = GetXmlText(xmlInvoice, invoiceInfo.InvoiceDto, config.ExportType);
             var pdfBytes = await GetPdfBytes(invoiceInfo.InvoiceDto, config.ExportType, config.CultureName, xmlText);
 
             if (config.ExportEmbedPdf && config.ExportType != ExportType.PdfA3)
@@ -104,14 +105,14 @@ public partial class InvoiceRepository
         }
     }
 
-    private string GetXmlText(XmlInvoice xmlInvoice, ExportType exportType)
+    private string GetXmlText(XmlInvoice xmlInvoice, BlazorInvoiceDto invoiceDto, ExportType exportType)
     {
         return exportType switch
         {
             ExportType.Xml => XmlInvoiceWriter.Serialize(xmlInvoice),
             ExportType.Pdf => string.Empty,
             ExportType.XmlAndPdf => XmlInvoiceWriter.Serialize(xmlInvoice),
-            ExportType.PdfA3 => XmlInvoiceWriter.Serialize(xmlInvoice),
+            ExportType.PdfA3 => ZugferdMapper.MapToZugferd(invoiceDto),
             _ => throw new NotSupportedException($"Export type {exportType} is not supported.")
         };
     }
