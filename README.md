@@ -34,7 +34,13 @@ BeInX does not collect or transmit any personal data. See our full [privacy poli
 
 # Change Log
 
-<details open="open"><summary>v1.0.2</summary>
+<details open="open"><summary>v1.0.3</summary>
+
+>- ZUGFeRD PDF export with embedded ZUGFeRD v2.3 BASIC XML
+
+</details>
+
+<details><summary>v1.0.2</summary>
 
 >- Add ZUGFeRD PDF export (PDF/A3b)
 >- Fix Invoice Lines ux
