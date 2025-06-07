@@ -25,19 +25,22 @@ public static class ZugferdMapper
             invoice.IssueDate,
             GetEnum<CurrencyCodes>(invoice.DocumentCurrencyCode)
         );
+        desc.BusinessProcess = "urn:fdc:peppol.eu:2017:poacc:billing:01:1.0";
         desc.Type = GetEnumFromAttributeValue<InvoiceType>(invoice.InvoiceTypeCode);
 
         desc.Name = "Invoice";
         desc.ReferenceOrderNo = invoice.BuyerParty.BuyerReference;
         desc.AddNote(invoice.Note);
 
-        desc.SetBuyer(invoice.BuyerParty.RegistrationName,
+        desc.SetBuyer(invoice.BuyerParty.Name,
             invoice.BuyerParty.PostCode,
             invoice.BuyerParty.City,
             invoice.BuyerParty.StreetName,
-            GetEnum<CountryCodes>(invoice.BuyerParty.CountryCode)
+            GetEnum<CountryCodes>(invoice.BuyerParty.CountryCode),
+            id: string.Empty
         );
-        desc.AddBuyerTaxRegistration(invoice.BuyerParty.BuyerReference, TaxRegistrationSchemeID.VA);
+        desc.AddBuyerTaxRegistration(invoice.BuyerParty.TaxId, TaxRegistrationSchemeID.VA);
+        desc.SetBuyerElectronicAddress(invoice.BuyerParty.Email, ElectronicAddressSchemeIdentifiers.EM);
         desc.SetBuyerContact(
             name: invoice.BuyerParty.Name,
             emailAddress: invoice.BuyerParty.Email,
@@ -48,7 +51,8 @@ public static class ZugferdMapper
             invoice.SellerParty.PostCode,
             invoice.SellerParty.City,
             invoice.SellerParty.StreetName,
-            GetEnum<CountryCodes>(invoice.SellerParty.CountryCode)
+            GetEnum<CountryCodes>(invoice.SellerParty.CountryCode),
+            id: string.Empty
         );
         desc.AddSellerTaxRegistration(invoice.SellerParty.CompanyId, TaxRegistrationSchemeID.FC);
         desc.AddSellerTaxRegistration(invoice.SellerParty.TaxId, TaxRegistrationSchemeID.VA);
@@ -59,9 +63,6 @@ public static class ZugferdMapper
         );
         desc.SetSellerElectronicAddress(invoice.SellerParty.Email, ElectronicAddressSchemeIdentifiers.EM);
 
-        desc.SetTotals(
-            lineTotalAmount: taxExclusiveAmount
-            );
         desc.AddApplicableTradeTax(
             basisAmount: taxExclusiveAmount,
             percent: (decimal)invoice.GlobalTax,
@@ -79,7 +80,8 @@ public static class ZugferdMapper
         desc.AddCreditorFinancialAccount(
             iban: invoice.PaymentMeans.Iban,
             bic: invoice.PaymentMeans.Bic,
-            bankName: invoice.PaymentMeans.Name
+            bankName: invoice.PaymentMeans.Name,
+            name: invoice.SellerParty.Name
         );
 
         desc.SetPaymentMeans(
@@ -88,26 +90,37 @@ public static class ZugferdMapper
 
         foreach (var line in invoice.InvoiceLines.OrderBy(o => o.Id))
         {
-            AddLine(line, desc);
+            AddLine(line, invoice, desc);
         }
 
+        desc.SetTotals(
+            lineTotalAmount: taxExclusiveAmount,
+            taxBasisAmount: taxExclusiveAmount,
+            taxTotalAmount: taxAmount,
+            grandTotalAmount: payableAmount,
+            duePayableAmount: payableAmount
+        );
+
         using var memoryStream = new MemoryStream();
-        desc.Save(memoryStream, ZUGFeRDVersion.Version23);
+        desc.Save(memoryStream, ZUGFeRDVersion.Version23, Profile.Basic);
         memoryStream.Position = 0;
         return Encoding.UTF8.GetString(memoryStream.ToArray());
     }
 
-    private static void AddLine(InvoiceLineAnnotationDto line, InvoiceDescriptor desc)
+    private static void AddLine(InvoiceLineAnnotationDto line, BlazorInvoiceDto invoice, InvoiceDescriptor desc)
     {
         desc.AddTradeLineItem(
             name: line.Name,
-            netUnitPrice: (decimal)line.UnitPrice,
             unitCode: GetEnum<QuantityCodes>(line.QuantityCode),
+            grossUnitPrice: (decimal)line.UnitPrice,
+            netUnitPrice: (decimal)line.UnitPrice,
             description: line.Description,
-            unitQuantity: (decimal)line.Quantity,
             billedQuantity: (decimal)line.Quantity,
             billingPeriodStart: line.StartDate,
-            billingPeriodEnd: line.EndDate
+            billingPeriodEnd: line.EndDate,
+            taxType: GetEnum<TaxTypes>(invoice.GlobalTaxScheme),
+            categoryCode: invoice.GlobalTax == 0 ? TaxCategoryCodes.E : GetEnum<TaxCategoryCodes>(invoice.GlobalTaxCategory),
+            taxPercent: (decimal)invoice.GlobalTax
         );
     }
 

@@ -18,6 +18,7 @@ namespace BlazorInvoice.Tests
                 IssueDate = DateTime.UtcNow,
                 InvoiceTypeCode = "380",
                 DocumentCurrencyCode = "EUR",
+                Note = "Dies ist eine Testrechnung.",
                 SellerParty = new SellerAnnotationDto()
                 {
                     Name = "Seller Name",
@@ -41,7 +42,7 @@ namespace BlazorInvoice.Tests
                     Telefone = "1234/54321",
                     Email = "buyer@example.com",
                     RegistrationName = "Buyer Name",
-                    BuyerReference = "04011000-12345-34",
+                    BuyerReference = "DE87654321"
                 },
                 PaymentMeans = new PaymentAnnotationDto()
                 {
