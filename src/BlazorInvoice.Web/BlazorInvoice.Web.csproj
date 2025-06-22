@@ -12,6 +12,7 @@
     <ProjectReference Include="..\BlazorInvoice.Pdf\BlazorInvoice.Pdf.csproj" />
     <ProjectReference Include="..\BlazorInvoice.Shared\BlazorInvoice.Shared.csproj" />
     <ProjectReference Include="..\BlazorInvoice.Weblib\BlazorInvoice.Weblib.csproj" />
+    <ProjectReference Include="..\BlazorInvoice.Worklist\BlazorInvoice.Worklist.csproj" />
     <ProjectReference Include="..\pax.BBToast\pax.BBToast.csproj" />
   </ItemGroup>
 

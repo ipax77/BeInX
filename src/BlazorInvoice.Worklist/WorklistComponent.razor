@@ -1,5 +1,6 @@
-@using BlazorInvoice.Shared
+﻿@using BlazorInvoice.Shared
 @using BlazorInvoice.Shared.Interfaces
+@using BlazorInvoice.Weblib
 @using BlazorInvoice.Weblib.Modals
 @using BlazorInvoice.Weblib.Services
 @using Microsoft.JSInterop
@@ -10,69 +11,72 @@
 @inject IJSRuntime JSRuntime
 @inject IToastService ToastService
 
-<h3>Work List</h3>
-@if (workListService.CanUndoParty(partyId))
-{
-    <i class="bi bi-arrow-90deg-left ms-2 text-warning pointer"
-       title="Undo"
-       @onclick="() => UndoParty(partyId)"></i>
-}
-@if (workListService.CanRedoParty(partyId))
-{
-    <i class="bi bi-arrow-90deg-right ms-2 text-success pointer"
-       title="Redo"
-       @onclick="() => RedoParty(partyId)"></i>
-}
+<div class="container-fluid mt-2">
+    <h3>Worklist @(partyId > 0 ? $"for {activeParty?.Name}" : "")</h3>
+    @if (workListService.CanUndoParty(partyId))
+    {
+        <i class="bi bi-arrow-90deg-left ms-2 text-warning pointer"
+           title="Undo"
+           @onclick="() => UndoParty(partyId)"></i>
+    }
+    @if (workListService.CanRedoParty(partyId))
+    {
+        <i class="bi bi-arrow-90deg-right ms-2 text-success pointer"
+           title="Redo"
+           @onclick="() => RedoParty(partyId)"></i>
+    }
 
-<div>
     <div>
-        <ul class="nav nav-tabs">
-            @foreach (var party in tabParties)
-            {
-                <li class="nav-item">
-                    <button class="nav-link @(party.PartyId == partyId ? "active" : "")"
-                            @onclick="() => partyId = party.PartyId">
-                        @party.Name
-                        <i class="bi bi-x text-danger pointer" @onclick:stopPropagation @onclick="e => RemoveParty(party)"></i>
-                    </button>
+        <div>
+            <ul class="nav nav-tabs bg-dark">
+                @foreach (var party in tabParties)
+                {
+                    <li class="nav-item">
+                        <button class="nav-link @(party.PartyId == partyId ? "active" : "")"
+                                @onclick="() => partyId = party.PartyId" style="max-width: 200px;">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <span class="d-inline-block text-truncate" style="width: 160px;">@party.Name</span>
+                                </div>
+                                <div>
+                                    <i class="bi bi-x text-danger pointer" @onclick:stopPropagation @onclick="e => RemoveParty(party)"></i>
+                                </div>
+                            </div>
+                        </button>
+                    </li>
+                }
+                @if (tabParties.Count == 0)
+                {
+                    <li>
+                        <button type="button" class="btn btn-outline-light" @onclick="e => buyerSelectModal?.Show()">
+                            <i class="bi bi-plus-circle pointer ms-2"></i>
+                            @Loc["Add Party Tab"]
+                        </button>
+                    </li>
+                }
+                else
+                {
+                    <li><i class="bi bi-plus-circle pointer ms-2" @onclick="e => buyerSelectModal?.Show()"></i></li>
+                }
+            </ul>
+        </div>
 
-                </li>
-            }
-            @if (tabParties.Count == 0)
-            {
-                <li>
-                    <button type="button" class="btn btn-outline-light" @onclick="e => buyerSelectModal?.Show()">
-                        <i class="bi bi-plus-circle pointer ms-2"></i>
-                        @Loc["Add Party Tab"]"
-                    </button>
-                </li>
-            }
-            else
-            {
-                <li><i class="bi bi-plus-circle pointer ms-2" @onclick="e => buyerSelectModal?.Show()"></i></li>
-            }
-        </ul>
+        @foreach (var party in tabParties)
+        {
+            <div class="tab-content @(party.PartyId == partyId ? "show active" : "visually-hidden")">
+                <WorkEntriesComponent @ref="workEntriesComponents[party.PartyId]"
+                                      DtoWorkEntries="workListService.GetEntriesByParty(party.PartyId)"
+                                      PartyId="@party.PartyId"
+                                      ColumnCount="@columnCount"
+                                      OnFieldChanged="FieldChanged"
+                                      OnDelete="DeleteEntry" />
+            </div>
+        }
     </div>
 
-    @foreach (var party in tabParties)
-    {
-        <div class="tab-content @(party.PartyId == partyId ? "show active" : "visually-hidden")">
-            <WorkEntriesComponent @ref="workEntriesComponents[party.PartyId]"
-                                  DtoWorkEntries="workListService.GetEntriesByParty(party.PartyId)"
-                                  PartyId="@party.PartyId"
-                                  ColumnCount="@columnCount"
-                                  OnFieldChanged="FieldChanged"
-                                  OnDelete="DeleteEntry" />
-        </div>
-    }
+    <BuyerSelectModal @ref="buyerSelectModal" Parties="parties"
+                      OnSelected="PartySelected" />
 </div>
-
-<div>
-    <DebugWorkList @ref="debugWorkList" />
-</div>
-
-<BuyerSelectModal @ref="buyerSelectModal" Parties="parties"
-                  OnSelected="PartySelected" />
 
 @code {
     int columnCount = 5;
@@ -85,9 +89,9 @@
 
     HashSet<Guid> savedGuids = [];
     BuyerSelectModal? buyerSelectModal;
-    DebugWorkList? debugWorkList;
     WorkListService workListService = new(new());
     Dictionary<int, WorkEntriesComponent?> workEntriesComponents = [];
+    PartyListDto? activeParty => parties.FirstOrDefault(f => f.PartyId == partyId);
 
     protected override async Task OnInitializedAsync()
     {
@@ -202,7 +206,6 @@
         var entries = snapshot.EntriesByParty
             .SelectMany(kvp => kvp.Value)
             .ToList();
-        debugWorkList?.Update(entries);
     }
 
     private async Task SaveEntries()
