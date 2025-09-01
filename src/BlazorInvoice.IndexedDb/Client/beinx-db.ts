@@ -1,4 +1,4 @@
-﻿import { AppConfigDto } from "./dtos.js";
+import { AppConfigDto, InvoiceListRequest, IPaymentMeansBaseDto, PaymentListDto } from "./dtos.js";
 import pako from "./pako/index.js";
 
 const DB_NAME = "BeInXDB";
@@ -27,19 +27,19 @@ export function openDB(): Promise<IDBDatabase> {
             const database = (event.target as IDBOpenDBRequest).result;
 
             if (!database.objectStoreNames.contains(STORES.invoices)) {
-                database.createObjectStore(STORES.invoices, { keyPath: "id" });
+                database.createObjectStore(STORES.invoices, { keyPath: "id", autoIncrement: true });
             }
 
             if (!database.objectStoreNames.contains(STORES.parties)) {
-                database.createObjectStore(STORES.parties, { keyPath: "email" });
+                database.createObjectStore(STORES.parties, { keyPath: "id", autoIncrement: true });
             }
 
             if (!database.objectStoreNames.contains(STORES.payments)) {
-                database.createObjectStore(STORES.payments, { keyPath: "iban" });
+                database.createObjectStore(STORES.payments, { keyPath: "id", autoIncrement: true });
             }
 
             if (!database.objectStoreNames.contains(STORES.references)) {
-                database.createObjectStore(STORES.references, { keyPath: "id" });
+                database.createObjectStore(STORES.references, { keyPath: "id", autoIncrement: true });
             }
 
             if (!database.objectStoreNames.contains(STORES.config)) {
@@ -205,4 +205,124 @@ export function ungzipString(base64: string): string {
     const binary = Uint8Array.from(atob(base64), c => c.charCodeAt(0));
     const text = pako.ungzip(binary, { to: "string" });
     return text;
+}
+
+async function getPaymentListQueryable(request: InvoiceListRequest): Promise<PaymentListDto[]> {
+    const db = await openDB();
+    const transaction = db.transaction(STORES.payments, 'readonly');
+    const store = transaction.objectStore(STORES.payments);
+    const allPayments = await new Promise<any[]>((resolve, reject) => {
+        const req = store.getAll();
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error);
+    });
+
+    let query = allPayments
+        .filter(p => !p.isDeleted)
+        .map(s => ({
+            playmentMeansId: s.id,
+            iban: s.iban,
+            name: s.name,
+        } as PaymentListDto));
+
+    if (request.filter) {
+        const filter = request.filter.toLowerCase();
+        query = query.filter(i =>
+            i.name.toLowerCase().includes(filter) ||
+            i.iban.toLowerCase().includes(filter)
+        );
+    }
+
+    return query;
+}
+
+export async function getPaymentsCount(request: InvoiceListRequest): Promise<number> {
+    const query = await getPaymentListQueryable(request);
+    return query.length;
+}
+
+export async function getPayments(request: InvoiceListRequest): Promise<PaymentListDto[]> {
+    let query = await getPaymentListQueryable(request);
+
+    if (request.tableOrders && request.tableOrders.length > 0) {
+        const order = request.tableOrders[0];
+        const key = order.propertyName.toLowerCase() as keyof PaymentListDto;
+        query.sort((a, b) => {
+            if (a[key] < b[key]) return order.ascending ? -1 : 1;
+            if (a[key] > b[key]) return order.ascending ? 1 : -1;
+            return 0;
+        });
+    } else {
+        query.sort((a, b) => a.name.localeCompare(b.name));
+    }
+
+    return query.slice(request.skip, request.skip + request.take);
+}
+
+export async function getPaymentMeans(paymentMeansId: number): Promise<IPaymentMeansBaseDto> {
+    const db = await openDB();
+    const transaction = db.transaction(STORES.payments, 'readonly');
+    const store = transaction.objectStore(STORES.payments);
+    return new Promise((resolve, reject) => {
+        const req = store.get(paymentMeansId);
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error);
+    });
+}
+
+export async function createPaymentMeans(paymentMeans: IPaymentMeansBaseDto): Promise<number> {
+    const db = await openDB();
+    const transaction = db.transaction(STORES.payments, 'readwrite');
+    const store = transaction.objectStore(STORES.payments);
+    return new Promise((resolve, reject) => {
+        const req = store.add(paymentMeans);
+        req.onsuccess = () => resolve(req.result as number);
+        req.onerror = () => reject(req.error);
+    });
+}
+
+export async function updatePaymentMeans(paymentMeansId: number, paymentMeans: IPaymentMeansBaseDto): Promise<void> {
+    const db = await openDB();
+    const transaction = db.transaction(STORES.payments, 'readwrite');
+    const store = transaction.objectStore(STORES.payments);
+    return new Promise((resolve, reject) => {
+        const req = store.put({ ...paymentMeans, id: paymentMeansId });
+        req.onsuccess = () => resolve();
+        req.onerror = () => reject(req.error);
+    });
+}
+
+export async function deletePaymentMeans(paymentMeansId: number): Promise<void> {
+    const db = await openDB();
+
+    const invoicesTransaction = db.transaction(STORES.invoices, 'readonly');
+    const invoicesStore = invoicesTransaction.objectStore(STORES.invoices);
+    const allInvoices = await new Promise<any[]>((resolve, reject) => {
+        const req = invoicesStore.getAll();
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error);
+    });
+
+    const isReferenced = allInvoices.some(invoice => invoice.paymentMeansId === paymentMeansId);
+
+    const paymentsTransaction = db.transaction(STORES.payments, 'readwrite');
+    const paymentsStore = paymentsTransaction.objectStore(STORES.payments);
+
+    if (isReferenced) {
+        const req = paymentsStore.get(paymentMeansId);
+        req.onsuccess = () => {
+            const payment = req.result;
+            if (payment) {
+                payment.isDeleted = true;
+                paymentsStore.put(payment);
+            }
+        };
+    } else {
+        paymentsStore.delete(paymentMeansId);
+    }
+
+    return new Promise((resolve, reject) => {
+        paymentsTransaction.oncomplete = () => resolve();
+        paymentsTransaction.onerror = () => reject(paymentsTransaction.error);
+    });
 }
