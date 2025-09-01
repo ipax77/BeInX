@@ -126,6 +126,7 @@ public partial class InvoiceRepository
 
         ArgumentNullException.ThrowIfNull(invoice, nameof(invoice));
 
+        invoice.Id = invoiceDto.Id;
         invoice.GlobalTaxCategory = invoiceDto.GlobalTaxCategory;
         invoice.GlobalTaxScheme = invoiceDto.GlobalTaxScheme;
         invoice.GlobalTax = invoiceDto.GlobalTax;
