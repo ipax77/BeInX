@@ -1,10 +1,11 @@
 import { AppConfigDto, InvoiceListRequest, IPaymentMeansBaseDto, PaymentListDto } from "./dtos.js";
 import pako from "./pako/index.js";
+import { PartyRepository } from "./party-repository.js";
 
 const DB_NAME = "BeInXDB";
 const DB_VERSION = 1;
 
-const STORES = {
+export const STORES = {
     invoices: "Invoices",
     parties: "Parties",
     payments: "PaymentMeans",
@@ -207,6 +208,8 @@ export function ungzipString(base64: string): string {
     return text;
 }
 
+/// Payments 
+
 async function getPaymentListQueryable(request: InvoiceListRequest): Promise<PaymentListDto[]> {
     const db = await openDB();
     const transaction = db.transaction(STORES.payments, 'readonly');
@@ -326,3 +329,6 @@ export async function deletePaymentMeans(paymentMeansId: number): Promise<void> 
         paymentsTransaction.onerror = () => reject(paymentsTransaction.error);
     });
 }
+
+// Export a singleton instance
+export const partyRepository = new PartyRepository();
