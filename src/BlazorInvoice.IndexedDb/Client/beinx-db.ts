@@ -1,4 +1,5 @@
 import { AppConfigDto, InvoiceListRequest, IPaymentMeansBaseDto, PaymentListDto } from "./dtos.js";
+import { InvoiceRepository } from "./invoice.repository.js";
 import pako from "./pako/index.js";
 import { PartyRepository } from "./party-repository.js";
 
@@ -27,8 +28,20 @@ export function openDB(): Promise<IDBDatabase> {
         request.onupgradeneeded = (event) => {
             const database = (event.target as IDBOpenDBRequest).result;
 
-            if (!database.objectStoreNames.contains(STORES.invoices)) {
-                database.createObjectStore(STORES.invoices, { keyPath: "id", autoIncrement: true });
+           if (!database.objectStoreNames.contains(STORES.invoices)) {
+                const invoiceStore = database.createObjectStore(STORES.invoices, { 
+                    keyPath: "id", 
+                    autoIncrement: true 
+                });
+                
+                // Create indexes for common queries
+                invoiceStore.createIndex("invoiceId", "invoiceId", { unique: true });
+                invoiceStore.createIndex("sellerPartyId", "sellerPartyId");
+                invoiceStore.createIndex("buyerPartyId", "buyerPartyId");
+                invoiceStore.createIndex("paymentMeansId", "paymentMeansId");
+                invoiceStore.createIndex("isPaid", "isPaid");
+                invoiceStore.createIndex("isDeleted", "isDeleted");
+                invoiceStore.createIndex("issueDate", "issueDate");
             }
 
             if (!database.objectStoreNames.contains(STORES.parties)) {
@@ -332,3 +345,4 @@ export async function deletePaymentMeans(paymentMeansId: number): Promise<void> 
 
 // Export a singleton instance
 export const partyRepository = new PartyRepository();
+export const invoiceRepository = new InvoiceRepository();

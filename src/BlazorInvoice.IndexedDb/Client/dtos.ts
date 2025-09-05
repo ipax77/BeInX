@@ -94,3 +94,75 @@ export interface PartyEntity {
     isDeleted: boolean;
     logo?: string; // Base64 encoded image data
 }
+
+// TypeScript interfaces for Invoice operations
+export interface InvoiceEntity {
+    id?: number; // Auto-increment primary key (maps to SQL InvoiceId)
+    
+    // Core invoice data
+    globalTaxCategory: string;
+    globalTaxScheme: string;
+    globalTax: number;
+    invoiceId: string; // Business ID (maps to SQL Id field)
+    issueDate: string; // ISO date string
+    dueDate?: string;
+    note?: string;
+    invoiceTypeCode: string;
+    documentCurrencyCode: string;
+    paymentTermsNote: string;
+    payableAmount: number;
+    
+    // Foreign key references
+    sellerPartyId: number;
+    buyerPartyId: number;
+    paymentMeansId: number;
+    
+    // Embedded related data
+    invoiceLines: InvoiceLineEntity[];
+    additionalDocumentReferences: DocumentReferenceEntity[];
+    
+    // XML finalization data
+    xmlInvoiceCreated?: string; // ISO date string
+    xmlInvoiceSha1Hash?: string;
+    xmlInvoiceBlob?: ArrayBuffer; // Binary XML data
+    totalAmountWithoutVat?: number;
+    
+    // Status flags
+    isPaid: boolean;
+    isDeleted: boolean; // For soft delete
+}
+
+export interface InvoiceLineEntity {
+    id: string; // Business ID
+    note?: string;
+    quantity: number;
+    quantityCode: string;
+    unitPrice: number;
+    startDate?: string; // ISO date string
+    endDate?: string; // ISO date string
+    description?: string;
+    name: string;
+}
+
+export interface DocumentReferenceEntity {
+    id: string;
+    documentDescription: string;
+    mimeCode: string;
+    fileName: string;
+    content: string; // Base64 encoded
+}
+
+// Result interface matching C# InvoiceDtoInfo
+export interface InvoiceDtoInfo {
+    invoiceDto: any; // Will be mapped to BlazorInvoiceDto in C#
+    invoiceId: number;
+    sellerId?: number;
+    buyerId?: number;
+    paymentId?: number;
+}
+
+export interface FinalizeResult {
+    xmlInvoiceCreated: string; // ISO date string
+    xmlInvoiceSha1Hash: string;
+    xmlInvoiceBlob: ArrayBuffer;
+}

@@ -1,7 +1,9 @@
+import { InvoiceRepository } from "./invoice.repository.js";
 import pako from "./pako/index.js";
+import { PartyRepository } from "./party-repository.js";
 const DB_NAME = "BeInXDB";
 const DB_VERSION = 1;
-const STORES = {
+export const STORES = {
     invoices: "Invoices",
     parties: "Parties",
     payments: "PaymentMeans",
@@ -19,7 +21,18 @@ export function openDB() {
         request.onupgradeneeded = (event) => {
             const database = event.target.result;
             if (!database.objectStoreNames.contains(STORES.invoices)) {
-                database.createObjectStore(STORES.invoices, { keyPath: "id", autoIncrement: true });
+                const invoiceStore = database.createObjectStore(STORES.invoices, {
+                    keyPath: "id",
+                    autoIncrement: true
+                });
+                // Create indexes for common queries
+                invoiceStore.createIndex("invoiceId", "invoiceId", { unique: true });
+                invoiceStore.createIndex("sellerPartyId", "sellerPartyId");
+                invoiceStore.createIndex("buyerPartyId", "buyerPartyId");
+                invoiceStore.createIndex("paymentMeansId", "paymentMeansId");
+                invoiceStore.createIndex("isPaid", "isPaid");
+                invoiceStore.createIndex("isDeleted", "isDeleted");
+                invoiceStore.createIndex("issueDate", "issueDate");
             }
             if (!database.objectStoreNames.contains(STORES.parties)) {
                 database.createObjectStore(STORES.parties, { keyPath: "id", autoIncrement: true });
@@ -163,6 +176,7 @@ export function ungzipString(base64) {
     const text = pako.ungzip(binary, { to: "string" });
     return text;
 }
+/// Payments 
 async function getPaymentListQueryable(request) {
     const db = await openDB();
     const transaction = db.transaction(STORES.payments, 'readonly');
@@ -268,4 +282,7 @@ export async function deletePaymentMeans(paymentMeansId) {
         paymentsTransaction.onerror = () => reject(paymentsTransaction.error);
     });
 }
+// Export a singleton instance
+export const partyRepository = new PartyRepository();
+export const invoiceRepository = new InvoiceRepository();
 //# sourceMappingURL=beinx-db.js.map

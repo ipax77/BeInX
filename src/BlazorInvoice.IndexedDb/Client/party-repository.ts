@@ -307,4 +307,15 @@ export class PartyRepository {
             request.onerror = () => reject(request.error);
         });
     }
+
+    async clear(): Promise<void> {
+        const db = await openDB();
+        const transaction = db.transaction([STORES.parties], "readwrite");
+        const store = transaction.objectStore(STORES.parties);
+        return new Promise((resolve, reject) => {
+            const request = store.clear();
+            request.onsuccess = () => resolve();
+            request.onerror = () => reject(request.error);
+        });
+    }
 }
