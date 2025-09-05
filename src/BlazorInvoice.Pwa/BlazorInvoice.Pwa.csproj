@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <OverrideHtmlAssetPlaceholders>true</OverrideHtmlAssetPlaceholders>
+    <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.0-preview.7.25380.108" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="10.0.0-preview.7.25380.108" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BlazorInvoice.IndexedDb\BlazorInvoice.IndexedDb.csproj" />
+    <ProjectReference Include="..\BlazorInvoice.Shared\BlazorInvoice.Shared.csproj" />
+    <ProjectReference Include="..\BlazorInvoice.Weblib\BlazorInvoice.Weblib.csproj" />
+    <ProjectReference Include="..\BlazorInvoice.Pdf\BlazorInvoice.Pdf.csproj" />
+    <ProjectReference Include="..\BlazorInvoice.Localization\BlazorInvoice.Localization.csproj" />
+    <ProjectReference Include="..\pax.BBToast\pax.BBToast.csproj" />
+  </ItemGroup>
+
+</Project>

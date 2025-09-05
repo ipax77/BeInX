@@ -1,0 +1,12 @@
+﻿@using BlazorInvoice.Weblib
+@page "/create"
+@page "/create/{invoiceId:int?}"
+
+<PageTitle>New Invoice</PageTitle>
+
+<InvoiceComponent InvoiceId="InvoiceId" />
+
+@code {
+    [Parameter]
+    public int? InvoiceId { get; set; }
+}

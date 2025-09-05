@@ -12,24 +12,34 @@ using pax.XRechnung.NET.XmlModels;
 
 namespace BlazorInvoice.IndexedDb.Services;
 
-public partial class InvoiceRepository(IJSRuntime _js, ILogger<InvoiceRepository> logger) : IInvoiceRepository
+public partial class InvoiceRepository : IInvoiceRepository
 {
+    private readonly ILogger<InvoiceRepository> logger;
+    private Task<IJSObjectReference> moduleTask;
+
+    public InvoiceRepository(IJSRuntime js, ILogger<InvoiceRepository> logger)
+    {
+        this.logger = logger;
+        moduleTask = js.InvokeAsync<IJSObjectReference>("import", "./_content/BlazorInvoice.IndexedDb/js/beinx-db.js").AsTask();
+    }
+
     // Party Logo Operations
     public async Task AddReplaceOrDeletePartyLogo(string? base64String, int partyId)
     {
+        var module = await moduleTask;
         try
         {
             if (string.IsNullOrEmpty(base64String))
             {
                 // Delete logo by setting empty string
-                await _js.InvokeVoidAsync("partyRepository.updatePartyLogo", partyId, "", null);
+                await module.InvokeVoidAsync("partyRepository.updatePartyLogo", partyId, "", null);
                 logger.LogInformation("Deleted logo for party {PartyId}", partyId);
             }
             else
             {
                 // Add or replace logo
                 var logoReferenceId = Guid.NewGuid().ToString();
-                await _js.InvokeVoidAsync("partyRepository.updatePartyLogo", partyId, base64String, logoReferenceId);
+                await module.InvokeVoidAsync("partyRepository.updatePartyLogo", partyId, base64String, logoReferenceId);
                 logger.LogInformation("Updated logo for party {PartyId}", partyId);
             }
         }
@@ -43,9 +53,10 @@ public partial class InvoiceRepository(IJSRuntime _js, ILogger<InvoiceRepository
     // Party CRUD Operations
     public async Task<int> CreateParty(IPartyBaseDto party, bool isSeller, CancellationToken token = default)
     {
+        var module = await moduleTask;
         try
         {
-            var partyId = await _js.InvokeAsync<int>("partyRepository.createParty", token, party, isSeller);
+            var partyId = await module.InvokeAsync<int>("partyRepository.createParty", token, party, isSeller);
             logger.LogInformation("Created {PartyType} party {PartyId}: {PartyName}",
                 isSeller ? "seller" : "buyer", partyId, party.Name);
             return partyId;
@@ -60,13 +71,14 @@ public partial class InvoiceRepository(IJSRuntime _js, ILogger<InvoiceRepository
 
     public async Task DeleteParty(int partyId, CancellationToken token = default)
     {
+        var module = await moduleTask;
         try
         {
             // Check if party is referenced by invoices to determine soft vs hard delete
-            var referencedIds = await _js.InvokeAsync<int[]>("partyRepository.getReferencedPartyIds", token);
+            var referencedIds = await module.InvokeAsync<int[]>("partyRepository.getReferencedPartyIds", token);
             var isReferenced = referencedIds.Contains(partyId);
 
-            await _js.InvokeVoidAsync("partyRepository.deleteParty", token, partyId, isReferenced);
+            await module.InvokeVoidAsync("partyRepository.deleteParty", token, partyId, isReferenced);
 
             logger.LogInformation("Deleted party {PartyId} ({DeleteType})",
                 partyId, isReferenced ? "soft delete" : "hard delete");
@@ -80,9 +92,10 @@ public partial class InvoiceRepository(IJSRuntime _js, ILogger<InvoiceRepository
 
     public async Task UpdateParty(int partyId, IPartyBaseDto party, CancellationToken token = default)
     {
+        var module = await moduleTask;
         try
         {
-            await _js.InvokeVoidAsync("partyRepository.updateParty", token, partyId, party);
+            await module.InvokeVoidAsync("partyRepository.updateParty", token, partyId, party);
             logger.LogInformation("Updated party {PartyId}: {PartyName}", partyId, party.Name);
         }
         catch (Exception ex)
@@ -95,9 +108,10 @@ public partial class InvoiceRepository(IJSRuntime _js, ILogger<InvoiceRepository
     // Seller Operations
     public async Task<SellerAnnotationDto?> GetSeller(int partyId, CancellationToken token = default)
     {
+        var module = await moduleTask;
         try
         {
-            var seller = await _js.InvokeAsync<SellerAnnotationDto?>("partyRepository.getSeller", token, partyId);
+            var seller = await module.InvokeAsync<SellerAnnotationDto?>("partyRepository.getSeller", token, partyId);
             logger.LogDebug("Retrieved seller {PartyId}", partyId);
             return seller;
         }
@@ -110,10 +124,11 @@ public partial class InvoiceRepository(IJSRuntime _js, ILogger<InvoiceRepository
 
     public async Task<List<PartyListDto>> GetSellers(InvoiceListRequest request, CancellationToken token = default)
     {
+        var module = await moduleTask;
         try
         {
             // Get all sellers from IndexedDB
-            var allSellers = await _js.InvokeAsync<PartyListDto[]>("partyRepository.getAllParties", token, true);
+            var allSellers = await module.InvokeAsync<PartyListDto[]>("partyRepository.getAllParties", token, true);
 
             // Apply filtering in C#
             var filtered = allSellers.AsEnumerable();
@@ -143,10 +158,11 @@ public partial class InvoiceRepository(IJSRuntime _js, ILogger<InvoiceRepository
 
     public async Task<int> GetSellersCount(InvoiceListRequest request, CancellationToken token = default)
     {
+        var module = await moduleTask;
         try
         {
             // Get all sellers from IndexedDB
-            var allSellers = await _js.InvokeAsync<PartyListDto[]>("partyRepository.getAllParties", token, true);
+            var allSellers = await module.InvokeAsync<PartyListDto[]>("partyRepository.getAllParties", token, true);
 
             // Apply filtering in C#
             var filtered = allSellers.AsEnumerable();
@@ -172,9 +188,10 @@ public partial class InvoiceRepository(IJSRuntime _js, ILogger<InvoiceRepository
     // Buyer Operations
     public async Task<BuyerAnnotationDto?> GetBuyer(int partyId, CancellationToken token = default)
     {
+        var module = await moduleTask;
         try
         {
-            var buyer = await _js.InvokeAsync<BuyerAnnotationDto?>("partyRepository.getBuyer", token, partyId);
+            var buyer = await module.InvokeAsync<BuyerAnnotationDto?>("partyRepository.getBuyer", token, partyId);
             logger.LogDebug("Retrieved buyer {PartyId}", partyId);
             return buyer;
         }
@@ -187,10 +204,11 @@ public partial class InvoiceRepository(IJSRuntime _js, ILogger<InvoiceRepository
 
     public async Task<List<PartyListDto>> GetBuyers(InvoiceListRequest request, CancellationToken token = default)
     {
+        var module = await moduleTask;
         try
         {
             // Get all buyers from IndexedDB
-            var allBuyers = await _js.InvokeAsync<PartyListDto[]>("partyRepository.getAllParties", token, false);
+            var allBuyers = await module.InvokeAsync<PartyListDto[]>("partyRepository.getAllParties", token, false);
 
             // Apply filtering in C#
             var filtered = allBuyers.AsEnumerable();
@@ -220,10 +238,11 @@ public partial class InvoiceRepository(IJSRuntime _js, ILogger<InvoiceRepository
 
     public async Task<int> GetBuyersCount(InvoiceListRequest request, CancellationToken token = default)
     {
+        var module = await moduleTask;
         try
         {
             // Get all buyers from IndexedDB
-            var allBuyers = await _js.InvokeAsync<PartyListDto[]>("partyRepository.getAllParties", token, false);
+            var allBuyers = await module.InvokeAsync<PartyListDto[]>("partyRepository.getAllParties", token, false);
 
             // Apply filtering in C#
             var filtered = allBuyers.AsEnumerable();
@@ -249,9 +268,10 @@ public partial class InvoiceRepository(IJSRuntime _js, ILogger<InvoiceRepository
     // Party Logo Operations
     public async Task<DocumentReferenceAnnotationDto?> GetPartyLogo(int partyId, CancellationToken token = default)
     {
+        var module = await moduleTask;
         try
         {
-            var logo = await _js.InvokeAsync<DocumentReferenceAnnotationDto?>("partyRepository.getPartyLogo", token, partyId);
+            var logo = await module.InvokeAsync<DocumentReferenceAnnotationDto?>("partyRepository.getPartyLogo", token, partyId);
             logger.LogDebug("Retrieved logo for party {PartyId}: {HasLogo}", partyId, logo != null);
             return logo;
         }
@@ -311,9 +331,10 @@ public partial class InvoiceRepository(IJSRuntime _js, ILogger<InvoiceRepository
     // Payment-related methods (to be implemented separately)
     public async Task<int> CreatePaymentMeans(IPaymentMeansBaseDto paymentMeans, CancellationToken token = default)
     {
+        var module = await moduleTask;
         try
         {
-            return await _js.InvokeAsync<int>("createPaymentMeans", paymentMeans);
+            return await module.InvokeAsync<int>("createPaymentMeans", paymentMeans);
         }
         catch (Exception ex)
         {
@@ -324,9 +345,10 @@ public partial class InvoiceRepository(IJSRuntime _js, ILogger<InvoiceRepository
 
     public async Task DeletePaymentMeans(int paymentMeansId, CancellationToken token = default)
     {
+        var module = await moduleTask;
         try
         {
-            await _js.InvokeVoidAsync("deletePaymentMeans", paymentMeansId);
+            await module.InvokeVoidAsync("deletePaymentMeans", paymentMeansId);
         }
         catch (Exception ex)
         {
@@ -336,9 +358,10 @@ public partial class InvoiceRepository(IJSRuntime _js, ILogger<InvoiceRepository
 
     public async Task<PaymentAnnotationDto> GetPaymentMeans(int paymentMeansId, CancellationToken token = default)
     {
+        var module = await moduleTask;
         try
         {
-            return await _js.InvokeAsync<PaymentAnnotationDto>("getPaymentMeans", paymentMeansId);
+            return await module.InvokeAsync<PaymentAnnotationDto>("getPaymentMeans", paymentMeansId);
         }
         catch (Exception ex)
         {
@@ -349,9 +372,10 @@ public partial class InvoiceRepository(IJSRuntime _js, ILogger<InvoiceRepository
 
     public async Task<List<PaymentListDto>> GetPayments(InvoiceListRequest request, CancellationToken token = default)
     {
+        var module = await moduleTask;
         try
         {
-            return await _js.InvokeAsync<List<PaymentListDto>>("getPayments", request);
+            return await module.InvokeAsync<List<PaymentListDto>>("getPayments", request);
         }
         catch (Exception ex)
         {
@@ -362,9 +386,10 @@ public partial class InvoiceRepository(IJSRuntime _js, ILogger<InvoiceRepository
 
     public async Task<int> GetPaymentsCount(InvoiceListRequest request, CancellationToken token = default)
     {
+        var module = await moduleTask;
         try
         {
-            return await _js.InvokeAsync<int>("getPaymentsCount", request);
+            return await module.InvokeAsync<int>("getPaymentsCount", request);
         }
         catch (Exception ex)
         {
@@ -375,9 +400,10 @@ public partial class InvoiceRepository(IJSRuntime _js, ILogger<InvoiceRepository
 
     public async Task UpdatePaymentMeans(int paymentMeansId, IPaymentMeansBaseDto paymentMeans, CancellationToken token = default)
     {
+        var module = await moduleTask;
         try
         {
-            await _js.InvokeVoidAsync("updatePaymentMeans", paymentMeansId, paymentMeans);
+            await module.InvokeVoidAsync("updatePaymentMeans", paymentMeansId, paymentMeans);
         }
         catch (Exception ex)
         {
@@ -392,9 +418,10 @@ public partial class InvoiceRepository(IJSRuntime _js, ILogger<InvoiceRepository
 
     public async Task<DocumentReferenceAnnotationDto?> AddReplaceOrDeleteSellerLogo(int invoiceId, string? base64String, CancellationToken token = default)
     {
+        var module = await moduleTask;
         try
         {
-            var result = await _js.InvokeAsync<DocumentReferenceAnnotationDto?>("invoiceRepository.addReplaceOrDeleteSellerLogo", token, invoiceId, base64String);
+            var result = await module.InvokeAsync<DocumentReferenceAnnotationDto?>("invoiceRepository.addReplaceOrDeleteSellerLogo", token, invoiceId, base64String);
             logger.LogInformation("Updated seller logo for invoice {InvoiceId}", invoiceId);
             return result;
         }
@@ -407,9 +434,10 @@ public partial class InvoiceRepository(IJSRuntime _js, ILogger<InvoiceRepository
 
     public async Task<int> CreateInvoice(BlazorInvoiceDto invoiceDto, int sellerId, int buyerId, int paymentId, bool isImported = false, CancellationToken token = default)
     {
+        var module = await moduleTask;
         try
         {
-            var invoiceId = await _js.InvokeAsync<int>("invoiceRepository.createInvoice", token, invoiceDto, sellerId, buyerId, paymentId, isImported);
+            var invoiceId = await module.InvokeAsync<int>("invoiceRepository.createInvoice", token, invoiceDto, sellerId, buyerId, paymentId, isImported);
             logger.LogInformation("Created invoice {InvoiceId}", invoiceId);
             return invoiceId;
         }
@@ -422,9 +450,10 @@ public partial class InvoiceRepository(IJSRuntime _js, ILogger<InvoiceRepository
 
     public async Task DeleteInvoice(int invoiceId, CancellationToken token = default)
     {
+        var module = await moduleTask;
         try
         {
-            await _js.InvokeVoidAsync("invoiceRepository.deleteInvoice", token, invoiceId);
+            await module.InvokeVoidAsync("invoiceRepository.deleteInvoice", token, invoiceId);
             logger.LogInformation("Deleted invoice {InvoiceId}", invoiceId);
         }
         catch (Exception ex)
@@ -436,9 +465,10 @@ public partial class InvoiceRepository(IJSRuntime _js, ILogger<InvoiceRepository
 
     public async Task<InvoiceDtoInfo?> GetInvoice(int invoiceId, CancellationToken token = default)
     {
+        var module = await moduleTask;
         try
         {
-            var invoice = await _js.InvokeAsync<InvoiceDtoInfo?>("invoiceRepository.getInvoice", token, invoiceId);
+            var invoice = await module.InvokeAsync<InvoiceDtoInfo?>("invoiceRepository.getInvoice", token, invoiceId);
             logger.LogDebug("Retrieved invoice {InvoiceId}", invoiceId);
             return invoice;
         }
@@ -451,9 +481,10 @@ public partial class InvoiceRepository(IJSRuntime _js, ILogger<InvoiceRepository
 
     public async Task<List<InvoiceListDto>> GetInvoices(InvoiceListRequest request, CancellationToken token = default)
     {
+        var module = await moduleTask;
         try
         {
-            var allInvoices = await _js.InvokeAsync<List<InvoiceListDto>>("invoiceRepository.getAllInvoices", token);
+            var allInvoices = await module.InvokeAsync<List<InvoiceListDto>>("invoiceRepository.getAllInvoices", token);
 
             // Apply filtering, sorting, and pagination in C#
             var filtered = allInvoices.AsEnumerable();
@@ -485,9 +516,10 @@ public partial class InvoiceRepository(IJSRuntime _js, ILogger<InvoiceRepository
 
     public async Task<int> GetInvoicesCount(InvoiceListRequest request, CancellationToken token = default)
     {
+        var module = await moduleTask;
         try
         {
-            var allInvoices = await _js.InvokeAsync<List<InvoiceListDto>>("invoiceRepository.getAllInvoices", token);
+            var allInvoices = await module.InvokeAsync<List<InvoiceListDto>>("invoiceRepository.getAllInvoices", token);
 
             var filtered = allInvoices.AsEnumerable();
 
@@ -555,9 +587,10 @@ public partial class InvoiceRepository(IJSRuntime _js, ILogger<InvoiceRepository
 
     public async Task UpdateInvoice(int invoiceId, BlazorInvoiceDto invoiceDto, CancellationToken token = default)
     {
+        var module = await moduleTask;
         try
         {
-            await _js.InvokeVoidAsync("invoiceRepository.updateInvoice", token, invoiceId, invoiceDto);
+            await module.InvokeVoidAsync("invoiceRepository.updateInvoice", token, invoiceId, invoiceDto);
             logger.LogInformation("Updated invoice {InvoiceId}", invoiceId);
         }
         catch (Exception ex)
@@ -569,13 +602,14 @@ public partial class InvoiceRepository(IJSRuntime _js, ILogger<InvoiceRepository
 
     public async Task<FinalizeResult> FinalizeInvoice(int invoiceId, XmlInvoice xmlInvoice, CancellationToken token = default)
     {
+        var module = await moduleTask;
         try
         {
             var xmlText = XmlInvoiceWriter.Serialize(xmlInvoice);
             ArgumentNullException.ThrowIfNull(xmlText, nameof(xmlText));
             var bytes = Encoding.UTF8.GetBytes(xmlText);
             var hash = SHA1.HashData(bytes);
-            var result = await _js.InvokeAsync<FinalizeResult>("invoiceRepository.finalizeInvoice", token, invoiceId, bytes, hash, xmlInvoice.LegalMonetaryTotal.TaxExclusiveAmount.Value);
+            var result = await module.InvokeAsync<FinalizeResult>("invoiceRepository.finalizeInvoice", token, invoiceId, bytes, hash, xmlInvoice.LegalMonetaryTotal.TaxExclusiveAmount.Value);
             logger.LogInformation("Finalized invoice {InvoiceId}", invoiceId);
             return result;
         }
@@ -588,9 +622,10 @@ public partial class InvoiceRepository(IJSRuntime _js, ILogger<InvoiceRepository
 
     public async Task<XmlInvoice?> GetXmlInvoice(int invoiceId, CancellationToken token = default)
     {
+        var module = await moduleTask;
         try
         {
-            var xmlBlob = await _js.InvokeAsync<byte[]?>("invoiceRepository.getXmlBlob", token, invoiceId);
+            var xmlBlob = await module.InvokeAsync<byte[]?>("invoiceRepository.getXmlBlob", token, invoiceId);
             if (xmlBlob == null)
             {
                 return null;
@@ -610,9 +645,10 @@ public partial class InvoiceRepository(IJSRuntime _js, ILogger<InvoiceRepository
 
     public async Task<bool> ValidateXmlInvoiceHash(int invoiceId, CancellationToken token = default)
     {
+        var module = await moduleTask;
         try
         {
-            var isValid = await _js.InvokeAsync<bool>("invoiceRepository.validateXmlInvoiceHash", token, invoiceId);
+            var isValid = await module.InvokeAsync<bool>("invoiceRepository.validateXmlInvoiceHash", token, invoiceId);
             logger.LogInformation("Validated XML invoice hash for {InvoiceId}: {IsValid}", invoiceId, isValid);
             return isValid;
         }
@@ -625,9 +661,10 @@ public partial class InvoiceRepository(IJSRuntime _js, ILogger<InvoiceRepository
 
     public async Task SetIsPaid(int invoiceId, bool isPaid, CancellationToken token = default)
     {
+        var module = await moduleTask;
         try
         {
-            await _js.InvokeVoidAsync("invoiceRepository.setIsPaid", token, invoiceId, isPaid);
+            await module.InvokeVoidAsync("invoiceRepository.setIsPaid", token, invoiceId, isPaid);
             logger.LogInformation("Set isPaid to {IsPaid} for invoice {InvoiceId}", isPaid, invoiceId);
         }
         catch (Exception ex)
@@ -639,9 +676,10 @@ public partial class InvoiceRepository(IJSRuntime _js, ILogger<InvoiceRepository
 
     public async Task<int> CreateInvoiceCopy(int invoiceId)
     {
+        var module = await moduleTask;
         try
         {
-            var invoice = await _js.InvokeAsync<InvoiceDtoInfo?>("invoiceRepository.getInvoice", invoiceId);
+            var invoice = await module.InvokeAsync<InvoiceDtoInfo?>("invoiceRepository.getInvoice", invoiceId);
             ArgumentNullException.ThrowIfNull(invoice);
             if (!invoice.SellerId.HasValue)
             {
@@ -678,9 +716,10 @@ public partial class InvoiceRepository(IJSRuntime _js, ILogger<InvoiceRepository
 
     public async Task<bool> HasTempInvoice()
     {
+        var module = await moduleTask;
         try
         {
-            return await _js.InvokeAsync<bool>("invoiceRepository.hasTempInvoice");
+            return await module.InvokeAsync<bool>("invoiceRepository.hasTempInvoice");
         }
         catch (Exception ex)
         {
@@ -691,9 +730,10 @@ public partial class InvoiceRepository(IJSRuntime _js, ILogger<InvoiceRepository
 
     public async Task DeleteTempInvoice()
     {
+        var module = await moduleTask;
         try
         {
-            await _js.InvokeVoidAsync("invoiceRepository.deleteTempInvoice");
+            await module.InvokeVoidAsync("invoiceRepository.deleteTempInvoice");
         }
         catch (Exception ex)
         {
@@ -704,9 +744,10 @@ public partial class InvoiceRepository(IJSRuntime _js, ILogger<InvoiceRepository
 
     public async Task SaveTempInvoice(InvoiceDtoInfo request)
     {
+        var module = await moduleTask;
         try
         {
-            await _js.InvokeVoidAsync("invoiceRepository.saveTempInvoice", request);
+            await module.InvokeVoidAsync("invoiceRepository.saveTempInvoice", request);
         }
         catch (Exception ex)
         {
@@ -717,9 +758,10 @@ public partial class InvoiceRepository(IJSRuntime _js, ILogger<InvoiceRepository
 
     public async Task<InvoiceDtoInfo?> GetTempInvoice()
     {
+        var module = await moduleTask;
         try
         {
-            return await _js.InvokeAsync<InvoiceDtoInfo?>("invoiceRepository.getTempInvoice");
+            return await module.InvokeAsync<InvoiceDtoInfo?>("invoiceRepository.getTempInvoice");
         }
         catch (Exception ex)
         {
@@ -808,6 +850,6 @@ public partial class InvoiceRepository(IJSRuntime _js, ILogger<InvoiceRepository
         //     };
         // }
         throw new NotImplementedException();
-}
+    }
 
 }

@@ -5,6 +5,7 @@ public record AppConfigDto
     public string CultureName { get; set; } = string.Empty;
     public string BackupFolder { get; set; } = string.Empty;
     public BackupInterval BackupInterval { get; set; }
+    public DateTime LastBackup { get; set; }
     public string SchematronValidationUri { get; set; } = string.Empty;
     public bool ShowFormDescriptions { get; set; } = true;
     public bool ShowValidationWarnings { get; set; }

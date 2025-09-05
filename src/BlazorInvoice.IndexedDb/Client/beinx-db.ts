@@ -1,6 +1,6 @@
 import { AppConfigDto, InvoiceListRequest, IPaymentMeansBaseDto, PaymentListDto } from "./dtos.js";
 import { InvoiceRepository } from "./invoice.repository.js";
-import pako from "./pako/index.js";
+import * as pako from "./pako/index.js";
 import { PartyRepository } from "./party-repository.js";
 
 const DB_NAME = "BeInXDB";

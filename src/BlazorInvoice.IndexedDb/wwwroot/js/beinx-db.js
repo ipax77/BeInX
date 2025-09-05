@@ -1,5 +1,5 @@
 import { InvoiceRepository } from "./invoice.repository.js";
-import pako from "./pako/index.js";
+import * as pako from "./pako/index.js";
 import { PartyRepository } from "./party-repository.js";
 const DB_NAME = "BeInXDB";
 const DB_VERSION = 1;
@@ -9,6 +9,7 @@ export const STORES = {
     payments: "PaymentMeans",
     references: "AdditionalDocumentReferences",
     config: "AppConfig",
+    temp_invoices: "TempInvoices",
 };
 let db = null;
 export function openDB() {
@@ -45,6 +46,9 @@ export function openDB() {
             }
             if (!database.objectStoreNames.contains(STORES.config)) {
                 database.createObjectStore(STORES.config);
+            }
+            if (!database.objectStoreNames.contains(STORES.temp_invoices)) {
+                database.createObjectStore(STORES.temp_invoices);
             }
         };
         request.onsuccess = () => {

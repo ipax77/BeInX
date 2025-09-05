@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BlazorInvoice.Pwa</title>
+    <base href="/" />
+    <link rel="preload" id="webassembly" />
+    <link rel="stylesheet" href="_content/BlazorInvoice.Weblib/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="_content/BlazorInvoice.Weblib/css/app.css" />
+    <link rel="stylesheet" href="_content/BlazorInvoice.Weblib/css/bootstrap-icons/font/bootstrap-icons.min.css" />
+    <link rel="icon" type="image/svg+xml" href="beinxicon.svg" />
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <link href="BlazorInvoice.Pwa.styles.css" rel="stylesheet" />
+    <link href="manifest.webmanifest" rel="manifest" />
+
+    <!-- Apple devices don't support SVG for touch icons, so you still need PNGs -->
+    <link rel="apple-touch-icon" sizes="512x512" href="favicon.png" />
+    <link rel="apple-touch-icon" sizes="192x192" href="favicon.png" />
+    <script type="importmap"></script>
+</head>
+
+<body>
+    <div id="app">
+        <svg class="loading-progress">
+            <circle r="40%" cx="50%" cy="50%" />
+            <circle r="40%" cx="50%" cy="50%" />
+        </svg>
+        <div class="loading-progress-text"></div>
+    </div>
+
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="." class="reload">Reload</a>
+        <span class="dismiss">🗙</span>
+    </div>
+    <script src="_framework/blazor.webassembly#[.{fingerprint}].js"></script>
+    <script>navigator.serviceWorker.register('service-worker.js', { updateViaCache: 'none' });</script>
+    <script src="_content/BlazorInvoice.Weblib/js/bootstrap.bundle.min.js"></script>
+    <script src="_content/BlazorInvoice.Weblib/js/blazorinvoice.js"></script>
+</body>
+
+</html>
