@@ -623,36 +623,6 @@ public partial class InvoiceRepository(IJSRuntime _js, ILogger<InvoiceRepository
         }
     }
 
-    public Task<bool> HasTempInvoice()
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task DeleteTempInvoice()
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task SaveTempInvoice(InvoiceDtoInfo request)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<InvoiceDtoInfo?> GetTempInvoice()
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<int> ImportInvoice(XmlInvoice invoice, CancellationToken token = default)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<ExportResult> ExportInvoice(int invoiceId)
-    {
-        throw new NotImplementedException();
-    }
-
     public async Task SetIsPaid(int invoiceId, bool isPaid, CancellationToken token = default)
     {
         try
@@ -705,6 +675,37 @@ public partial class InvoiceRepository(IJSRuntime _js, ILogger<InvoiceRepository
             throw;
         }
     }
+    
+    public Task<bool> HasTempInvoice()
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task DeleteTempInvoice()
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task SaveTempInvoice(InvoiceDtoInfo request)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<InvoiceDtoInfo?> GetTempInvoice()
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<int> ImportInvoice(XmlInvoice invoice, CancellationToken token = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<ExportResult> ExportInvoice(int invoiceId)
+    {
+        throw new NotImplementedException();
+    }
+
 
     public Task SeedTestInvoices(int count)
     {
@@ -715,4 +716,10 @@ public partial class InvoiceRepository(IJSRuntime _js, ILogger<InvoiceRepository
     {
         throw new NotImplementedException();
     }
+
+    public Task<DocumentReferenceAnnotationDto?> AddReplaceOrDeleteSellerLogo(int invoiceId, CancellationToken token)
+    {
+        throw new NotImplementedException();
+    }
+
 }
