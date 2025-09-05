@@ -675,25 +675,57 @@ public partial class InvoiceRepository(IJSRuntime _js, ILogger<InvoiceRepository
             throw;
         }
     }
-    
-    public Task<bool> HasTempInvoice()
+
+    public async Task<bool> HasTempInvoice()
     {
-        throw new NotImplementedException();
+        try
+        {
+            return await _js.InvokeAsync<bool>("invoiceRepository.hasTempInvoice");
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error checking for temp invoice");
+            throw;
+        }
     }
 
-    public Task DeleteTempInvoice()
+    public async Task DeleteTempInvoice()
     {
-        throw new NotImplementedException();
+        try
+        {
+            await _js.InvokeVoidAsync("invoiceRepository.deleteTempInvoice");
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error deleting temp invoice");
+            throw;
+        }
     }
 
-    public Task SaveTempInvoice(InvoiceDtoInfo request)
+    public async Task SaveTempInvoice(InvoiceDtoInfo request)
     {
-        throw new NotImplementedException();
+        try
+        {
+            await _js.InvokeVoidAsync("invoiceRepository.saveTempInvoice", request);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error saving temp invoice");
+            throw;
+        }
     }
 
-    public Task<InvoiceDtoInfo?> GetTempInvoice()
+    public async Task<InvoiceDtoInfo?> GetTempInvoice()
     {
-        throw new NotImplementedException();
+        try
+        {
+            return await _js.InvokeAsync<InvoiceDtoInfo?>("invoiceRepository.getTempInvoice");
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error getting temp invoice");
+            throw;
+        }
     }
 
     public Task<int> ImportInvoice(XmlInvoice invoice, CancellationToken token = default)
@@ -719,7 +751,63 @@ public partial class InvoiceRepository(IJSRuntime _js, ILogger<InvoiceRepository
 
     public Task<DocumentReferenceAnnotationDto?> AddReplaceOrDeleteSellerLogo(int invoiceId, CancellationToken token)
     {
+        //     var invoice = await context.Invoices
+        //         .Include(i => i.SellerParty)
+        //         .Include(i => i.AdditionalDocumentReferences)
+        //         .FirstOrDefaultAsync(i => i.InvoiceId == invoiceId);
+
+        //     if (invoice is null || invoice.SellerParty is null)
+        //     {
+        //         return null;
+        //     }
+        //     var desc = "Seller Logo";
+        //     var logoId = invoice.SellerParty.LogoReferenceId ?? string.Empty;
+        //     var base64String = invoice.SellerParty.Logo is null ? null : Convert.ToBase64String(invoice.SellerParty.Logo);
+        //     var docRef = invoice.AdditionalDocumentReferences
+        //         .FirstOrDefault(f => f.DocumentDescription == desc);
+
+        //     if (string.IsNullOrEmpty(base64String))
+        //     {
+        //         if (docRef is not null)
+        //         {
+        //             context.AdditionalDocumentReferences.Remove(docRef);
+        //             await context.SaveChangesAsync(token);
+        //         }
+        //         return null;
+        //     }
+        //     else
+        //     {
+        //         if (docRef is null)
+        //         {
+        //             docRef = new()
+        //             {
+        //                 Id = logoId,
+        //                 MimeCode = "image/png",
+        //                 DocumentDescription = desc,
+        //                 FileName = "SellerLogo.png",
+        //                 Content = Convert.FromBase64String(base64String),
+        //                 Invoice = invoice,
+        //             };
+        //             context.AdditionalDocumentReferences.Add(docRef);
+        //         }
+        //         else
+        //         {
+        //             docRef.Content = Convert.FromBase64String(base64String);
+        //             context.AdditionalDocumentReferences.Update(docRef);
+        //         }
+        //         await context.SaveChangesAsync(token);
+        //     }
+
+        //     return new DocumentReferenceAnnotationDto()
+        //     {
+        //         Id = docRef.Id,
+        //         DocumentDescription = docRef.DocumentDescription,
+        //         MimeCode = docRef.MimeCode,
+        //         FileName = docRef.FileName,
+        //         Content = Convert.ToBase64String(docRef.Content),
+        //     };
+        // }
         throw new NotImplementedException();
-    }
+}
 
 }

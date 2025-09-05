@@ -1,5 +1,5 @@
 import { openDB, STORES } from "./beinx-db.js";
-import { InvoiceEntity, FinalizeResult, DocumentReferenceEntity } from "./dtos.js";
+import { InvoiceEntity, FinalizeResult, DocumentReferenceEntity, InvoiceDtoInfo } from "./dtos.js";
 
 export class InvoiceRepository {
     
@@ -335,6 +335,52 @@ export class InvoiceRepository {
         return new Promise((resolve, reject) => {
             const request = store.clear();
             request.onsuccess = () => resolve();
+            request.onerror = () => reject(request.error);
+        });
+    }
+
+    async hasTempInvoice(): Promise<boolean> {
+        const db = await openDB();
+        const transaction = db.transaction([STORES.temp_invoices], "readonly");
+        const store = transaction.objectStore(STORES.temp_invoices);
+        return new Promise((resolve, reject) => {
+            const request = store.count();
+            request.onsuccess = () => resolve(request.result > 0);
+            request.onerror = () => reject(request.error);
+        });
+    }
+
+    async deleteTempInvoice(): Promise<void> {
+        const db = await openDB();
+        const transaction = db.transaction([STORES.temp_invoices], "readwrite");
+        const store = transaction.objectStore(STORES.temp_invoices);
+        return new Promise((resolve, reject) => {
+            const request = store.clear();
+            request.onsuccess = () => resolve();
+            request.onerror = () => reject(request.error);
+        });
+    }
+
+    async saveTempInvoice(request: InvoiceDtoInfo): Promise<void> {
+        const db = await openDB();
+        const transaction = db.transaction([STORES.temp_invoices], "readwrite");
+        const store = transaction.objectStore(STORES.temp_invoices);
+        return new Promise((resolve, reject) => {
+            const requestPut = store.put(request, "current_temp_invoice");
+            requestPut.onsuccess = () => resolve();
+            requestPut.onerror = () => reject(requestPut.error);
+        });
+    }
+
+    async getTempInvoice(): Promise<InvoiceDtoInfo | null> {
+        const db = await openDB();
+        const transaction = db.transaction([STORES.temp_invoices], "readonly");
+        const store = transaction.objectStore(STORES.temp_invoices);
+        return new Promise((resolve, reject) => {
+            const request = store.get("current_temp_invoice");
+            request.onsuccess = () => {
+                resolve(request.result as InvoiceDtoInfo || null);
+            };
             request.onerror = () => reject(request.error);
         });
     }

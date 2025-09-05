@@ -12,6 +12,7 @@ export const STORES = {
     payments: "PaymentMeans",
     references: "AdditionalDocumentReferences",
     config: "AppConfig",
+    temp_invoices: "TempInvoices",
 };
 
 let db: IDBDatabase | null = null;
@@ -58,6 +59,10 @@ export function openDB(): Promise<IDBDatabase> {
 
             if (!database.objectStoreNames.contains(STORES.config)) {
                 database.createObjectStore(STORES.config);
+            }
+
+            if (!database.objectStoreNames.contains(STORES.temp_invoices)) {
+                database.createObjectStore(STORES.temp_invoices);
             }
         };
 
