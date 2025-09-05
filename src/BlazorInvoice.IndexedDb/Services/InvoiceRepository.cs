@@ -1,7 +1,11 @@
+using System.Security.Cryptography;
+using System.Text;
+using System.Xml.Serialization;
 using BlazorInvoice.Shared;
 using BlazorInvoice.Shared.Interfaces;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
+using pax.XRechnung.NET;
 using pax.XRechnung.NET.AnnotatedDtos;
 using pax.XRechnung.NET.BaseDtos;
 using pax.XRechnung.NET.XmlModels;
@@ -386,54 +390,237 @@ public partial class InvoiceRepository(IJSRuntime _js, ILogger<InvoiceRepository
         throw new NotImplementedException();
     }
 
-    public Task<DocumentReferenceAnnotationDto?> AddReplaceOrDeleteSellerLogo(int invoiceId, CancellationToken token)
+    public async Task<DocumentReferenceAnnotationDto?> AddReplaceOrDeleteSellerLogo(int invoiceId, string? base64String, CancellationToken token = default)
     {
-        throw new NotImplementedException();
+        try
+        {
+            var result = await _js.InvokeAsync<DocumentReferenceAnnotationDto?>("invoiceRepository.addReplaceOrDeleteSellerLogo", token, invoiceId, base64String);
+            logger.LogInformation("Updated seller logo for invoice {InvoiceId}", invoiceId);
+            return result;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error updating seller logo for invoice {InvoiceId}", invoiceId);
+            throw;
+        }
     }
 
-    public Task<int> CreateInvoice(BlazorInvoiceDto invoiceDto, int sellerId, int buyerId, int paymentId, bool isImported = false, CancellationToken token = default)
+    public async Task<int> CreateInvoice(BlazorInvoiceDto invoiceDto, int sellerId, int buyerId, int paymentId, bool isImported = false, CancellationToken token = default)
     {
-        throw new NotImplementedException();
+        try
+        {
+            var invoiceId = await _js.InvokeAsync<int>("invoiceRepository.createInvoice", token, invoiceDto, sellerId, buyerId, paymentId, isImported);
+            logger.LogInformation("Created invoice {InvoiceId}", invoiceId);
+            return invoiceId;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error creating invoice");
+            throw;
+        }
     }
 
-    public Task DeleteInvoice(int invoiceId, CancellationToken token = default)
+    public async Task DeleteInvoice(int invoiceId, CancellationToken token = default)
     {
-        throw new NotImplementedException();
+        try
+        {
+            await _js.InvokeVoidAsync("invoiceRepository.deleteInvoice", token, invoiceId);
+            logger.LogInformation("Deleted invoice {InvoiceId}", invoiceId);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error deleting invoice {InvoiceId}", invoiceId);
+            throw;
+        }
     }
 
-    public Task<InvoiceDtoInfo?> GetInvoice(int invoiceId, CancellationToken token = default)
+    public async Task<InvoiceDtoInfo?> GetInvoice(int invoiceId, CancellationToken token = default)
     {
-        throw new NotImplementedException();
+        try
+        {
+            var invoice = await _js.InvokeAsync<InvoiceDtoInfo?>("invoiceRepository.getInvoice", token, invoiceId);
+            logger.LogDebug("Retrieved invoice {InvoiceId}", invoiceId);
+            return invoice;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error retrieving invoice {InvoiceId}", invoiceId);
+            throw;
+        }
     }
 
-    public Task<List<InvoiceListDto>> GetInvoices(InvoiceListRequest request, CancellationToken token = default)
+    public async Task<List<InvoiceListDto>> GetInvoices(InvoiceListRequest request, CancellationToken token = default)
     {
-        throw new NotImplementedException();
+        try
+        {
+            var allInvoices = await _js.InvokeAsync<List<InvoiceListDto>>("invoiceRepository.getAllInvoices", token);
+
+            // Apply filtering, sorting, and pagination in C#
+            var filtered = allInvoices.AsEnumerable();
+
+            if (request.Unpaid)
+            {
+                filtered = filtered.Where(x => !x.IsPaid);
+            }
+
+            if (!string.IsNullOrEmpty(request.Filter))
+            {
+                var filter = request.Filter.ToLowerInvariant();
+                filtered = filtered.Where(i =>
+                    i.BuyerEmail.Contains(filter, StringComparison.InvariantCultureIgnoreCase));
+            }
+
+            var sorted = ApplyInvoiceSorting(filtered, request.TableOrders);
+            var result = sorted.Skip(request.Skip).Take(request.Take).ToList();
+
+            logger.LogDebug("Retrieved {Count} invoices (filtered from {Total})", result.Count, allInvoices.Count);
+            return result;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error retrieving invoices");
+            throw;
+        }
     }
 
-    public Task<int> GetInvoicesCount(InvoiceListRequest request, CancellationToken token = default)
+    public async Task<int> GetInvoicesCount(InvoiceListRequest request, CancellationToken token = default)
     {
-        throw new NotImplementedException();
+        try
+        {
+            var allInvoices = await _js.InvokeAsync<List<InvoiceListDto>>("invoiceRepository.getAllInvoices", token);
+
+            var filtered = allInvoices.AsEnumerable();
+
+            if (request.Unpaid)
+            {
+                filtered = filtered.Where(x => !x.IsPaid);
+            }
+
+            if (!string.IsNullOrEmpty(request.Filter))
+            {
+                var filter = request.Filter.ToLowerInvariant();
+                filtered = filtered.Where(i =>
+                    i.BuyerEmail.Contains(filter, StringComparison.InvariantCultureIgnoreCase));
+            }
+
+            var count = filtered.Count();
+            logger.LogDebug("Invoices count: {Count} (filtered from {Total})", count, allInvoices.Count);
+            return count;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error counting invoices");
+            throw;
+        }
     }
 
-    public Task UpdateInvoice(int invoiceId, BlazorInvoiceDto invoiceDto, CancellationToken token = default)
+    private static IEnumerable<InvoiceListDto> ApplyInvoiceSorting(IEnumerable<InvoiceListDto> invoices, List<TableOrder> orders)
     {
-        throw new NotImplementedException();
+        if (!orders.Any())
+        {
+            return invoices.OrderByDescending(i => i.IssueDate);
+        }
+
+        IOrderedEnumerable<InvoiceListDto>? orderedInvoices = null;
+
+        for (int i = 0; i < orders.Count; i++)
+        {
+            var order = orders[i];
+            var propertyName = order.PropertyName.ToLowerInvariant();
+
+            if (i == 0)
+            {
+                orderedInvoices = propertyName switch
+                {
+                    "id" => order.Ascending ? invoices.OrderBy(p => p.Id) : invoices.OrderByDescending(p => p.Id),
+                    "buyeremail" => order.Ascending ? invoices.OrderBy(p => p.BuyerEmail) : invoices.OrderByDescending(p => p.BuyerEmail),
+                    "issuedate" => order.Ascending ? invoices.OrderBy(p => p.IssueDate) : invoices.OrderByDescending(p => p.IssueDate),
+                    _ => invoices.OrderByDescending(p => p.IssueDate)
+                };
+            }
+            else
+            {
+                orderedInvoices = propertyName switch
+                {
+                    "id" => order.Ascending ? orderedInvoices!.ThenBy(p => p.Id) : orderedInvoices!.ThenByDescending(p => p.Id),
+                    "buyeremail" => order.Ascending ? orderedInvoices!.ThenBy(p => p.BuyerEmail) : orderedInvoices!.ThenByDescending(p => p.BuyerEmail),
+                    "issuedate" => order.Ascending ? orderedInvoices!.ThenBy(p => p.IssueDate) : orderedInvoices!.ThenByDescending(p => p.IssueDate),
+                    _ => orderedInvoices!.ThenByDescending(p => p.IssueDate)
+                };
+            }
+        }
+
+        return orderedInvoices ?? invoices.OrderByDescending(i => i.IssueDate);
     }
 
-    public Task<FinalizeResult> FinalizeInvoice(int invoiceId, XmlInvoice xmlInvoice, CancellationToken token = default)
+    public async Task UpdateInvoice(int invoiceId, BlazorInvoiceDto invoiceDto, CancellationToken token = default)
     {
-        throw new NotImplementedException();
+        try
+        {
+            await _js.InvokeVoidAsync("invoiceRepository.updateInvoice", token, invoiceId, invoiceDto);
+            logger.LogInformation("Updated invoice {InvoiceId}", invoiceId);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error updating invoice {InvoiceId}", invoiceId);
+            throw;
+        }
     }
 
-    public Task<XmlInvoice?> GetXmlInvoice(int invoiceId, CancellationToken token = default)
+    public async Task<FinalizeResult> FinalizeInvoice(int invoiceId, XmlInvoice xmlInvoice, CancellationToken token = default)
     {
-        throw new NotImplementedException();
+        try
+        {
+            var xmlText = XmlInvoiceWriter.Serialize(xmlInvoice);
+            ArgumentNullException.ThrowIfNull(xmlText, nameof(xmlText));
+            var bytes = Encoding.UTF8.GetBytes(xmlText);
+            var hash = SHA1.HashData(bytes);
+            var result = await _js.InvokeAsync<FinalizeResult>("invoiceRepository.finalizeInvoice", token, invoiceId, bytes, hash, xmlInvoice.LegalMonetaryTotal.TaxExclusiveAmount.Value);
+            logger.LogInformation("Finalized invoice {InvoiceId}", invoiceId);
+            return result;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error finalizing invoice {InvoiceId}", invoiceId);
+            throw;
+        }
     }
 
-    public Task<bool> ValidateXmlInvoiceHash(int invoiceId, CancellationToken token = default)
+    public async Task<XmlInvoice?> GetXmlInvoice(int invoiceId, CancellationToken token = default)
     {
-        throw new NotImplementedException();
+        try
+        {
+            var xmlBlob = await _js.InvokeAsync<byte[]?>("invoiceRepository.getXmlBlob", token, invoiceId);
+            if (xmlBlob == null)
+            {
+                return null;
+            }
+            var serializer = new XmlSerializer(typeof(XmlInvoice));
+            using var stream = new MemoryStream(xmlBlob);
+            using var reader = new StreamReader(stream, Encoding.UTF8);
+            var xmlInvoice = (XmlInvoice?)serializer.Deserialize(reader);
+            return xmlInvoice;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error retrieving XML invoice {InvoiceId}", invoiceId);
+            throw;
+        }
+    }
+
+    public async Task<bool> ValidateXmlInvoiceHash(int invoiceId, CancellationToken token = default)
+    {
+        try
+        {
+            var isValid = await _js.InvokeAsync<bool>("invoiceRepository.validateXmlInvoiceHash", token, invoiceId);
+            logger.LogInformation("Validated XML invoice hash for {InvoiceId}: {IsValid}", invoiceId, isValid);
+            return isValid;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error validating XML invoice hash for {InvoiceId}", invoiceId);
+            throw;
+        }
     }
 
     public Task<bool> HasTempInvoice()
@@ -466,14 +653,57 @@ public partial class InvoiceRepository(IJSRuntime _js, ILogger<InvoiceRepository
         throw new NotImplementedException();
     }
 
-    public Task SetIsPaid(int invoiceId, bool isPaid, CancellationToken token = default)
+    public async Task SetIsPaid(int invoiceId, bool isPaid, CancellationToken token = default)
     {
-        throw new NotImplementedException();
+        try
+        {
+            await _js.InvokeVoidAsync("invoiceRepository.setIsPaid", token, invoiceId, isPaid);
+            logger.LogInformation("Set isPaid to {IsPaid} for invoice {InvoiceId}", isPaid, invoiceId);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error setting isPaid for invoice {InvoiceId}", invoiceId);
+            throw;
+        }
     }
 
-    public Task<int> CreateInvoiceCopy(int invoiceId)
+    public async Task<int> CreateInvoiceCopy(int invoiceId)
     {
-        throw new NotImplementedException();
+        try
+        {
+            var invoice = await _js.InvokeAsync<InvoiceDtoInfo?>("invoiceRepository.getInvoice", invoiceId);
+            ArgumentNullException.ThrowIfNull(invoice);
+            if (!invoice.SellerId.HasValue)
+            {
+                throw new ArgumentNullException(nameof(invoice.SellerId));
+            }
+
+            if (!invoice.BuyerId.HasValue)
+            {
+                throw new ArgumentNullException(nameof(invoice.BuyerId));
+            }
+
+            if (!invoice.PaymentId.HasValue)
+            {
+                throw new ArgumentNullException(nameof(invoice.PaymentId));
+            }
+
+
+            invoice.InvoiceDto.Id = invoice.InvoiceDto.Id + "_copy";
+            invoice.InvoiceDto.IssueDate = DateTime.UtcNow;
+            invoice.InvoiceDto.DueDate = DateTime.UtcNow.AddDays(14);
+            invoice.InvoiceDto.InvoiceLines.Clear();
+            invoice.InvoiceDto.AdditionalDocumentReferences.Clear();
+
+            var newInvoiceId = await CreateInvoice(invoice.InvoiceDto, invoice.SellerId.Value, invoice.BuyerId.Value, invoice.PaymentId.Value);
+            logger.LogInformation("Created copy of invoice {InvoiceId} with new id {NewInvoiceId}", invoiceId, newInvoiceId);
+            return newInvoiceId;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error creating copy of invoice {InvoiceId}", invoiceId);
+            throw;
+        }
     }
 
     public Task SeedTestInvoices(int count)
