@@ -67,9 +67,21 @@ namespace BlazorInvoice.IndexedDb.Services
             try
             {
                 var module = await _moduleTask;
-                _payments = (await module.InvokeAsync<List<PaymentEntity>>("paymentRepository.getAllPaymentMeans")).ToDictionary(k => k.Id, v => v);
-                _parties = (await module.InvokeAsync<List<PartyEntity>>("partyRepository.getAllParties")).ToDictionary(k => k.Id, v => v);
-                _invoices = (await module.InvokeAsync<List<InvoiceEntity>>("invoiceRepository.getAllInvoices")).ToDictionary(k => k.Id, v => v);
+                var payments = await module.InvokeAsync<List<PaymentEntityRaw>>("paymentRepository.getAllPaymentMeans");
+                _payments = payments.Select(s => new PaymentEntity(s)).ToDictionary(k => k.Id, v => v);
+
+                var parties = await module.InvokeAsync<List<PartyEntityRaw>>("partyRepository.getAllParties");
+                _parties = parties.Select(s => new PartyEntity(s)).ToDictionary(k => k.Id, v => v);
+                var invoices = await module.InvokeAsync<List<InvoiceEntity>>("invoiceRepository.getAllInvoices");
+                invoices.ForEach(f => f.Info = new()
+                {
+                    InvoiceDto = f.Info.InvoiceDto,
+                    InvoiceId = f.Id,
+                    SellerId = f.Info.SellerId,
+                    BuyerId = f.Info.BuyerId,
+                    PaymentId = f.Info.PaymentId,
+                });
+                _invoices = invoices.ToDictionary(k => k.Id, v => v);
                 isInit = true;
             }
             finally
@@ -162,7 +174,14 @@ namespace BlazorInvoice.IndexedDb.Services
             InvoiceEntity entity = new()
             {
                 Id = id,
-                Info = invoiceInfo,
+                Info = new InvoiceDtoInfo()
+                {
+                    InvoiceDto = invoiceInfo.InvoiceDto,
+                    InvoiceId = id,
+                    SellerId = invoiceInfo.SellerId,
+                    BuyerId = invoiceInfo.BuyerId,
+                    PaymentId = invoiceInfo.PaymentId,
+                },
                 Year = invoiceInfo.InvoiceDto.IssueDate.Year,
                 IsPaid = isPaid,
                 IsImported = IsImported,
@@ -285,6 +304,15 @@ namespace BlazorInvoice.IndexedDb.Services
 
     public class PartyEntity
     {
+        public PartyEntity() { }
+        public PartyEntity(PartyEntityRaw raw)
+        {
+            Id = raw.Id;
+            Party = raw.Party;
+            IsSeller = raw.IsSeller;
+            IsDeleted = raw.IsDeleted;
+            Logo = raw.Logo;
+        }
         public int Id { get; set; }
         public IPartyBaseDto Party { get; set; } = null!;
         public bool IsSeller { get; set; }
@@ -292,10 +320,33 @@ namespace BlazorInvoice.IndexedDb.Services
         public DocumentReferenceAnnotationDto? Logo { get; set; }
     }
 
-    public class PaymentEntity
+    public class PartyEntityRaw
     {
         public int Id { get; set; }
+        public PartyBaseDto Party { get; set; } = null!;
+        public bool IsSeller { get; set; }
+        public bool IsDeleted { get; set; }
+        public DocumentReferenceAnnotationDto? Logo { get; set; }
+    }
+
+    public class PaymentEntity
+    {
+        public PaymentEntity() { }
+        public PaymentEntity(PaymentEntityRaw raw)
+        {
+            Id = raw.Id;
+            Payment = raw.Payment;
+            IsDeleted = raw.IsDeleted;
+        }
+        public int Id { get; set; }
         public IPaymentMeansBaseDto Payment { get; set; } = null!;
+        public bool IsDeleted { get; set; }
+    }
+
+    public class PaymentEntityRaw
+    {
+        public int Id { get; set; }
+        public PaymentAnnotationDto Payment { get; set; } = null!;
         public bool IsDeleted { get; set; }
     }
 

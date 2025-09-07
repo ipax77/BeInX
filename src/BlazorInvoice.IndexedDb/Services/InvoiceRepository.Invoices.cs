@@ -103,6 +103,8 @@ namespace BlazorInvoice.IndexedDb.Services
         {
             return new InvoiceListDto
             {
+                InvoiceId = entity.Id,
+                Id = entity.Info.InvoiceDto.Id,
                 BuyerEmail = entity.Info.InvoiceDto.BuyerParty.Email,
                 IssueDate = entity.Info.InvoiceDto.IssueDate,
                 IsPaid = entity.IsPaid

@@ -1,12 +1,12 @@
-using Microsoft.AspNetCore.Components.Web;
-using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using BlazorInvoice.Pwa;
-using BlazorInvoice.Shared.Interfaces;
 using BlazorInvoice.IndexedDb.Services;
 using BlazorInvoice.Pdf;
+using BlazorInvoice.Pwa;
+using BlazorInvoice.Pwa.Services;
+using BlazorInvoice.Shared.Interfaces;
+using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using pax.BBToast;
 using pax.BlazorChartJs;
-using BlazorInvoice.Pwa.Services;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -34,3 +34,5 @@ builder.Services.AddScoped<IMauiPathService, FakeMauiPathService>();
 builder.Services.AddScoped<IMauiPopupService, FakeMauiPopupService>();
 
 await builder.Build().RunAsync();
+//var app = builder.Build();
+//await app.RunAsync();
