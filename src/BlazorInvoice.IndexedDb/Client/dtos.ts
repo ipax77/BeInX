@@ -1,4 +1,3 @@
-
 export interface AppConfigDto {
     cultureName: string;
     backupFolder: string;
@@ -83,4 +82,12 @@ export interface InvoiceEntity {
     isImported: boolean;
     isDeleted: boolean;
     finalizeResult?: FinalizeResult;
+}
+
+export interface TempInvoiceEntity {
+    invoiceBlob: ArrayBuffer;
+    invoiceId?: number;
+    sellerPartyId?: number;
+    buyerPartyId?: number;
+    paymentMeansId?: number;
 }

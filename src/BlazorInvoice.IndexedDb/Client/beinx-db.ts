@@ -1,4 +1,5 @@
-import { AppConfigDto } from "./dtos.js";
+
+import { AppConfigDto, TempInvoiceEntity } from "./dtos.js";
 import { InvoiceRepository } from "./invoice-repository.js";
 import * as pako from "./pako/index.js";
 import { PartyRepository } from "./party-repository.js";
@@ -146,9 +147,6 @@ export async function exportDb(): Promise<string> {
     });
 }
 
-/**
- * Open file picker, read backup file and import into DB
- */
 export async function uploadBackup(replace: boolean = false): Promise<void> {
     return new Promise((resolve, reject) => {
         const input = document.createElement("input");
@@ -178,7 +176,6 @@ export async function uploadBackup(replace: boolean = false): Promise<void> {
         input.click();
     });
 }
-
 
 export async function importDb(base64: string, replace: boolean = false): Promise<void> {
     const database = await openDB();
@@ -217,6 +214,51 @@ export function ungzipString(base64: string): string {
     const text = pako.ungzip(binary, { to: "string" });
     return text;
 }
+
+export async function getTempInvoice(): Promise<TempInvoiceEntity | undefined> {
+    const db = await openDB();
+    const transaction = db.transaction(STORES.temp_invoices, "readonly");
+    const store = transaction.objectStore(STORES.temp_invoices);
+    return new Promise((resolve, reject) => {
+        const request = store.get("temp");
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+    });
+}
+
+export async function saveTempInvoice(invoice: TempInvoiceEntity): Promise<void> {
+    const db = await openDB();
+    const transaction = db.transaction(STORES.temp_invoices, "readwrite");
+    const store = transaction.objectStore(STORES.temp_invoices);
+    return new Promise((resolve, reject) => {
+        const request = store.put(invoice, "temp");
+        request.onsuccess = () => resolve();
+        request.onerror = () => reject(request.error);
+    });
+}
+
+export async function deleteTempInvoice(): Promise<void> {
+    const db = await openDB();
+    const transaction = db.transaction(STORES.temp_invoices, "readwrite");
+    const store = transaction.objectStore(STORES.temp_invoices);
+    return new Promise((resolve, reject) => {
+        const request = store.delete("temp");
+        request.onsuccess = () => resolve();
+        request.onerror = () => reject(request.error);
+    });
+}
+
+export async function hasTempInvoice(): Promise<boolean> {
+    const db = await openDB();
+    const transaction = db.transaction(STORES.temp_invoices, "readonly");
+    const store = transaction.objectStore(STORES.temp_invoices);
+    return new Promise((resolve, reject) => {
+        const request = store.count();
+        request.onsuccess = () => resolve(request.result > 0);
+        request.onerror = () => reject(request.error);
+    });
+}
+
 
 // Export a singleton instance
 export const paymentRepository = new PaymentRepository();

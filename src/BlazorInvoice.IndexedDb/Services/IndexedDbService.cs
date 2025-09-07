@@ -1,9 +1,9 @@
-
 using BlazorInvoice.Shared;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using pax.XRechnung.NET.AnnotatedDtos;
 using pax.XRechnung.NET.BaseDtos;
+using System.Text.Json;
 
 namespace BlazorInvoice.IndexedDb.Services
 {
@@ -30,6 +30,10 @@ namespace BlazorInvoice.IndexedDb.Services
         Task<string> ExportDb();
         Task UploadBackup(bool replace = false);
         Task ImportDb(string base64, bool replace = false);
+        Task<InvoiceDtoInfo?> GetTempInvoice();
+        Task SaveTempInvoice(InvoiceDtoInfo invoice);
+        Task DeleteTempInvoice();
+        Task<bool> HasTempInvoice();
     }
 
     public class IndexedDbService : IIndexedDbService
@@ -231,6 +235,52 @@ namespace BlazorInvoice.IndexedDb.Services
             var module = await _moduleTask;
             await module.InvokeVoidAsync("importDb", base64, replace);
         }
+
+        public async Task<InvoiceDtoInfo?> GetTempInvoice()
+        {
+            var module = await _moduleTask;
+            var tempInvoice = await module.InvokeAsync<TempInvoiceEntity>("getTempInvoice");
+            if (tempInvoice == null) return null;
+            var json = System.Text.Encoding.UTF8.GetString(tempInvoice.InvoiceBlob);
+            var invoiceDto = JsonSerializer.Deserialize<BlazorInvoiceDto>(json);
+            ArgumentNullException.ThrowIfNull(invoiceDto, nameof(invoiceDto));
+            return new InvoiceDtoInfo
+            {
+                InvoiceDto = invoiceDto,
+                InvoiceId = tempInvoice.InvoiceId ?? 0,
+                SellerId = tempInvoice.SellerPartyId,
+                BuyerId = tempInvoice.BuyerPartyId,
+                PaymentId = tempInvoice.PaymentMeansId
+            };
+        }
+
+        public async Task SaveTempInvoice(InvoiceDtoInfo invoice)
+        {
+            var module = await _moduleTask;
+            var json = JsonSerializer.Serialize(invoice.InvoiceDto);
+            var bytes = System.Text.Encoding.UTF8.GetBytes(json);
+            var tempInvoice = new TempInvoiceEntity
+            {
+                InvoiceBlob = bytes,
+                InvoiceId = invoice.InvoiceId,
+                SellerPartyId = invoice.SellerId,
+                BuyerPartyId = invoice.BuyerId,
+                PaymentMeansId = invoice.PaymentId
+            };
+            await module.InvokeVoidAsync("saveTempInvoice", tempInvoice);
+        }
+
+        public async Task DeleteTempInvoice()
+        {
+            var module = await _moduleTask;
+            await module.InvokeVoidAsync("deleteTempInvoice");
+        }
+
+        public async Task<bool> HasTempInvoice()
+        {
+            var module = await _moduleTask;
+            return await module.InvokeAsync<bool>("hasTempInvoice");
+        }
     }
 
     public class PartyEntity
@@ -258,5 +308,14 @@ namespace BlazorInvoice.IndexedDb.Services
         public bool IsImported { get; set; }
         public bool IsDeleted { get; set; }
         public FinalizeResult? FinalizeResult { get; set; }
+    }
+
+    public class TempInvoiceEntity
+    {
+        public byte[] InvoiceBlob { get; set; } = [];
+        public int? InvoiceId { get; set; }
+        public int? SellerPartyId { get; set; }
+        public int? BuyerPartyId { get; set; }
+        public int? PaymentMeansId { get; set; }
     }
 }

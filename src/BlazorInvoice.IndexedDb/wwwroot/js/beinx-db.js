@@ -1,6 +1,7 @@
-import { InvoiceRepository } from "./invoice.repository.js";
+import { InvoiceRepository } from "./invoice-repository.js";
 import * as pako from "./pako/index.js";
 import { PartyRepository } from "./party-repository.js";
+import { PaymentRepository } from "./payment-repository.js";
 const DB_NAME = "BeInXDB";
 const DB_VERSION = 1;
 export const STORES = {
@@ -26,14 +27,6 @@ export function openDB() {
                     keyPath: "id",
                     autoIncrement: true
                 });
-                // Create indexes for common queries
-                invoiceStore.createIndex("invoiceId", "invoiceId", { unique: true });
-                invoiceStore.createIndex("sellerPartyId", "sellerPartyId");
-                invoiceStore.createIndex("buyerPartyId", "buyerPartyId");
-                invoiceStore.createIndex("paymentMeansId", "paymentMeansId");
-                invoiceStore.createIndex("isPaid", "isPaid");
-                invoiceStore.createIndex("isDeleted", "isDeleted");
-                invoiceStore.createIndex("issueDate", "issueDate");
             }
             if (!database.objectStoreNames.contains(STORES.parties)) {
                 database.createObjectStore(STORES.parties, { keyPath: "id", autoIncrement: true });
@@ -116,9 +109,6 @@ export async function exportDb() {
         }
     });
 }
-/**
- * Open file picker, read backup file and import into DB
- */
 export async function uploadBackup(replace = false) {
     return new Promise((resolve, reject) => {
         const input = document.createElement("input");
@@ -180,113 +170,48 @@ export function ungzipString(base64) {
     const text = pako.ungzip(binary, { to: "string" });
     return text;
 }
-/// Payments 
-async function getPaymentListQueryable(request) {
+export async function getTempInvoice() {
     const db = await openDB();
-    const transaction = db.transaction(STORES.payments, 'readonly');
-    const store = transaction.objectStore(STORES.payments);
-    const allPayments = await new Promise((resolve, reject) => {
-        const req = store.getAll();
-        req.onsuccess = () => resolve(req.result);
-        req.onerror = () => reject(req.error);
-    });
-    let query = allPayments
-        .filter(p => !p.isDeleted)
-        .map(s => ({
-        playmentMeansId: s.id,
-        iban: s.iban,
-        name: s.name,
-    }));
-    if (request.filter) {
-        const filter = request.filter.toLowerCase();
-        query = query.filter(i => i.name.toLowerCase().includes(filter) ||
-            i.iban.toLowerCase().includes(filter));
-    }
-    return query;
-}
-export async function getPaymentsCount(request) {
-    const query = await getPaymentListQueryable(request);
-    return query.length;
-}
-export async function getPayments(request) {
-    let query = await getPaymentListQueryable(request);
-    if (request.tableOrders && request.tableOrders.length > 0) {
-        const order = request.tableOrders[0];
-        const key = order.propertyName.toLowerCase();
-        query.sort((a, b) => {
-            if (a[key] < b[key])
-                return order.ascending ? -1 : 1;
-            if (a[key] > b[key])
-                return order.ascending ? 1 : -1;
-            return 0;
-        });
-    }
-    else {
-        query.sort((a, b) => a.name.localeCompare(b.name));
-    }
-    return query.slice(request.skip, request.skip + request.take);
-}
-export async function getPaymentMeans(paymentMeansId) {
-    const db = await openDB();
-    const transaction = db.transaction(STORES.payments, 'readonly');
-    const store = transaction.objectStore(STORES.payments);
+    const transaction = db.transaction(STORES.temp_invoices, "readonly");
+    const store = transaction.objectStore(STORES.temp_invoices);
     return new Promise((resolve, reject) => {
-        const req = store.get(paymentMeansId);
-        req.onsuccess = () => resolve(req.result);
-        req.onerror = () => reject(req.error);
+        const request = store.get("temp");
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
     });
 }
-export async function createPaymentMeans(paymentMeans) {
+export async function saveTempInvoice(invoice) {
     const db = await openDB();
-    const transaction = db.transaction(STORES.payments, 'readwrite');
-    const store = transaction.objectStore(STORES.payments);
+    const transaction = db.transaction(STORES.temp_invoices, "readwrite");
+    const store = transaction.objectStore(STORES.temp_invoices);
     return new Promise((resolve, reject) => {
-        const req = store.add(paymentMeans);
-        req.onsuccess = () => resolve(req.result);
-        req.onerror = () => reject(req.error);
+        const request = store.put(invoice, "temp");
+        request.onsuccess = () => resolve();
+        request.onerror = () => reject(request.error);
     });
 }
-export async function updatePaymentMeans(paymentMeansId, paymentMeans) {
+export async function deleteTempInvoice() {
     const db = await openDB();
-    const transaction = db.transaction(STORES.payments, 'readwrite');
-    const store = transaction.objectStore(STORES.payments);
+    const transaction = db.transaction(STORES.temp_invoices, "readwrite");
+    const store = transaction.objectStore(STORES.temp_invoices);
     return new Promise((resolve, reject) => {
-        const req = store.put({ ...paymentMeans, id: paymentMeansId });
-        req.onsuccess = () => resolve();
-        req.onerror = () => reject(req.error);
+        const request = store.delete("temp");
+        request.onsuccess = () => resolve();
+        request.onerror = () => reject(request.error);
     });
 }
-export async function deletePaymentMeans(paymentMeansId) {
+export async function hasTempInvoice() {
     const db = await openDB();
-    const invoicesTransaction = db.transaction(STORES.invoices, 'readonly');
-    const invoicesStore = invoicesTransaction.objectStore(STORES.invoices);
-    const allInvoices = await new Promise((resolve, reject) => {
-        const req = invoicesStore.getAll();
-        req.onsuccess = () => resolve(req.result);
-        req.onerror = () => reject(req.error);
-    });
-    const isReferenced = allInvoices.some(invoice => invoice.paymentMeansId === paymentMeansId);
-    const paymentsTransaction = db.transaction(STORES.payments, 'readwrite');
-    const paymentsStore = paymentsTransaction.objectStore(STORES.payments);
-    if (isReferenced) {
-        const req = paymentsStore.get(paymentMeansId);
-        req.onsuccess = () => {
-            const payment = req.result;
-            if (payment) {
-                payment.isDeleted = true;
-                paymentsStore.put(payment);
-            }
-        };
-    }
-    else {
-        paymentsStore.delete(paymentMeansId);
-    }
+    const transaction = db.transaction(STORES.temp_invoices, "readonly");
+    const store = transaction.objectStore(STORES.temp_invoices);
     return new Promise((resolve, reject) => {
-        paymentsTransaction.oncomplete = () => resolve();
-        paymentsTransaction.onerror = () => reject(paymentsTransaction.error);
+        const request = store.count();
+        request.onsuccess = () => resolve(request.result > 0);
+        request.onerror = () => reject(request.error);
     });
 }
 // Export a singleton instance
+export const paymentRepository = new PaymentRepository();
 export const partyRepository = new PartyRepository();
 export const invoiceRepository = new InvoiceRepository();
 //# sourceMappingURL=beinx-db.js.map
