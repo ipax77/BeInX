@@ -38,4 +38,40 @@ describe('PartyRepository CRUD Operations', () => {
         await partyRepository.clear();
         await invoiceRepository.clear();
     });
+
+    it('should create a party', async () => {
+        const testParty = getTestParty();
+        const id = await partyRepository.createParty(testParty, true, undefined);
+        expect(id).toBeGreaterThan(0);
+
+        const createdParties = await partyRepository.getAllParties();
+        expect(createdParties.shift()?.id).toEqual(id);
+    });
+
+    it('should update a party', async () => {
+        const testParty = getTestParty();
+        const id = await partyRepository.createParty(testParty, true, undefined);
+
+        const createdParties = await partyRepository.getAllParties();
+        const party = createdParties.find(f => f.id === id);
+        expect(party).toBeDefined();
+        if (!party) return;
+        const newName = "Test Party Update";
+        party.party.name = newName;
+        await partyRepository.updateParty(party);
+        const updatedParties = await partyRepository.getAllParties();
+        const updatedParty = updatedParties.find(f => f.id === id);
+        expect(updatedParty).toBeDefined();
+        expect(updatedParty?.party.name).toEqual(newName);
+    });
+
+    it('should delete a party', async () => {
+        const testParty = getTestParty();
+        const id = await partyRepository.createParty(testParty, true, undefined);
+
+        await partyRepository.deleteParty(id);
+        const createdParties = await partyRepository.getAllParties();
+        const deletedParty = createdParties.find(f => f.id === id);
+        expect(deletedParty).toBeUndefined();
+    });
 });
