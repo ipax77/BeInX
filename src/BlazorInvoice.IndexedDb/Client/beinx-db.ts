@@ -1,4 +1,4 @@
-import { AppConfigDto, IPaymentMeansBaseDto } from "./dtos.js";
+import { AppConfigDto } from "./dtos.js";
 import { InvoiceRepository } from "./invoice-repository.js";
 import * as pako from "./pako/index.js";
 import { PartyRepository } from "./party-repository.js";
