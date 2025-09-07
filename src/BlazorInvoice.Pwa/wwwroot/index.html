@@ -14,8 +14,6 @@
     <link rel="icon" type="image/png" href="favicon.png" />
     <link href="BlazorInvoice.Pwa.styles.css" rel="stylesheet" />
     <link href="manifest.webmanifest" rel="manifest" />
-
-    <!-- Apple devices don't support SVG for touch icons, so you still need PNGs -->
     <link rel="apple-touch-icon" sizes="512x512" href="favicon.png" />
     <link rel="apple-touch-icon" sizes="192x192" href="favicon.png" />
     <script type="importmap"></script>
@@ -39,6 +37,7 @@
     <script>navigator.serviceWorker.register('service-worker.js', { updateViaCache: 'none' });</script>
     <script src="_content/BlazorInvoice.Weblib/js/bootstrap.bundle.min.js"></script>
     <script src="_content/BlazorInvoice.Weblib/js/blazorinvoice.js"></script>
+    <script type="module" src="_content/BlazorInvoice.IndexedDb/js/beinx-db.js"></script>
 </body>
 
 </html>

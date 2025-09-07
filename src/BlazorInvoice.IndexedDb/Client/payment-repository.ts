@@ -1,4 +1,4 @@
-import { openDB, STORES } from "./beinx-db.js";
+import { openDB, STORES } from "./db-core.js";
 import { IPaymentMeansBaseDto, PaymentMeansEntity } from "./dtos.js";
 
 export class PaymentRepository {

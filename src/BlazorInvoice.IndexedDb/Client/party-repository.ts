@@ -1,5 +1,5 @@
-import { openDB, STORES } from "./beinx-db";
-import { IPartyBaseDto, DocumentReferenceAnnotationDto, PartyEntity } from "./dtos";
+import { openDB, STORES } from "./db-core.js";
+import { IPartyBaseDto, DocumentReferenceAnnotationDto, PartyEntity } from "./dtos.js";
 
 
 export class PartyRepository {

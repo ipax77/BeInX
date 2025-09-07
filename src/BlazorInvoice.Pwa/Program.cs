@@ -23,10 +23,11 @@ builder.Services.AddChartJs(options =>
     options.ChartJsPluginDatalabelsLocation = "/_content/BlazorInvoice.Weblib/js/chartjs-plugin-datalabels.js";
 });
 
-builder.Services.AddSingleton<IInvoiceRepository, InvoiceRepository>();
+builder.Services.AddSingleton<IIndexedDbService, IndexedDbService>();
+builder.Services.AddScoped<IInvoiceRepository, InvoiceRepository>();
 
 builder.Services.AddSingleton<IConfigService, ConfigService>();
-builder.Services.AddSingleton<IBackupService, BackupService>();
+builder.Services.AddScoped<IBackupService, BackupService>();
 builder.Services.AddSingleton<IUpdateService, FakeUpdateService>();
 builder.Services.AddScoped<IStatsRepository, StatsService>();
 builder.Services.AddScoped<IMauiPathService, FakeMauiPathService>();

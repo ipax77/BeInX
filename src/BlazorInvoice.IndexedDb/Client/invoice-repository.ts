@@ -1,5 +1,5 @@
-import { openDB, STORES } from "./beinx-db";
-import { InvoiceDtoInfo, FinalizeResult, InvoiceEntity } from "./dtos";
+import { openDB, STORES } from "./db-core.js";
+import { InvoiceDtoInfo, FinalizeResult, InvoiceEntity } from "./dtos.js";
 
 
 export class InvoiceRepository {

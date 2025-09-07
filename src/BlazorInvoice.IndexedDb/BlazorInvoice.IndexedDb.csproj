@@ -1,9 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+	<StaticWebAssetFingerprintingEnabled>false</StaticWebAssetFingerprintingEnabled>
+	<StaticWebAssetsFingerprintContent>false</StaticWebAssetsFingerprintContent>
   </PropertyGroup>
 
 
@@ -12,7 +14,7 @@
   </ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="9.0.8" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="10.0.0-preview.7.*" />
 		<PackageReference Include="Microsoft.TypeScript.MSBuild" Version="5.9.2">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -21,6 +23,12 @@
 
 	<ItemGroup>
 		<Content Remove="wwwroot\{path-to-typescript-outputs}" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Content Update="wwwroot\js\**\*.js">
+			<StaticWebAssetFingerprint>false</StaticWebAssetFingerprint>
+		</Content>
 	</ItemGroup>
 
 	<ItemGroup>

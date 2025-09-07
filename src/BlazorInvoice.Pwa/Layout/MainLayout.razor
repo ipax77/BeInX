@@ -1,8 +1,18 @@
 ﻿@using BlazorInvoice.Weblib
 @inherits LayoutComponentBase
 
-<NavMenu />
-<div class="container-fluid">
-    @Body
+<div class="page">
+    <NavMenu />
+    <main>
+        <div class="container-fluid">
+            @Body
+        </div>
+    </main>
+    <pax.BBToast.ToastContainer />
 </div>
-<pax.BBToast.ToastContainer />
+
+<div id="blazor-error-ui" data-nosnippet>
+    An unhandled error has occurred.
+    <a href="." class="reload">Reload</a>
+    <span class="dismiss">🗙</span>
+</div>
