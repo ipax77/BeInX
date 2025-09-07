@@ -8,12 +8,8 @@ using System.Text;
 using System.Xml.Serialization;
 using pax.XRechnung.NET;
 using pax.XRechnung.NET.BaseDtos;
-using System.Threading.Tasks;
-using System.Threading;
-using System;
 using BlazorInvoice.Shared.ZUGFeRD;
 using System.IO.Compression;
-using System.IO;
 
 namespace BlazorInvoice.IndexedDb.Services
 {
@@ -146,7 +142,7 @@ namespace BlazorInvoice.IndexedDb.Services
             }
         }
 
-        private string GetXmlText(XmlInvoice xmlInvoice, BlazorInvoiceDto invoiceDto, ExportType exportType)
+        private static string GetXmlText(XmlInvoice xmlInvoice, BlazorInvoiceDto invoiceDto, ExportType exportType)
         {
             return exportType switch
             {
