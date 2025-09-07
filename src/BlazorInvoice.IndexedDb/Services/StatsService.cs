@@ -1,29 +1,24 @@
-﻿using BlazorInvoice.Shared;
+
+using BlazorInvoice.Shared;
 using BlazorInvoice.Shared.Interfaces;
-using Microsoft.EntityFrameworkCore;
-using pax.XRechnung.NET.XmlModels;
-using System.Text;
-using System.Xml.Serialization;
 
-namespace BlazorInvoice.Db.Repository;
+namespace BlazorInvoice.IndexedDb.Services;
 
-public class StatsRepository(InvoiceContext context, IConfigService configService) : IStatsRepository
+public class StatsService(IIndexedDbService indexedDbService, IConfigService configService) : IStatsRepository
 {
     public async Task<StatsResponse> GetStats(int year)
     {
+        var invoices = await indexedDbService.GetAllInvoices();
+        var invoiceBlobs = invoices
+            .Select(s => new InvoiceStatsRecord(s.Info.InvoiceDto.IssueDate,
+                 (decimal)(s.Info.InvoiceDto.PayableAmount - s.Info.InvoiceDto.GlobalTax), s.IsPaid))
+            .ToList();
         var config = await configService.GetConfig();
-        DateTime start = new DateTime(year, 1, 1);
-        DateTime end = new DateTime(year + 1, 1, 1);
-        var invoiceBlobs = await context.Invoices
-
-            .OrderBy(o => o.IssueDate)
-            .Select(s => new InvoiceStatsRecord(s.IssueDate, s.TotalAmountWithoutVat, s.IsPaid))
-            .ToListAsync();
+        DateTime start = new(year, 1, 1);
+        DateTime end = new(year + 1, 1, 1);
 
         var monthStep = config.StatsIsMonthNotQuater ? 1 : 3;
         var monthEndDay = config.StatsMonthEndDay == 0 ? 1 : config.StatsMonthEndDay;
-
-        var serializer = new XmlSerializer(typeof(XmlInvoice));
         var steps = GetSteps(invoiceBlobs
                 .Where(x => x.IsPaid && x.IssueDate >= start && x.IssueDate < end)
             , year, monthStep, monthEndDay);
@@ -89,29 +84,6 @@ public class StatsRepository(InvoiceContext context, IConfigService configServic
     {
         var daysInMonth = DateTime.DaysInMonth(year, month);
         return new DateOnly(year, month, Math.Min(day, daysInMonth));
-    }
-
-    private static XmlInvoice? GetXmlInvoice(byte[]? blob, XmlSerializer serializer)
-    {
-        if (blob == null)
-        {
-            return null;
-        }
-        try
-        {
-            using var stream = new MemoryStream(blob);
-            using var reader = new StreamReader(stream, Encoding.UTF8);
-            return (XmlInvoice?)serializer.Deserialize(stream);
-        }
-        catch
-        {
-            return null;
-        }
-    }
-
-    private static decimal GetTotalAmountWithoutVat(XmlInvoice xmlInvoice)
-    {
-        return xmlInvoice.LegalMonetaryTotal.TaxExclusiveAmount.Value;
     }
 }
 
