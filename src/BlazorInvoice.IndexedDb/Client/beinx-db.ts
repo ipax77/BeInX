@@ -1,7 +1,8 @@
-import { AppConfigDto, InvoiceListRequest, IPaymentMeansBaseDto, PaymentListDto } from "./dtos.js";
-import { InvoiceRepository } from "./invoice.repository.js";
+import { AppConfigDto, IPaymentMeansBaseDto } from "./dtos.js";
+import { InvoiceRepository } from "./invoice-repository.js";
 import * as pako from "./pako/index.js";
 import { PartyRepository } from "./party-repository.js";
+import { PaymentRepository } from "./payment-repository.js";
 
 const DB_NAME = "BeInXDB";
 const DB_VERSION = 1;
@@ -34,15 +35,6 @@ export function openDB(): Promise<IDBDatabase> {
                     keyPath: "id", 
                     autoIncrement: true 
                 });
-                
-                // Create indexes for common queries
-                invoiceStore.createIndex("invoiceId", "invoiceId", { unique: true });
-                invoiceStore.createIndex("sellerPartyId", "sellerPartyId");
-                invoiceStore.createIndex("buyerPartyId", "buyerPartyId");
-                invoiceStore.createIndex("paymentMeansId", "paymentMeansId");
-                invoiceStore.createIndex("isPaid", "isPaid");
-                invoiceStore.createIndex("isDeleted", "isDeleted");
-                invoiceStore.createIndex("issueDate", "issueDate");
             }
 
             if (!database.objectStoreNames.contains(STORES.parties)) {
@@ -226,128 +218,7 @@ export function ungzipString(base64: string): string {
     return text;
 }
 
-/// Payments 
-
-async function getPaymentListQueryable(request: InvoiceListRequest): Promise<PaymentListDto[]> {
-    const db = await openDB();
-    const transaction = db.transaction(STORES.payments, 'readonly');
-    const store = transaction.objectStore(STORES.payments);
-    const allPayments = await new Promise<any[]>((resolve, reject) => {
-        const req = store.getAll();
-        req.onsuccess = () => resolve(req.result);
-        req.onerror = () => reject(req.error);
-    });
-
-    let query = allPayments
-        .filter(p => !p.isDeleted)
-        .map(s => ({
-            playmentMeansId: s.id,
-            iban: s.iban,
-            name: s.name,
-        } as PaymentListDto));
-
-    if (request.filter) {
-        const filter = request.filter.toLowerCase();
-        query = query.filter(i =>
-            i.name.toLowerCase().includes(filter) ||
-            i.iban.toLowerCase().includes(filter)
-        );
-    }
-
-    return query;
-}
-
-export async function getPaymentsCount(request: InvoiceListRequest): Promise<number> {
-    const query = await getPaymentListQueryable(request);
-    return query.length;
-}
-
-export async function getPayments(request: InvoiceListRequest): Promise<PaymentListDto[]> {
-    let query = await getPaymentListQueryable(request);
-
-    if (request.tableOrders && request.tableOrders.length > 0) {
-        const order = request.tableOrders[0];
-        const key = order.propertyName.toLowerCase() as keyof PaymentListDto;
-        query.sort((a, b) => {
-            if (a[key] < b[key]) return order.ascending ? -1 : 1;
-            if (a[key] > b[key]) return order.ascending ? 1 : -1;
-            return 0;
-        });
-    } else {
-        query.sort((a, b) => a.name.localeCompare(b.name));
-    }
-
-    return query.slice(request.skip, request.skip + request.take);
-}
-
-export async function getPaymentMeans(paymentMeansId: number): Promise<IPaymentMeansBaseDto> {
-    const db = await openDB();
-    const transaction = db.transaction(STORES.payments, 'readonly');
-    const store = transaction.objectStore(STORES.payments);
-    return new Promise((resolve, reject) => {
-        const req = store.get(paymentMeansId);
-        req.onsuccess = () => resolve(req.result);
-        req.onerror = () => reject(req.error);
-    });
-}
-
-export async function createPaymentMeans(paymentMeans: IPaymentMeansBaseDto): Promise<number> {
-    const db = await openDB();
-    const transaction = db.transaction(STORES.payments, 'readwrite');
-    const store = transaction.objectStore(STORES.payments);
-    return new Promise((resolve, reject) => {
-        const req = store.add(paymentMeans);
-        req.onsuccess = () => resolve(req.result as number);
-        req.onerror = () => reject(req.error);
-    });
-}
-
-export async function updatePaymentMeans(paymentMeansId: number, paymentMeans: IPaymentMeansBaseDto): Promise<void> {
-    const db = await openDB();
-    const transaction = db.transaction(STORES.payments, 'readwrite');
-    const store = transaction.objectStore(STORES.payments);
-    return new Promise((resolve, reject) => {
-        const req = store.put({ ...paymentMeans, id: paymentMeansId });
-        req.onsuccess = () => resolve();
-        req.onerror = () => reject(req.error);
-    });
-}
-
-export async function deletePaymentMeans(paymentMeansId: number): Promise<void> {
-    const db = await openDB();
-
-    const invoicesTransaction = db.transaction(STORES.invoices, 'readonly');
-    const invoicesStore = invoicesTransaction.objectStore(STORES.invoices);
-    const allInvoices = await new Promise<any[]>((resolve, reject) => {
-        const req = invoicesStore.getAll();
-        req.onsuccess = () => resolve(req.result);
-        req.onerror = () => reject(req.error);
-    });
-
-    const isReferenced = allInvoices.some(invoice => invoice.paymentMeansId === paymentMeansId);
-
-    const paymentsTransaction = db.transaction(STORES.payments, 'readwrite');
-    const paymentsStore = paymentsTransaction.objectStore(STORES.payments);
-
-    if (isReferenced) {
-        const req = paymentsStore.get(paymentMeansId);
-        req.onsuccess = () => {
-            const payment = req.result;
-            if (payment) {
-                payment.isDeleted = true;
-                paymentsStore.put(payment);
-            }
-        };
-    } else {
-        paymentsStore.delete(paymentMeansId);
-    }
-
-    return new Promise((resolve, reject) => {
-        paymentsTransaction.oncomplete = () => resolve();
-        paymentsTransaction.onerror = () => reject(paymentsTransaction.error);
-    });
-}
-
 // Export a singleton instance
+export const paymentRepository = new PaymentRepository();
 export const partyRepository = new PartyRepository();
 export const invoiceRepository = new InvoiceRepository();

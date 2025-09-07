@@ -15,24 +15,6 @@ export interface AppConfigDto {
     statsIsMonthNotQuater: string;
 }
 
-export interface TableOrder {
-    propertyName: string;
-    ascending: boolean;
-}
-
-export interface InvoiceListRequest {
-    filter: string;
-    skip: number;
-    take: number;
-    tableOrders: TableOrder[];
-}
-
-export interface PaymentListDto {
-    playmentMeansId: number;
-    name: string;
-    iban: string;
-}
-
 export interface IPaymentMeansBaseDto {
     name: string;
     iban: string;
@@ -40,10 +22,10 @@ export interface IPaymentMeansBaseDto {
     paymentMeansTypeCode: string;
 }
 
-export interface PartyListDto {
-    readonly partyId: number;
-    readonly name: string;
-    readonly email: string;
+export interface PaymentMeansEntity {
+    id?: number;
+    payment: IPaymentMeansBaseDto;
+    isDeleted: boolean;
 }
 
 export interface DocumentReferenceAnnotationDto {
@@ -70,86 +52,12 @@ export interface IPartyBaseDto {
     buyerReference: string;
 }
 
-export interface SellerAnnotationDto extends IPartyBaseDto {}
-
-export interface BuyerAnnotationDto extends IPartyBaseDto {}
-
-// Internal party storage interface
 export interface PartyEntity {
-    id?: number; // Auto-increment key
-    website?: string;
-    logoReferenceId?: string;
-    name: string;
-    streetName?: string;
-    city: string;
-    postCode: string;
-    countryCode: string;
-    telefone: string;
-    email: string;
-    registrationName: string;
-    taxId: string;
-    companyId?: string;
-    buyerReference: string;
+    id?: number;
+    party: IPartyBaseDto;
     isSeller: boolean;
     isDeleted: boolean;
-    logo?: string; // Base64 encoded image data
-}
-
-// TypeScript interfaces for Invoice operations
-export interface InvoiceEntity {
-    id?: number; // Auto-increment primary key (maps to SQL InvoiceId)
-    
-    // Core invoice data
-    globalTaxCategory: string;
-    globalTaxScheme: string;
-    globalTax: number;
-    invoiceId: string; // Business ID (maps to SQL Id field)
-    issueDate: string; // ISO date string
-    dueDate?: string;
-    note?: string;
-    invoiceTypeCode: string;
-    documentCurrencyCode: string;
-    paymentTermsNote: string;
-    payableAmount: number;
-    
-    // Foreign key references
-    sellerPartyId: number;
-    buyerPartyId: number;
-    paymentMeansId: number;
-    
-    // Embedded related data
-    invoiceLines: InvoiceLineEntity[];
-    additionalDocumentReferences: DocumentReferenceEntity[];
-    
-    // XML finalization data
-    xmlInvoiceCreated?: string; // ISO date string
-    xmlInvoiceSha1Hash?: string;
-    xmlInvoiceBlob?: ArrayBuffer; // Binary XML data
-    totalAmountWithoutVat?: number;
-    
-    // Status flags
-    isPaid: boolean;
-    isDeleted: boolean; // For soft delete
-}
-
-export interface InvoiceLineEntity {
-    id: string; // Business ID
-    note?: string;
-    quantity: number;
-    quantityCode: string;
-    unitPrice: number;
-    startDate?: string; // ISO date string
-    endDate?: string; // ISO date string
-    description?: string;
-    name: string;
-}
-
-export interface DocumentReferenceEntity {
-    id: string;
-    documentDescription: string;
-    mimeCode: string;
-    fileName: string;
-    content: string; // Base64 encoded
+    logo?: DocumentReferenceAnnotationDto;
 }
 
 // Result interface matching C# InvoiceDtoInfo
@@ -165,4 +73,14 @@ export interface FinalizeResult {
     xmlInvoiceCreated: string; // ISO date string
     xmlInvoiceSha1Hash: string;
     xmlInvoiceBlob: ArrayBuffer;
+}
+
+export interface InvoiceEntity {
+    id: number;
+    info: InvoiceDtoInfo;
+    year: number;
+    isPaid: boolean;
+    isImported: boolean;
+    isDeleted: boolean;
+    finalizeResult?: FinalizeResult;
 }

@@ -786,9 +786,14 @@ public partial class InvoiceRepository : IInvoiceRepository
         throw new NotImplementedException();
     }
 
-    public Task<int> SeedTestInvoice()
+    public async Task<int> SeedTestInvoice()
     {
-        throw new NotImplementedException();
+        var invoice = GetInvoiceAnnDto();
+        var sellerId = await CreateParty(invoice.SellerParty, true);
+        var buyerId = await CreateParty(invoice.BuyerParty, false);
+        var paymentId = await CreatePaymentMeans(invoice.PaymentMeans);
+
+        return await CreateInvoice(invoice, sellerId, buyerId, paymentId);
     }
 
     public Task<DocumentReferenceAnnotationDto?> AddReplaceOrDeleteSellerLogo(int invoiceId, CancellationToken token)
@@ -852,4 +857,63 @@ public partial class InvoiceRepository : IInvoiceRepository
         throw new NotImplementedException();
     }
 
+    public static BlazorInvoiceDto GetInvoiceAnnDto()
+    {
+        return new()
+        {
+            GlobalTaxCategory = "S",
+            GlobalTaxScheme = "VAT",
+            GlobalTax = 19.0,
+            Id = "1",
+            IssueDate = DateTime.UtcNow,
+            InvoiceTypeCode = "380",
+            DocumentCurrencyCode = "EUR",
+            Note = "Test Note",
+            SellerParty = new()
+            {
+                Name = "Seller Name",
+                StreetName = "Test Street",
+                City = "Test City",
+                PostCode = "123456",
+                CountryCode = "DE",
+                Telefone = "1234/54321",
+                Email = "seller@example.com",
+                RegistrationName = "Seller Name",
+                TaxId = "DE12345678"
+            },
+            BuyerParty = new()
+            {
+                Name = "Buyer Name",
+                StreetName = "Test Street",
+                City = "Test City",
+                PostCode = "123456",
+                CountryCode = "DE",
+                Telefone = "1234/54321",
+                Email = "buyer@example.com",
+                RegistrationName = "Buyer Name",
+                BuyerReference = "04011000-12345-34",
+            },
+            PaymentMeans = new()
+            {
+                Iban = "DE12 1234 1234 1234 1234 12",
+                Bic = "BICABCDE",
+                Name = "Bank Name",
+                PaymentMeansTypeCode = "30",
+            },
+            PaymentTermsNote = "Zahlbar innerhalb von 14 Tagen nach Erhalt der Rechnung.",
+            PayableAmount = 119.0,
+            InvoiceLines = [
+                new()
+                {
+                    Id = "1",
+                    StartDate = new(DateTime.Today.Year, DateTime.Today.Month, DateTime.Today.Day, 8, 0, 0),
+                    EndDate = new(DateTime.Today.Year, DateTime.Today.Month, DateTime.Today.Day, 9, 0, 0),
+                    Quantity = 1.0,
+                    QuantityCode = "HUR",
+                    UnitPrice = 100.0,
+                    Name = "Test Job"
+                }
+            ]
+        };
+    }
 }
