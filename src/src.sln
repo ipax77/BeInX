@@ -23,6 +23,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorInvoice.IndexedDb", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorInvoice.Pwa", "BlazorInvoice.Pwa\BlazorInvoice.Pwa.csproj", "{BCB2F2CA-D3C1-4E24-A004-8B21368016A3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorInvoice.Pwa.Tests", "BlazorInvoice.Pwa.Tests\BlazorInvoice.Pwa.Tests.csproj", "{009A8BCA-7094-4A92-85F4-663C6B02DE37}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -153,6 +155,18 @@ Global
 		{BCB2F2CA-D3C1-4E24-A004-8B21368016A3}.Release|x64.Build.0 = Release|Any CPU
 		{BCB2F2CA-D3C1-4E24-A004-8B21368016A3}.Release|x86.ActiveCfg = Release|Any CPU
 		{BCB2F2CA-D3C1-4E24-A004-8B21368016A3}.Release|x86.Build.0 = Release|Any CPU
+		{009A8BCA-7094-4A92-85F4-663C6B02DE37}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{009A8BCA-7094-4A92-85F4-663C6B02DE37}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{009A8BCA-7094-4A92-85F4-663C6B02DE37}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{009A8BCA-7094-4A92-85F4-663C6B02DE37}.Debug|x64.Build.0 = Debug|Any CPU
+		{009A8BCA-7094-4A92-85F4-663C6B02DE37}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{009A8BCA-7094-4A92-85F4-663C6B02DE37}.Debug|x86.Build.0 = Debug|Any CPU
+		{009A8BCA-7094-4A92-85F4-663C6B02DE37}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{009A8BCA-7094-4A92-85F4-663C6B02DE37}.Release|Any CPU.Build.0 = Release|Any CPU
+		{009A8BCA-7094-4A92-85F4-663C6B02DE37}.Release|x64.ActiveCfg = Release|Any CPU
+		{009A8BCA-7094-4A92-85F4-663C6B02DE37}.Release|x64.Build.0 = Release|Any CPU
+		{009A8BCA-7094-4A92-85F4-663C6B02DE37}.Release|x86.ActiveCfg = Release|Any CPU
+		{009A8BCA-7094-4A92-85F4-663C6B02DE37}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
