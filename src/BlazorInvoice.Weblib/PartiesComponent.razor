@@ -24,6 +24,19 @@
                         <i class="bi bi-x-lg text-danger pointer" @onclick="Reset"></i>
                     </div>
                 </div>
+                <div class="col-2 align-self-center">
+                    <button class="btn btn-sm btn-outline-light mt-2" @onclick="NewParty">
+                        +
+                        @if (IsSeller)
+                        {
+                            @Loc["Add New Seller"]
+                        }
+                        else
+                        {
+                            @Loc["Add New Buyer"]
+                        }
+                    </button>
+                </div>
             </div>
         </EditForm>
     </div>
@@ -194,6 +207,13 @@
         isLoading = false;
         partyEditContext = null;
         _ = Reload();
+    }
+
+    private void NewParty()
+    {
+        partyId = 0;
+        party = IsSeller ? new SellerAnnotationDto() : new BuyerAnnotationDto();
+        partyEditContext = IsSeller ? new EditContext((SellerAnnotationDto)party) : new EditContext((BuyerAnnotationDto)party);
     }
 
     private void FieldChanged(object? sender, FieldChangedEventArgs e)

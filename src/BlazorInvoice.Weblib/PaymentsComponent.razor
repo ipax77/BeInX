@@ -24,6 +24,11 @@
                         <i class="bi bi-x-lg text-danger pointer" @onclick="Reset"></i>
                     </div>
                 </div>
+                <div class="col-2 align-self-center">
+                    <button class="btn btn-sm btn-outline-light mt-2" @onclick="NewPayment">
+                        + @Loc["Add New Payment Means"]
+                    </button>
+                </div>
             </div>
         </EditForm>
     </div>
@@ -85,7 +90,6 @@
                         </Placeholder>
                     </Virtualize>
                 }
-
             </tbody>
         </table>
     </div>
@@ -159,18 +163,29 @@
 
     private async Task PaymentChanged(IPaymentMeansBaseDto arg)
     {
-        if (paymentId == 0)
-        {
-            return;
-        }
         isLoading = true;
         await InvokeAsync(StateHasChanged);
-        await InvoiceRepository.UpdatePaymentMeans(paymentId, arg);
+        if (paymentId == 0)
+        {
+            paymentId = await InvoiceRepository.CreatePaymentMeans(arg);
+            await Reload();
+        }
+        else
+        {
+            await InvoiceRepository.UpdatePaymentMeans(paymentId, arg);
+        }
         payment = null;
         paymentId = 0;
         isLoading = false;
         paymentEditContext = null;
         await InvokeAsync(StateHasChanged);
+    }
+
+    private void NewPayment()
+    {
+        paymentId = 0;
+        payment = new PaymentAnnotationDto();
+        paymentEditContext = new EditContext((PaymentAnnotationDto)payment);
     }
 
     private void FieldChanged(object? sender, FieldChangedEventArgs e)

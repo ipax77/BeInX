@@ -187,6 +187,7 @@ namespace BlazorInvoice.IndexedDb.Services
             if (entity == null) return new();
             return new PartyListDto
             {
+                PartyId = entity.Id,
                 Name = entity.Party.Name,
                 Email = entity.Party.Email
             };

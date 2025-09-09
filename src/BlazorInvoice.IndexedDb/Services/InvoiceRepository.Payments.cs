@@ -88,6 +88,7 @@ namespace BlazorInvoice.IndexedDb.Services
             if (entity == null) return new();
             return new PaymentListDto
             {
+                PlaymentMeansId = entity.Id,
                 Name = entity.Payment.Name,
                 Iban = entity.Payment.Iban
             };
