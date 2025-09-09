@@ -37,6 +37,12 @@
     <script>navigator.serviceWorker.register('service-worker.js', { updateViaCache: 'none' });</script>
     <script src="_content/BlazorInvoice.Weblib/js/bootstrap.bundle.min.js"></script>
     <script src="_content/BlazorInvoice.Weblib/js/blazorinvoice.js"></script>
+    <script>
+        window.blazorCulture = {
+            get: () => window.localStorage['BlazorCulture'],
+            set: (value) => window.localStorage['BlazorCulture'] = value
+        };
+    </script>
 </body>
 
 </html>

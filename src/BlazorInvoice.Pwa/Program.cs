@@ -5,8 +5,10 @@ using BlazorInvoice.Pwa.Services;
 using BlazorInvoice.Shared.Interfaces;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using Microsoft.JSInterop;
 using pax.BBToast;
 using pax.BlazorChartJs;
+using System.Globalization;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -33,6 +35,20 @@ builder.Services.AddScoped<IStatsRepository, StatsService>();
 builder.Services.AddScoped<IMauiPathService, FakeMauiPathService>();
 builder.Services.AddScoped<IMauiPopupService, FakeMauiPopupService>();
 
-await builder.Build().RunAsync();
-//var app = builder.Build();
-//await app.RunAsync();
+var host = builder.Build();
+
+const string defaultCulture = "en-US";
+
+var js = host.Services.GetRequiredService<IJSRuntime>();
+var result = await js.InvokeAsync<string>("blazorCulture.get");
+var culture = CultureInfo.GetCultureInfo(result ?? defaultCulture);
+
+if (result == null)
+{
+    await js.InvokeVoidAsync("blazorCulture.set", defaultCulture);
+}
+
+CultureInfo.DefaultThreadCurrentCulture = culture;
+CultureInfo.DefaultThreadCurrentUICulture = culture;
+
+await host.RunAsync();
