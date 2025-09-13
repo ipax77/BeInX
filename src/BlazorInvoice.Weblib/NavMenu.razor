@@ -8,6 +8,7 @@
 @inject IToastService ToastService
 @inject IMauiPopupService PopupService
 @inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
 
 <nav class="navbar navbar-expand-lg bg-body-tertiary">
     <div class="container-fluid">
@@ -122,13 +123,22 @@
     private async Task SetCulture(string name)
     {
         var cultureInfo = new CultureInfo(name);
-        await JSRuntime.InvokeVoidAsync("blazorCulture.set", name);
-        CultureInfo.CurrentCulture = cultureInfo;
-        CultureInfo.DefaultThreadCurrentCulture = cultureInfo;
-        CultureInfo.DefaultThreadCurrentUICulture = cultureInfo;
+        if (CultureInfo.CurrentCulture != cultureInfo)
+        {
+            await JSRuntime.InvokeVoidAsync("blazorCulture.set", cultureInfo.Name);
+            CultureInfo.CurrentCulture = cultureInfo;
+            CultureInfo.CurrentUICulture = cultureInfo;
+            CultureInfo.DefaultThreadCurrentCulture = cultureInfo;
+            CultureInfo.DefaultThreadCurrentUICulture = cultureInfo;
 
-        appConfig.CultureName = cultureInfo.TwoLetterISOLanguageName;
-        await ConfigService.UpdateConfig(appConfig);
+            appConfig.CultureName = cultureInfo.TwoLetterISOLanguageName;
+            await ConfigService.UpdateConfig(appConfig);
+            var currentUri = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
+            if (string.IsNullOrEmpty(currentUri))
+            {
+                NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
+            }
+        }
     }
 
     private async Task CheckForUpdates(bool init = false)
