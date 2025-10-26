@@ -1,5 +1,5 @@
-import { openDB, STORES } from "./db-core.js";
-import { InvoiceDtoInfo, FinalizeResult, InvoiceEntity } from "./dtos.js";
+import { openDB, STORES } from "./db-core";
+import { InvoiceDtoInfo, FinalizeResult, InvoiceEntity } from "./dtos";
 
 
 export class InvoiceRepository {

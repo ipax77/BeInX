@@ -15,24 +15,16 @@
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="10.0.0-*" />
-		<PackageReference Include="Microsoft.TypeScript.MSBuild" Version="5.9.2">
-			<PrivateAssets>all</PrivateAssets>
-			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		</PackageReference>
+		
 	</ItemGroup>
 
-	<ItemGroup>
-		<Content Remove="wwwroot\{path-to-typescript-outputs}" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<Content Update="wwwroot\js\**\*.js">
-			<StaticWebAssetFingerprint>false</StaticWebAssetFingerprint>
-		</Content>
-	</ItemGroup>
+	
 
 	<ItemGroup>
 	  <ProjectReference Include="..\BlazorInvoice.Shared\BlazorInvoice.Shared.csproj" />
 	</ItemGroup>
 
+	<Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+		<Exec Command="npm run build" />
+	</Target>
 </Project>

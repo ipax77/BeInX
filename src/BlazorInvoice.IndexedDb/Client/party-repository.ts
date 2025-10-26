@@ -1,5 +1,5 @@
-import { openDB, STORES } from "./db-core.js";
-import { IPartyBaseDto, DocumentReferenceAnnotationDto, PartyEntity } from "./dtos.js";
+import { openDB, STORES } from "./db-core";
+import { IPartyBaseDto, DocumentReferenceAnnotationDto, PartyEntity } from "./dtos";
 
 
 export class PartyRepository {

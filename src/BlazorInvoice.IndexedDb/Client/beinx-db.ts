@@ -1,10 +1,9 @@
-
-import { openDB, STORES } from "./db-core.js";
-import { AppConfigDto, TempInvoiceEntity } from "./dtos.js";
-import { InvoiceRepository } from "./invoice-repository.js";
-import * as pako from "./pako/index.js";
-import { PartyRepository } from "./party-repository.js";
-import { PaymentRepository } from "./payment-repository.js";
+import { openDB, STORES } from "./db-core";
+import { AppConfigDto, TempInvoiceEntity } from "./dtos";
+import { InvoiceRepository } from "./invoice-repository";
+import * as pako from "pako";
+import { PartyRepository } from "./party-repository";
+import { PaymentRepository } from "./payment-repository";
 
 export async function getConfig(): Promise<AppConfigDto | undefined> {
     const database = await openDB();

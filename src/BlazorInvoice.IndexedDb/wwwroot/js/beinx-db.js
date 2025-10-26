@@ -1,6 +1,5 @@
 import { openDB, STORES } from "./db-core.js";
 import { InvoiceRepository } from "./invoice-repository.js";
-import * as pako from "./pako/index.js";
 import { PartyRepository } from "./party-repository.js";
 import { PaymentRepository } from "./payment-repository.js";
 export async function getConfig() {
@@ -89,7 +88,7 @@ export async function uploadBackup(replace = false) {
 }
 export async function importDb(base64, replace = false) {
     const database = await openDB();
-    const json = ungzipString(base64);
+    const json = await ungzipString(base64);
     const dump = JSON.parse(json);
     return new Promise((resolve, reject) => {
         const tx = database.transaction(Array.from(database.objectStoreNames), "readwrite");
@@ -113,11 +112,13 @@ export async function importDb(base64, replace = false) {
         }
     });
 }
-export function gzipString(content) {
+export async function gzipString(content) {
+    const pako = await import("https://cdn.jsdelivr.net/npm/pako@2.1.0/+esm");
     const binary = pako.gzip(content);
     return btoa(String.fromCharCode(...binary));
 }
-export function ungzipString(base64) {
+export async function ungzipString(base64) {
+    const pako = await import("https://cdn.jsdelivr.net/npm/pako@2.1.0/+esm");
     const binary = Uint8Array.from(atob(base64), c => c.charCodeAt(0));
     const text = pako.ungzip(binary, { to: "string" });
     return text;

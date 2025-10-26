@@ -1,5 +1,5 @@
-import { openDB, STORES } from "./db-core.js";
-import { IPaymentMeansBaseDto, PaymentMeansEntity } from "./dtos.js";
+import { openDB, STORES } from "./db-core";
+import { IPaymentMeansBaseDto, PaymentMeansEntity } from "./dtos";
 
 export class PaymentRepository {
 
