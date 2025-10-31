@@ -1,4 +1,5 @@
 @using System.Globalization
+@using BlazorInvoice.Localization
 @using BlazorInvoice.Shared
 @using BlazorInvoice.Shared.Interfaces
 @using Microsoft.JSInterop
@@ -131,6 +132,8 @@
             CultureInfo.DefaultThreadCurrentCulture = cultureInfo;
             CultureInfo.DefaultThreadCurrentUICulture = cultureInfo;
 
+            await CultureLoader.LoadSatelliteAssembliesAsync();
+
             appConfig.CultureName = cultureInfo.TwoLetterISOLanguageName;
             await ConfigService.UpdateConfig(appConfig);
             var currentUri = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
@@ -143,6 +146,10 @@
 
     private async Task CheckForUpdates(bool init = false)
     {
+        if (OperatingSystem.IsBrowser())
+        {
+            return;
+		}
         if (isCheckingForUpdate)
         {
             ToastService.ShowInfo("Update check is already in progress.", "Update Check");
@@ -189,4 +196,5 @@
         updateProgress = eventArgs.Progress;
         InvokeAsync(StateHasChanged);
     }
+
 }

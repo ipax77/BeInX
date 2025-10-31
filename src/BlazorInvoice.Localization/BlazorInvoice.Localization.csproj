@@ -4,6 +4,7 @@
 		<TargetFramework>net10.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
+		<AssemblyName>BlazorInvoice.Localization</AssemblyName>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -27,5 +28,18 @@
 			<Generator>PublicResXFileCodeGenerator</Generator>
 			<LastGenOutput>InvoiceLoc.Designer.cs</LastGenOutput>
 		</EmbeddedResource>
+
+		<!--<EmbeddedResource Include="InvoiceLoc.de.resx">
+			<DependentUpon>InvoiceLoc.resx</DependentUpon>
+		</EmbeddedResource>
+		<EmbeddedResource Include="InvoiceLoc.en.resx">
+			<DependentUpon>InvoiceLoc.resx</DependentUpon>
+		</EmbeddedResource>
+		<EmbeddedResource Include="InvoiceLoc.es.resx">
+			<DependentUpon>InvoiceLoc.resx</DependentUpon>
+		</EmbeddedResource>
+		<EmbeddedResource Include="InvoiceLoc.fr.resx">
+			<DependentUpon>InvoiceLoc.resx</DependentUpon>
+		</EmbeddedResource>-->
 	</ItemGroup>
 </Project>

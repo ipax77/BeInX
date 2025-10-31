@@ -6,7 +6,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <OverrideHtmlAssetPlaceholders>true</OverrideHtmlAssetPlaceholders>
     <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
+	<InvariantGlobalization>false</InvariantGlobalization>
 	<BlazorWebAssemblyLoadAllGlobalizationData>true</BlazorWebAssemblyLoadAllGlobalizationData>
+	<PublishTrimmed>false</PublishTrimmed>
 	 <WasmFingerprintAssets>false</WasmFingerprintAssets>
   </PropertyGroup>
 
