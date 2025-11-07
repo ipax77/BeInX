@@ -19,8 +19,4 @@
     <ProjectReference Include="..\beinx.shared\beinx.shared.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Services\" />
-  </ItemGroup>
-
 </Project>
