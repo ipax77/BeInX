@@ -1,0 +1,9 @@
+﻿@page "/payments"
+
+@using pax.XRechnung.NET.AnnotatedDtos
+
+<beinx.web.Forms.PaymentForm Payment="payment" />
+
+@code {
+	PaymentAnnotationDto payment = new();
+}

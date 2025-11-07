@@ -1,0 +1,562 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="BT-1" xml:space="preserve">
+    <value>Un identifiant unique de la facture qui l'identifie dans le système du vendeur.</value>
+  </data>
+  <data name="BT-2" xml:space="preserve">
+    <value>La date à laquelle la facture a été émise.</value>
+  </data>
+  <data name="BT-9" xml:space="preserve">
+    <value>La date d'échéance du montant de la facture.</value>
+  </data>
+  <data name="BT-3" xml:space="preserve">
+    <value>Un code indiquant le type fonctionnel de la facture.</value>
+  </data>
+  <data name="BT-5" xml:space="preserve">
+    <value>La devise dans laquelle tous les montants de la facture sont indiqués.</value>
+  </data>
+  <data name="BT-10" xml:space="preserve">
+    <value>Un identifiant attribué par l'acheteur et utilisé à des fins de gestion interne.</value>
+  </data>
+  <data name="BT-20" xml:space="preserve">
+    <value>Une description textuelle des conditions de paiement applicables au montant dû.</value>
+  </data>
+  <data name="BT-27" xml:space="preserve">
+    <value>Le nom complet sous lequel le vendeur est enregistré dans le registre national des entités juridiques ou en tant que personne assujettie à la TVA, ou agit autrement en tant qu'entité commerciale (nom de l'entreprise).</value>
+  </data>
+  <data name="BT-28" xml:space="preserve">
+    <value>Un nom sous lequel le vendeur est connu, s’il est différent de son nom légal.</value>
+  </data>
+  <data name="BT-35" xml:space="preserve">
+    <value>La ligne principale d'une adresse. Cela correspond généralement au nom de la rue et au numéro de maison, ou au texte "Boîte postale" suivi du numéro de boîte postale.</value>
+  </data>
+  <data name="BT-37" xml:space="preserve">
+    <value>Le nom de la ville ou de la commune où se trouve l'adresse du vendeur.</value>
+  </data>
+  <data name="BT-38" xml:space="preserve">
+    <value>Le code postal.</value>
+  </data>
+  <data name="BT-31" xml:space="preserve">
+    <value>Le numéro d’identification TVA du vendeur.</value>
+  </data>
+  <data name="BT-32" xml:space="preserve">
+    <value>Un identifiant fiscal local du vendeur.</value>
+  </data>
+  <data name="BT-40" xml:space="preserve">
+    <value>Un code utilisé pour désigner le pays.</value>
+  </data>
+  <data name="BT-41" xml:space="preserve">
+    <value>Détails d'une personne de contact ou d'un point de contact (comme le nom d'une personne, un département ou une désignation de bureau).</value>
+  </data>
+  <data name="BT-42" xml:space="preserve">
+    <value>Numéro de téléphone de la personne de contact ou du point de contact.</value>
+  </data>
+  <data name="BT-43" xml:space="preserve">
+    <value>Une adresse e-mail de la personne de contact ou du point de contact.</value>
+  </data>
+  <data name="BT-81" xml:space="preserve">
+    <value>Le moyen de paiement prévu ou utilisé, exprimé sous forme de code.</value>
+  </data>
+  <data name="BT-118" xml:space="preserve">
+    <value>Le code de la catégorie de TVA applicable à l'article facturé.</value>
+  </data>
+  <data name="BT-118-global" xml:space="preserve">
+    <value>Désignation codée de la catégorie de TVA, par exemple 'S' pour standard.</value>
+  </data>
+  <data name="BT-119" xml:space="preserve">
+    <value>Le pourcentage de TVA applicable à l'article facturé.</value>
+  </data>
+  <data name="BT-127" xml:space="preserve">
+    <value>Une note textuelle contenant des informations non structurées pertinentes pour la ligne de facture.</value>
+  </data>
+  <data name="BT-128" xml:space="preserve">
+    <value>Un identifiant fourni par le vendeur pour un objet auquel se réfère la ligne de facture.</value>
+  </data>
+  <data name="BT-129" xml:space="preserve">
+    <value>La quantité des articles individuels (biens ou services) facturés dans la ligne correspondante.</value>
+  </data>
+  <data name="BT-131" xml:space="preserve">
+    <value>Le montant total de la ligne de facture. Il s'agit du montant hors TVA, mais incluant tous les remises, charges et autres taxes applicables à la ligne de facture.</value>
+  </data>
+  <data name="BT-133" xml:space="preserve">
+    <value>Une valeur textuelle indiquant où les données pertinentes doivent être enregistrées dans les comptes financiers de l'acheteur.</value>
+  </data>
+  <data name="BT-134" xml:space="preserve">
+    <value>La date de début de la période de facturation pour la ligne de facture concernée.</value>
+  </data>
+  <data name="BT-135" xml:space="preserve">
+    <value>La date à laquelle se termine la période de facturation pour la ligne de facture concernée.</value>
+  </data>
+  <data name="BT-146" xml:space="preserve">
+    <value>Le prix d’un article, hors TVA, après déduction de la remise applicable à cette ligne de facture.</value>
+  </data>
+  <data name="BT-147" xml:space="preserve">
+    <value>Le rabais total soustrait du prix brut de l'article pour calculer le prix net de l'article.</value>
+  </data>
+  <data name="BT-149" xml:space="preserve">
+    <value>Le nombre d'unités pour lesquelles le prix de l'article s'applique.</value>
+  </data>
+  <data name="BT-153" xml:space="preserve">
+    <value>Un nom de l’article.</value>
+  </data>
+  <data name="BT-154" xml:space="preserve">
+    <value>Une description de l'article.</value>
+  </data>
+  <data name="BT-155" xml:space="preserve">
+    <value>Identifiant de l'article fourni par le vendeur. (Optionnel)</value>
+  </data>
+  <data name="BT-156" xml:space="preserve">
+    <value>Identifiant de l'article fourni par l'acheteur. (Optionnel)</value>
+  </data>
+  <data name="BT-157" xml:space="preserve">
+    <value>Identifiant standard de l'article. (Optionnel)</value>
+  </data>
+  <data name="BT-160" xml:space="preserve">
+    <value>Le nom de la propriété de l'article, comme "Couleur."</value>
+  </data>
+  <data name="BT-161" xml:space="preserve">
+    <value>La valeur de la propriété de l'article, comme "rouge."</value>
+  </data>
+  <data name="BG-1" xml:space="preserve">
+    <value>Notes pertinentes pour la facture avec des références à l’objet de celle-ci.</value>
+  </data>
+  <data name="GlobalTaxScheme" xml:space="preserve">
+    <value>Nom du régime fiscal global, la valeur par défaut est 'VAT'.</value>
+  </data>
+  <data name="GlobalTax" xml:space="preserve">
+    <value>Le taux de TVA pour toutes les lignes de facture. 0 % signifie que le régime de la petite entreprise s’applique.</value>
+  </data>
+  <data name="LID" xml:space="preserve">
+    <value>ID généré automatiquement</value>
+  </data>
+  <data name="Dashboard" xml:space="preserve">
+    <value>Tableau de bord</value>
+  </data>
+  <data name="Invoice" xml:space="preserve">
+    <value>Facture</value>
+  </data>
+  <data name="Invoices" xml:space="preserve">
+    <value>Factures</value>
+  </data>
+  <data name="New Invoice" xml:space="preserve">
+    <value>Nouvelle facture</value>
+  </data>
+  <data name="Parties" xml:space="preserve">
+    <value>Parties</value>
+  </data>
+  <data name="Seller" xml:space="preserve">
+    <value>Vendeur</value>
+  </data>
+  <data name="Sellers" xml:space="preserve">
+    <value>Vendeurs</value>
+  </data>
+  <data name="Buyer" xml:space="preserve">
+    <value>Acheteur</value>
+  </data>
+  <data name="Buyers" xml:space="preserve">
+    <value>Acheteurs</value>
+  </data>
+  <data name="Means of Payments" xml:space="preserve">
+    <value>Moyens de paiement</value>
+  </data>
+  <data name="Import" xml:space="preserve">
+    <value>Importer</value>
+  </data>
+  <data name="Settings" xml:space="preserve">
+    <value>Paramètres</value>
+  </data>
+  <data name="Total Invoices" xml:space="preserve">
+    <value>Total des factures</value>
+  </data>
+  <data name="Paid" xml:space="preserve">
+    <value>Payé</value>
+  </data>
+  <data name="Unpaid" xml:space="preserve">
+    <value>Impayé</value>
+  </data>
+  <data name="Unfinished invoice found!" xml:space="preserve">
+    <value>Facture inachevée trouvée !</value>
+  </data>
+  <data name="Unpaid Invoices" xml:space="preserve">
+    <value>Factures impayées</value>
+  </data>
+  <data name="Stats For Year" xml:space="preserve">
+    <value>Statistiques de l’année</value>
+  </data>
+  <data name="Time Period" xml:space="preserve">
+    <value>Période de temps</value>
+  </data>
+  <data name="Amount" xml:space="preserve">
+    <value>Montant</value>
+  </data>
+  <data name="Amount (tax exclusive)" xml:space="preserve">
+    <value>Montant (hors taxes)</value>
+  </data>
+  <data name="Total" xml:space="preserve">
+    <value>Total</value>
+  </data>
+  <data name="Search" xml:space="preserve">
+    <value>Rechercher</value>
+  </data>
+  <data name="Issue Date" xml:space="preserve">
+    <value>Date d’émission</value>
+  </data>
+  <data name="Buyer Email" xml:space="preserve">
+    <value>E-mail de l’acheteur</value>
+  </data>
+  <data name="No data found" xml:space="preserve">
+    <value>Aucune donnée trouvée</value>
+  </data>
+  <data name="Create New Invoice" xml:space="preserve">
+    <value>Créer une nouvelle facture</value>
+  </data>
+  <data name="Edit Invoice" xml:space="preserve">
+    <value>Modifier la facture</value>
+  </data>
+  <data name="Show Descriptions" xml:space="preserve">
+    <value>Afficher les descriptions</value>
+  </data>
+  <data name="Create New Seller" xml:space="preserve">
+    <value>Créer un nouveau vendeur</value>
+  </data>
+  <data name="Edit Seller" xml:space="preserve">
+    <value>Modifier le vendeur</value>
+  </data>
+  <data name="Create New Buyer" xml:space="preserve">
+    <value>Créer un nouvel acheteur</value>
+  </data>
+  <data name="Edit Buyer" xml:space="preserve">
+    <value>Modifier l’acheteur</value>
+  </data>
+  <data name="Create New Payment Means" xml:space="preserve">
+    <value>Créer un nouveau moyen de paiement</value>
+  </data>
+  <data name="Edit Payment Means" xml:space="preserve">
+    <value>Modifier le moyen de paiement</value>
+  </data>
+  <data name="Create New Line" xml:space="preserve">
+    <value>Créer une nouvelle ligne</value>
+  </data>
+  <data name="Edit Line" xml:space="preserve">
+    <value>Modifier la ligne</value>
+  </data>
+  <data name="Select or Create Seller" xml:space="preserve">
+    <value>Sélectionner ou créer un vendeur</value>
+  </data>
+  <data name="Add New Seller" xml:space="preserve">
+    <value>Ajouter un nouveau vendeur</value>
+  </data>
+  <data name="Add New Buyer" xml:space="preserve">
+    <value>Ajouter un nouvel acheteur</value>
+  </data>
+  <data name="Select or Create Buyer" xml:space="preserve">
+    <value>Sélectionner ou créer un acheteur</value>
+  </data>
+  <data name="Select or Create Payment Means" xml:space="preserve">
+    <value>Sélectionner ou créer un moyen de paiement</value>
+  </data>
+  <data name="Add New Payment Means" xml:space="preserve">
+    <value>Ajouter un nouveau moyen de paiement</value>
+  </data>
+  <data name="Payment Means" xml:space="preserve">
+    <value>Moyens de paiement</value>
+  </data>
+  <data name="Invoice Lines" xml:space="preserve">
+    <value>Lignes de facture</value>
+  </data>
+  <data name="Import Lines" xml:space="preserve">
+    <value>Lignes importées</value>
+  </data>
+  <data name="Line Import" xml:space="preserve">
+    <value>Importation de lignes</value>
+  </data>
+  <data name="Line" xml:space="preserve">
+    <value>Ligne</value>
+  </data>
+  <data name="Add New Line" xml:space="preserve">
+    <value>Ajouter une nouvelle ligne</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>Enregistrer</value>
+  </data>
+  <data name="Export" xml:space="preserve">
+    <value>Exporter</value>
+  </data>
+  <data name="Edit" xml:space="preserve">
+    <value>Modifier</value>
+  </data>
+  <data name="Remove" xml:space="preserve">
+    <value>Supprimer</value>
+  </data>
+  <data name="Validation" xml:space="preserve">
+    <value>Validation</value>
+  </data>
+  <data name="LineImpDesc" xml:space="preserve">
+    <value>Collez vos données de suivi du temps au format suivant, séparé par des tabulations (TSV). Chaque ligne doit inclure :</value>
+  </data>
+  <data name="ImpDesc" xml:space="preserve">
+    <value>Copiez-collez le texte XML ici ou sélectionnez un fichier</value>
+  </data>
+  <data name="ValFailed" xml:space="preserve">
+    <value>Échec de la validation. Veuillez vérifier la structure du XML.</value>
+  </data>
+  <data name="ParseFailed" xml:space="preserve">
+    <value>Échec de l’analyse du XML.</value>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value>Supprimer</value>
+  </data>
+  <data name="DeleteInvoice" xml:space="preserve">
+    <value>Êtes-vous sûr de vouloir supprimer cette facture ?</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Annuler</value>
+  </data>
+  <data name="Delete Invoice" xml:space="preserve">
+    <value>Supprimer la facture</value>
+  </data>
+  <data name="Invoice deleted." xml:space="preserve">
+    <value>Facture supprimée.</value>
+  </data>
+  <data name="Select File" xml:space="preserve">
+    <value>Sélectionner un fichier</value>
+  </data>
+  <data name="Set Paid" xml:space="preserve">
+    <value>Marquer comme payé</value>
+  </data>
+  <data name="Set Unpaid" xml:space="preserve">
+    <value>Marquer comme non payé</value>
+  </data>
+  <data name="Copy" xml:space="preserve">
+    <value>Copier</value>
+  </data>
+  <data name="Delete Party" xml:space="preserve">
+    <value>Supprimer la partie</value>
+  </data>
+  <data name="DeleteParty" xml:space="preserve">
+    <value>Êtes-vous sûr de vouloir supprimer cette partie ?</value>
+  </data>
+  <data name="Delete Payment Means" xml:space="preserve">
+    <value>Supprimer le moyen de paiement</value>
+  </data>
+  <data name="DeletePaymentMeans" xml:space="preserve">
+    <value>Êtes-vous sûr de vouloir supprimer ce moyen de paiement ?</value>
+  </data>
+  <data name="Kosit validator uri" xml:space="preserve">
+    <value>URI du validateur Kosit</value>
+  </data>
+  <data name="KositDesc" xml:space="preserve">
+    <value>URI de validation Kosit. Vous pouvez utiliser {0} pour les tests.</value>
+  </data>
+  <data name="Show Form Descriptions" xml:space="preserve">
+    <value>Afficher les descriptions du formulaire</value>
+  </data>
+  <data name="Show XML Validation Warnings" xml:space="preserve">
+    <value>Afficher les avertissements de validation XML</value>
+  </data>
+  <data name="Backup Options" xml:space="preserve">
+    <value>Options de sauvegarde</value>
+  </data>
+  <data name="Folder" xml:space="preserve">
+    <value>Dossier</value>
+  </data>
+  <data name="Interval" xml:space="preserve">
+    <value>Intervalle</value>
+  </data>
+  <data name="No Backup" xml:space="preserve">
+    <value>Pas de sauvegarde</value>
+  </data>
+  <data name="On Close" xml:space="preserve">
+    <value>À la fermeture</value>
+  </data>
+  <data name="Every 30 days" xml:space="preserve">
+    <value>Tous les 30 jours</value>
+  </data>
+  <data name="Every 90 days" xml:space="preserve">
+    <value>Tous les 90 jours</value>
+  </data>
+  <data name="Export Options" xml:space="preserve">
+    <value>Options d’exportation</value>
+  </data>
+  <data name="Embed PDF" xml:space="preserve">
+    <value>Intégrer le PDF</value>
+  </data>
+  <data name="EmbedPDF" xml:space="preserve">
+    <value>Intégrer la facture en PDF dans le document XML.</value>
+  </data>
+  <data name="Validate XML" xml:space="preserve">
+    <value>Valider XML</value>
+  </data>
+  <data name="ValidateXML" xml:space="preserve">
+    <value>Valider le XML avant l’exportation.</value>
+  </data>
+  <data name="Finalize" xml:space="preserve">
+    <value>Finaliser</value>
+  </data>
+  <data name="FinalizeDesc" xml:space="preserve">
+    <value>Stocker le XML et le hash dans la base de données.</value>
+  </data>
+  <data name="Stats Options" xml:space="preserve">
+    <value>Options de statistiques</value>
+  </data>
+  <data name="StatsOptions" xml:space="preserve">
+    <value>Jour de la fin du mois de la période de préinscription.</value>
+  </data>
+  <data name="Monthly Period" xml:space="preserve">
+    <value>Période mensuelle</value>
+  </data>
+  <data name="MonthlyPeriod" xml:space="preserve">
+    <value>Période mensuelle ou trimestrielle.</value>
+  </data>
+  <data name="Backup" xml:space="preserve">
+    <value>Sauvegarde</value>
+  </data>
+  <data name="Restore" xml:space="preserve">
+    <value>Restaurer</value>
+  </data>
+  <data name="Month End Day" xml:space="preserve">
+    <value>Jour de fin de mois</value>
+  </data>
+  <data name="Backup Database" xml:space="preserve">
+    <value>Sauvegarder la base de données</value>
+  </data>
+  <data name="Restore Database" xml:space="preserve">
+    <value>Restaurer la base de données. ATTENTION : Toutes les données actuelles seront écrasées !</value>
+  </data>
+  <data name="Warning" xml:space="preserve">
+    <value>Avertissement</value>
+  </data>
+  <data name="SaveWarning" xml:space="preserve">
+    <value>Vous avez des modifications non enregistrées. Voulez-vous enregistrer maintenant ?</value>
+  </data>
+  <data name="Invoice Export" xml:space="preserve">
+    <value>Exportation de factures</value>
+  </data>
+  <data name="Close" xml:space="preserve">
+    <value>Fermer</value>
+  </data>
+  <data name="Unfinished Invoice" xml:space="preserve">
+    <value>Facture inachevée</value>
+  </data>
+  <data name="InvContinue" xml:space="preserve">
+    <value>Il semble que vous avez une facture inachevée. Voulez-vous continuer à y travailler ?</value>
+  </data>
+  <data name="Continue" xml:space="preserve">
+    <value>Continuer</value>
+  </data>
+  <data name="Discard" xml:space="preserve">
+    <value>Jeter</value>
+  </data>
+  <data name="DiscardDesc" xml:space="preserve">
+    <value>Cliquez sur {0} pour reprendre la modification ou sur {1} pour commencer une nouvelle facture.</value>
+  </data>
+  <data name="Language" xml:space="preserve">
+    <value>Langue</value>
+  </data>
+  <data name="ChartTitle" xml:space="preserve">
+    <value>Montant hors taxes des factures payées</value>
+  </data>
+  <data name="Create Sample Invoice" xml:space="preserve">
+    <value>Créer une facture d'exemple</value>
+  </data>
+  <data name="KositWarn" xml:space="preserve">
+    <value>N'entrez que des serveurs de confiance ou configurez le vôtre.</value>
+  </data>
+  <data name="External Link" xml:space="preserve">
+    <value>Lien externe</value>
+  </data>
+  <data name="Update Check" xml:space="preserve">
+    <value>Vérification des mises à jour</value>
+  </data>
+  <data name="UpdateCheck" xml:space="preserve">
+    <value>Vérifier une nouvelle version au démarrage de l'application</value>
+  </data>
+  <data name="Update Available" xml:space="preserve">
+    <value>Mise à jour disponible</value>
+  </data>
+  <data name="UpdateAvailable" xml:space="preserve">
+    <value>Une nouvelle version est disponible. Voulez-vous mettre à jour ?</value>
+  </data>
+  <data name="Yes" xml:space="preserve">
+    <value>Oui</value>
+  </data>
+  <data name="No" xml:space="preserve">
+    <value>Non</value>
+  </data>
+  <data name="ExportXmlAndPdf" xml:space="preserve">
+    <value>Exporter à la fois le XML et le PDF en fichier zip.</value>
+  </data>
+  <data name="ExportXml" xml:space="preserve">
+    <value>Exporter uniquement le fichier XML.</value>
+  </data>
+  <data name="ExportPdf" xml:space="preserve">
+    <value>Exporter uniquement le fichier PDF.</value>
+  </data>
+  <data name="ExportPdfA3" xml:space="preserve">
+    <value>Exporter le PDF avec XML intégré pour compatibilité ZUGFeRD (PDF/A3b).</value>
+  </data>
+  <data name="Parse" xml:space="preserve">
+    <value>Analyser</value>
+  </data>
+  <data name="Clear" xml:space="preserve">
+    <value>Effacer</value>
+  </data>
+</root>
