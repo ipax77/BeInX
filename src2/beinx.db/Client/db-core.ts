@@ -4,6 +4,7 @@ const DB_VERSION = 1;
 export const STORES = {
     payments: "PaymentMeans",
     config: "AppConfig",
+    drafts: "Drafts",
 };
 
 export type Dump = {
@@ -84,6 +85,10 @@ export const migration0: Migration = {
 
         if (!db.objectStoreNames.contains(STORES.config)) {
             db.createObjectStore(STORES.config);
+        }
+
+        if (!db.objectStoreNames.contains(STORES.drafts)) {
+            db.createObjectStore(STORES.drafts, { keyPath: "id" });
         }
     },
 };

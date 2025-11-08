@@ -1,8 +1,9 @@
 import { openDB, STORES } from "./db-core";
-import { IPaymentMeansBaseDto, PaymentMeansEntity } from "./dtos";
+import { DraftRepository } from "./draft-repository";
+import { IDraft, IPaymentMeansBaseDto, PaymentMeansEntity } from "./dtos";
 
 export class PaymentRepository {
-
+    private drafts = new DraftRepository();
     async createPaymentMeans(paymentMeans: IPaymentMeansBaseDto): Promise<number> {
         const db = await openDB();
         const transaction = db.transaction(STORES.payments, "readwrite");
@@ -91,5 +92,17 @@ export class PaymentRepository {
             request.onsuccess = () => resolve();
             request.onerror = () => reject(request.error);
         });
+    }
+
+    async saveTempPayment(payment: IPaymentMeansBaseDto, id?: number) {
+        await this.drafts.saveDraft(STORES.payments, payment, id);
+    }
+
+    async loadTempPayment(): Promise<IDraft | null> {
+        return await this.drafts.getDraft(STORES.payments);
+    }
+
+    async clearTempPayment() {
+        await this.drafts.clearDraft(STORES.payments);
     }
 }

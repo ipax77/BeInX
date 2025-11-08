@@ -4,9 +4,8 @@ using pax.XRechnung.NET.AnnotatedDtos;
 
 namespace beinx.db.Services;
 
-public class PaymentsRepository(IndexedDbInterop interop) : IPaymentsRepository
+public class PaymentsRepository(IIndexedDbInterop _interop) : IPaymentsRepository
 {
-    private readonly IndexedDbInterop _interop = interop;
 
     public Task<int> CreateAsync(PaymentAnnotationDto dto)
         => _interop.CallAsync<int>("paymentRepository.createPaymentMeans", dto);
@@ -22,4 +21,13 @@ public class PaymentsRepository(IndexedDbInterop interop) : IPaymentsRepository
 
     public async Task Clear()
         => await _interop.CallVoidAsync("paymentRepository.clea");
+
+    public async Task SaveDraftAsync(PaymentAnnotationDto dto, int? id)
+        => await _interop.CallVoidAsync("paymentRepository.saveTempPayment", dto, id ?? default);
+
+    public async Task<Draft<PaymentAnnotationDto>> LoadDraftAsync()
+        => await _interop.CallAsync<Draft<PaymentAnnotationDto>>("paymentRepository.loadTempPayment");
+
+    public async Task ClearDraftAsync()
+        => await _interop.CallVoidAsync("paymentRepository.clearTempPayment");
 }

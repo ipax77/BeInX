@@ -27,3 +27,44 @@ export interface PaymentMeansEntity {
     createdAt: string; 
     updatedAt: string;
 }
+
+export interface IPartyBaseDto {
+    website?: string;
+    logoReferenceId?: string;
+    name: string;
+    streetName?: string;
+    city: string;
+    postCode: string;
+    countryCode: string;
+    telefone: string;
+    email: string;
+    registrationName: string;
+    taxId: string;
+    companyId?: string;
+    buyerReference: string;
+}
+
+export interface DocumentReferenceAnnotationDto {
+    id: string;
+    documentDescription: string;
+    mimeCode: string;
+    fileName: string;
+    content: string;
+}
+
+export interface PartyEntity {
+    id?: number;
+    party: IPartyBaseDto;
+    isSeller: boolean;
+    logo?: DocumentReferenceAnnotationDto;
+    createdAt: string; 
+    updatedAt: string;
+}
+
+export interface IDraft {
+    id: string; // entityType + entityId or 'draft'
+    entityType: string,
+    entityId?: number,
+    data: IPaymentMeansBaseDto | IPartyBaseDto,
+    updatedAt: string;
+};

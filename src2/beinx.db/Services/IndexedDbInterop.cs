@@ -1,8 +1,10 @@
+using beinx.shared;
+using beinx.shared.Interfaces;
 using Microsoft.JSInterop;
 
 namespace beinx.db.Services;
 
-public class IndexedDbInterop : IDisposable
+public class IndexedDbInterop : IDisposable, IIndexedDbInterop
 {
     private readonly Lazy<Task<IJSObjectReference>> _moduleTask;
     public IndexedDbInterop(IJSRuntime js)
@@ -21,6 +23,13 @@ public class IndexedDbInterop : IDisposable
     {
         var module = await _moduleTask.Value;
         await module.InvokeVoidAsync(method, args);
+    }
+
+    public async Task<List<Draft<object>>> GetAllDrafts()
+    {
+        var module = await _moduleTask.Value;
+        var data = await module.InvokeAsync<List<Draft<object>>>("draftRepository.getAllDrafts");
+        return data;
     }
 
     public void Dispose()

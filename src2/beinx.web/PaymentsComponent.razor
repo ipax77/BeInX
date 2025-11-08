@@ -1,6 +1,7 @@
 @page "/payments"
 @using Microsoft.AspNetCore.Components.Forms
 @using Microsoft.Extensions.Localization
+@using Microsoft.JSInterop
 @using beinx.loc
 @using beinx.shared
 @using beinx.shared.Interfaces
@@ -8,6 +9,7 @@
 @using pax.XRechnung.NET.AnnotatedDtos
 @inject IPaymentsRepository PaymentsRepository
 @inject IStringLocalizer<InvoiceLoc> Loc
+@inject IJSRuntime JSRuntime
 @implements IDisposable
 
 <h3>Payments</h3>
@@ -82,11 +84,28 @@ else
     private PaymentAnnotationDto currentPayment = new();
     private int? editingId = null;
     EditContext editContext = null!;
+    private SemaphoreSlim darftSs = new(1, 1);
 
     protected override async Task OnInitializedAsync()
     {
         editContext = new EditContext(currentPayment);
         await LoadPaymentsAsync();
+        var draft = await PaymentsRepository.LoadDraftAsync();
+        if (draft is not null)
+        {
+            bool restore = await JSRuntime.InvokeAsync<bool>("confirm", "A draft was found. Restore it?");
+            if (restore)
+            {
+                currentPayment = draft.Data;
+                editingId = draft.EntityId > 0 ? draft.EntityId : null;
+                UpdateContext();
+                isEditing = true;
+            }
+            else
+            {
+				await PaymentsRepository.ClearDraftAsync();
+            }
+        }
     }
 
     private async Task LoadPaymentsAsync()
@@ -134,20 +153,23 @@ else
                 existing.Payment = dto;
             await PaymentsRepository.UpdateAsync(new PaymentMeansEntity { Id = editingId.Value, Payment = dto });
         }
-
+        await PaymentsRepository.ClearDraftAsync();
         isEditing = false;
     }
 
 
     private void CancelEdit()
     {
+        PaymentsRepository.ClearDraftAsync();
         isEditing = false;
     }
 
-    private async Task DeletePayment(int id)
+    private async Task DeletePayment(int? id)
     {
-        await PaymentsRepository.DeleteAsync(id);
-        payments.RemoveAll(p => p.Id == id);
+        if (!id.HasValue)
+			return;
+        await PaymentsRepository.DeleteAsync(id.Value);
+        payments.RemoveAll(p => p.Id == id.Value);
     }
 
 
@@ -160,12 +182,25 @@ else
     {
         editContext.OnFieldChanged -= FieldChanged;
         editContext = new EditContext(currentPayment);
-		editContext.OnFieldChanged += FieldChanged;
+        editContext.OnFieldChanged += FieldChanged;
     }
 
-	private void FieldChanged(object? sender, FieldChangedEventArgs e)
+    private void FieldChanged(object? sender, FieldChangedEventArgs e)
     {
-        
+        _ = SaveDraft();
+    }
+
+    private async Task SaveDraft()
+    {
+        await darftSs.WaitAsync();
+        try
+        {
+            await PaymentsRepository.SaveDraftAsync(currentPayment, editingId);
+        }
+        finally
+        {
+            darftSs.Release();
+		}
     }
 
     public void Dispose()

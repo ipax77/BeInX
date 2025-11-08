@@ -1,0 +1,96 @@
+@using Microsoft.Extensions.Localization
+@using beinx.loc
+@using beinx.shared
+@using beinx.shared.Interfaces
+@inject IIndexedDbInterop IndexedDbInterop
+@inject IStringLocalizer<InvoiceLoc> Loc
+@inject NavigationManager NavigationManager
+
+<div class="container-fluid mt-3">
+	<div class="row">
+		<div class="col-4">
+			<div class="p-3 border rounded bgchart">
+				<h3>Blazor eInvoice XRechung App</h3>
+				<p class="text-muted">Manage and view your eInvoices effortlessly</p>
+			</div>
+		</div>
+		<div class="col-7">
+			@if (statsResponse != null)
+			{
+				<div class="row">
+					<div class="col-auto">
+						<div class="card">
+							<div class="card-header bgchart2">
+								@Loc["Total Invoices"]
+							</div>
+							<div class="card-body bgchart text-center">
+								@statsResponse.TotalInvoices.ToString("N0")
+							</div>
+						</div>
+					</div>
+					<div class="col-auto">
+						<div class="card">
+							<div class="card-header bgchart2">
+								@Loc["Paid"]
+							</div>
+							<div class="card-body bgchart text-center">
+								@statsResponse.PaidInvoices.ToString("N0")
+							</div>
+						</div>
+					</div>
+					<div class="col-auto">
+						<div class="card">
+							<div class="card-header bgchart2">
+								@Loc["Unpaid"]
+							</div>
+							<div class="card-body bgchart text-center">
+								@((statsResponse.TotalInvoices - statsResponse.PaidInvoices).ToString("N0"))
+							</div>
+						</div>
+					</div>
+				</div>
+			}
+		</div>
+	</div>
+</div>
+
+@code {
+	StatsResponse statsResponse = new();
+	List<Draft<object>> drafts = [];
+
+	protected override async Task OnInitializedAsync()
+	{
+		drafts = await IndexedDbInterop.GetAllDrafts();
+	}
+
+	protected override void OnAfterRender(bool firstRender)
+	{
+		if (firstRender)
+		{
+			if (drafts.Count > 0)
+			{
+				NavigateToDraft(drafts[0]);
+			}
+		}
+		base.OnAfterRender(firstRender);
+	}
+
+	private void NavigateToDraft(Draft<object> draft)
+	{
+		Console.WriteLine(draft.EntityType);
+		switch (draft.EntityType)
+		{
+			case "PaymentMeans":
+				NavigationManager.NavigateTo($"/payments");
+				break;
+			case "party":
+				NavigationManager.NavigateTo($"/parties");
+				break;
+			case "invoice":
+				NavigationManager.NavigateTo($"/invoices");
+				break;
+			default:
+				break;
+		}
+	}
+}

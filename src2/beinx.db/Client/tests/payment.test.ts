@@ -50,4 +50,45 @@ describe('payments CRUD', () => {
         const deletedPayment = createdPayments.find(f => f.id === id);
         expect(deletedPayment).toBeUndefined();
     });
+
+    describe('temp payment drafts', () => {
+        afterEach(async () => {
+            await paymentRepository.clear();
+        });
+
+        it('should save and retrieve a temp payment draft', async () => {
+            const draftPayment = getTestPayment();
+            draftPayment.name = "Temp Draft Test";
+
+            await paymentRepository.saveTempPayment(draftPayment);
+
+            const loadedDraft = await paymentRepository.loadTempPayment();
+            expect(loadedDraft).toBeDefined();
+            expect(loadedDraft?.data.name).toEqual("Temp Draft Test");
+        });
+
+        it('should overwrite an existing temp draft with same entityType', async () => {
+            const draftPayment1 = getTestPayment();
+            draftPayment1.name = "First Temp";
+            await paymentRepository.saveTempPayment(draftPayment1);
+
+            const draftPayment2 = getTestPayment();
+            draftPayment2.name = "Second Temp";
+            await paymentRepository.saveTempPayment(draftPayment2);
+
+            const loadedDraft = await paymentRepository.loadTempPayment();
+            expect(loadedDraft).toBeDefined();
+            expect(loadedDraft?.data.name).toEqual("Second Temp"); // overwritten
+        });
+
+        it('should delete a temp payment draft', async () => {
+            const draftPayment = getTestPayment();
+            await paymentRepository.saveTempPayment(draftPayment);
+
+            await paymentRepository.clearTempPayment();
+
+            const loadedDraft = await paymentRepository.loadTempPayment();
+            expect(loadedDraft).toBeNull();
+        });
+    });
 });
