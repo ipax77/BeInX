@@ -3,6 +3,9 @@ const path = require('path');
 module.exports = {
   mode: 'production',
   entry: './Client/beinx-db.ts',
+  experiments: {
+    outputModule: true,
+  },
   module: {
     rules: [
       {
@@ -19,5 +22,8 @@ module.exports = {
   output: {
     filename: 'beinx-db.bundle.js',
     path: path.resolve(__dirname, 'wwwroot/js'),
+    library: {
+        type: 'module',
+    },
   },
 };

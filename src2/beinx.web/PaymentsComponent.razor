@@ -8,6 +8,7 @@
 @using pax.XRechnung.NET.AnnotatedDtos
 @inject IPaymentsRepository PaymentsRepository
 @inject IStringLocalizer<InvoiceLoc> Loc
+@implements IDisposable
 
 <h3>Payments</h3>
 
@@ -84,23 +85,25 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-		editContext = new EditContext(currentPayment);
+        editContext = new EditContext(currentPayment);
         await LoadPaymentsAsync();
     }
 
     private async Task LoadPaymentsAsync()
     {
         isLoading = true;
+        await InvokeAsync(StateHasChanged);
         payments = await PaymentsRepository.GetAllAsync();
         isLoading = false;
+        await InvokeAsync(StateHasChanged);
     }
 
     private void NewPayment()
     {
         currentPayment = new PaymentAnnotationDto();
         editingId = null;
+        UpdateContext();
         isEditing = true;
-		editContext = new EditContext(currentPayment);
     }
 
     private void EditPayment(PaymentMeansEntity entity)
@@ -113,7 +116,7 @@ else
             PaymentMeansTypeCode = entity.Payment.PaymentMeansTypeCode
         };
         editingId = entity.Id;
-        editContext = new EditContext(currentPayment);
+        UpdateContext();
         isEditing = true;
     }
 
@@ -121,36 +124,52 @@ else
     {
         if (editingId is null)
         {
-            await PaymentsRepository.CreateAsync(dto);
+            var id = await PaymentsRepository.CreateAsync(dto);
+            payments.Add(new PaymentMeansEntity { Id = id, Payment = dto });
         }
         else
         {
-            var updated = new PaymentMeansEntity
-            {
-                Id = editingId.Value,
-                Payment = dto
-            };
-            await PaymentsRepository.UpdateAsync(updated);
+            var existing = payments.FirstOrDefault(p => p.Id == editingId);
+            if (existing is not null)
+                existing.Payment = dto;
+            await PaymentsRepository.UpdateAsync(new PaymentMeansEntity { Id = editingId.Value, Payment = dto });
         }
 
         isEditing = false;
-        await LoadPaymentsAsync();
     }
+
 
     private void CancelEdit()
     {
         isEditing = false;
     }
 
-    private async Task DeletePayment(int? id)
+    private async Task DeletePayment(int id)
     {
-        if (id == null) return;
-        await PaymentsRepository.DeleteAsync(id.Value);
-        await LoadPaymentsAsync();
+        await PaymentsRepository.DeleteAsync(id);
+        payments.RemoveAll(p => p.Id == id);
     }
+
 
     private void ShowCodeList(string listName)
     {
         // optional: open modal or code picker
     }
+
+    private void UpdateContext()
+    {
+        editContext.OnFieldChanged -= FieldChanged;
+        editContext = new EditContext(currentPayment);
+		editContext.OnFieldChanged += FieldChanged;
+    }
+
+	private void FieldChanged(object? sender, FieldChangedEventArgs e)
+    {
+        
+    }
+
+    public void Dispose()
+    {
+        editContext.OnFieldChanged -= FieldChanged;
+	}
 }

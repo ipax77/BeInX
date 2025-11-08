@@ -150,10 +150,10 @@ export function ungzipString(base64: string): string {
     return text;
 }
 
-const paymentRepository = new PaymentRepository();
+export const paymentRepository = new PaymentRepository();
 
-export async function createPaymentMeans(payment: IPaymentMeansBaseDto) { return paymentRepository.createPaymentMeans(payment); }
-export async function updatePaymentMeans(id: number, p: IPaymentMeansBaseDto) { return paymentRepository.updatePaymentMeans(id, p); }
-export async function deletePaymentMeans(id: number) { return paymentRepository.deletePaymentMeans(id); }
-export async function getAllPaymentMeans() { return paymentRepository.getAllPaymentMeans(); }
-export async function clearPaymentMeans() { return paymentRepository.clear(); }
+//export async function createPaymentMeans(payment: IPaymentMeansBaseDto) { return paymentRepository.createPaymentMeans(payment); }
+//export async function updatePaymentMeans(id: number, p: IPaymentMeansBaseDto) { return paymentRepository.updatePaymentMeans(id, p); }
+//export async function deletePaymentMeans(id: number) { return paymentRepository.deletePaymentMeans(id); }
+//export async function getAllPaymentMeans() { return paymentRepository.getAllPaymentMeans(); }
+//export async function clearPaymentMeans() { return paymentRepository.clear(); }
