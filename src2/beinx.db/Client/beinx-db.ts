@@ -1,7 +1,7 @@
 import * as pako from "pako";
 import { openDB, STORES } from "./db-core";
 import { PaymentRepository } from "./payment-repository";
-import { AppConfigDto } from "./dtos";
+import { AppConfigDto, IPaymentMeansBaseDto } from "./dtos";
 
 export async function getConfig(): Promise<AppConfigDto | undefined> {
     const database = await openDB();
@@ -150,4 +150,10 @@ export function ungzipString(base64: string): string {
     return text;
 }
 
-export const paymentRepository = new PaymentRepository();
+const paymentRepository = new PaymentRepository();
+
+export async function createPaymentMeans(payment: IPaymentMeansBaseDto) { return paymentRepository.createPaymentMeans(payment); }
+export async function updatePaymentMeans(id: number, p: IPaymentMeansBaseDto) { return paymentRepository.updatePaymentMeans(id, p); }
+export async function deletePaymentMeans(id: number) { return paymentRepository.deletePaymentMeans(id); }
+export async function getAllPaymentMeans() { return paymentRepository.getAllPaymentMeans(); }
+export async function clearPaymentMeans() { return paymentRepository.clear(); }

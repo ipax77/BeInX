@@ -1,6 +1,6 @@
-using pax.XRechnung.NET.AnnotatedDtos;
+﻿using pax.XRechnung.NET.AnnotatedDtos;
 
-namespace beinx.db.Models;
+namespace beinx.shared;
 
 public class PaymentMeansEntity
 {

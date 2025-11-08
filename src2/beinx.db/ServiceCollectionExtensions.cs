@@ -8,8 +8,9 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddBeinxDbServices(this IServiceCollection services)
     {
+        services.AddSingleton<IndexedDbInterop>();
         services.AddScoped<IConfigService, ConfigService>();
-        services.AddSingleton<IIndexedDbService, IndexedDbService>();
+        services.AddScoped<IPaymentsRepository, PaymentsRepository>();
         return services;
     }
 }

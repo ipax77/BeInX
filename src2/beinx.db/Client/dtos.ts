@@ -24,4 +24,6 @@ export interface IPaymentMeansBaseDto {
 export interface PaymentMeansEntity {
     id?: number;
     payment: IPaymentMeansBaseDto;
+    createdAt: string; 
+    updatedAt: string;
 }

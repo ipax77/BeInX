@@ -70,11 +70,6 @@
 
     string descClass => ShowDesc ? "form-text text-muted" : "d-none";
 
-    protected override void OnInitialized()
-    {
-		partyEditContext = new EditContext(Payment);
-	}
-
     private async Task HandleValidSubmit()
     {
         await OnValidSubmit.InvokeAsync(Payment);

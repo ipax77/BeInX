@@ -34,7 +34,7 @@ describe('payments CRUD', () => {
         if (!payment) return;
         const newName = "Test Payment Update";
         payment.payment.name = newName;
-        await paymentRepository.updatePaymentMeans(payment);
+        await paymentRepository.updatePaymentMeans(id, payment.payment);
         const updatedPayments = await paymentRepository.getAllPaymentMeans();
         const updatedPayment = updatedPayments.find(f => f.id === id);
         expect(updatedPayment).toBeDefined();
