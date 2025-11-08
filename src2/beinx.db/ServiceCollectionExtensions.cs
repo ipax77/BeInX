@@ -9,6 +9,7 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddBeinxDbServices(this IServiceCollection services)
     {
         services.AddScoped<IConfigService, ConfigService>();
+        services.AddSingleton<IIndexedDbService, IndexedDbService>();
         return services;
     }
 }

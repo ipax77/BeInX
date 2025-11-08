@@ -48,6 +48,9 @@ bld/
 /src/BlazorInvoice.IndexedDb/wwwroot/js/*.js
 /src/BlazorInvoice.IndexedDb/wwwroot/js/*.js.map
 
+/src2/beinx.db/wwwroot/js/*.js
+/src2/beinx.db/wwwroot/js/*.js.map
+
 # Visual Studio 2017 auto generated files
 Generated\ Files/
 
