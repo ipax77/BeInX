@@ -5,16 +5,14 @@ using pax.XRechnung.NET.BaseDtos;
 
 namespace beinx.db.Services;
 
-public abstract class BasePartyRepository<TDto> : IBasePartyRepository<TDto> where TDto : IPartyBaseDto
+public abstract class BasePartyRepository<TDto> : IBasePartyRepository<TDto>, IDraftRepository<TDto> where TDto : IPartyBaseDto
 {
     protected readonly IIndexedDbInterop _interop;
-    protected readonly IDraftRepository<TDto> _draftRepo;
     protected readonly bool _isSeller;
 
-    protected BasePartyRepository(IIndexedDbInterop interop, IDraftRepository<TDto> draftRepo, bool isSeller)
+    protected BasePartyRepository(IIndexedDbInterop interop, bool isSeller)
     {
         _interop = interop;
-        _draftRepo = draftRepo;
         _isSeller = isSeller;
     }
 
@@ -27,7 +25,7 @@ public abstract class BasePartyRepository<TDto> : IBasePartyRepository<TDto> whe
 
     // Delete a party
     public async Task DeleteAsync(int id)
-        => await _interop.CallVoidAsync("partyRepository.deleteParty", id);
+        => await _interop.CallVoidAsync("partyRepository.deleteParty", id, _isSeller);
 
     // Get all parties (sellers or buyers)
     public Task<List<PartyEntity>> GetAllAsync()
@@ -63,16 +61,16 @@ public abstract class BasePartyRepository<TDto> : IBasePartyRepository<TDto> whe
 
 public class SellerRepository : BasePartyRepository<SellerAnnotationDto>, ISellerRepository
 {
-    public SellerRepository(IIndexedDbInterop interop, IDraftRepository<SellerAnnotationDto> draftRepo)
-        : base(interop, draftRepo, isSeller: true)
+    public SellerRepository(IIndexedDbInterop interop)
+        : base(interop, isSeller: true)
     {
     }
 }
 
 public class BuyerRepository : BasePartyRepository<BuyerAnnotationDto>, IBuyerRepository
 {
-    public BuyerRepository(IIndexedDbInterop interop, IDraftRepository<BuyerAnnotationDto> draftRepo)
-        : base(interop, draftRepo, isSeller: false)
+    public BuyerRepository(IIndexedDbInterop interop)
+        : base(interop, isSeller: false)
     {
     }
 }
