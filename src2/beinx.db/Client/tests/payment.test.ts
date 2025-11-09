@@ -64,7 +64,7 @@ describe('payments CRUD', () => {
 
             const loadedDraft = await paymentRepository.loadTempPayment();
             expect(loadedDraft).toBeDefined();
-            expect(loadedDraft?.data.name).toEqual("Temp Draft Test");
+            expect((loadedDraft?.data as IPaymentMeansBaseDto).name).toEqual("Temp Draft Test");
         });
 
         it('should overwrite an existing temp draft with same entityType', async () => {
@@ -78,7 +78,7 @@ describe('payments CRUD', () => {
 
             const loadedDraft = await paymentRepository.loadTempPayment();
             expect(loadedDraft).toBeDefined();
-            expect(loadedDraft?.data.name).toEqual("Second Temp"); // overwritten
+            expect((loadedDraft?.data as IPaymentMeansBaseDto).name).toEqual("Second Temp");
         });
 
         it('should delete a temp payment draft', async () => {

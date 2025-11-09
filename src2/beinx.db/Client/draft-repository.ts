@@ -1,5 +1,5 @@
 import { openDB, STORES } from "./db-core";
-import { IPartyBaseDto, IPaymentMeansBaseDto } from "./dtos";
+import { InvoiceDtoInfo, IPartyBaseDto, IPaymentMeansBaseDto } from "./dtos";
 
 export interface IDraft {
   id: string;
@@ -10,7 +10,7 @@ export interface IDraft {
 }
 
 export class DraftRepository {
-    async saveDraft(entityType: string, data: IPaymentMeansBaseDto | IPartyBaseDto, entityId?: number): Promise<void> {
+    async saveDraft(entityType: string, data: IPaymentMeansBaseDto | IPartyBaseDto | InvoiceDtoInfo, entityId?: number): Promise<void> {
         const db = await openDB();
         return new Promise<void>((resolve, reject) => {
             const tx = db.transaction(STORES.drafts, 'readwrite');

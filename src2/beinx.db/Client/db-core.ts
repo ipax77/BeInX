@@ -5,6 +5,7 @@ export const STORES = {
     payments: "PaymentMeans",
     buyers: "Buyers",
     sellers: "Sellers",
+    invoices: "Invoices",
     config: "AppConfig",
     drafts: "Drafts",
 };
@@ -99,6 +100,13 @@ export const migration0: Migration = {
 
         if (!db.objectStoreNames.contains(STORES.sellers)) {
             db.createObjectStore(STORES.sellers, { keyPath: "id", autoIncrement: true });
+        }
+
+        if (!db.objectStoreNames.contains(STORES.invoices)) {
+            const store = db.createObjectStore(STORES.invoices, { keyPath: "id", autoIncrement: true });
+            store.createIndex("year", "year", { unique: false });
+            store.createIndex("isPaid", "isPaid", { unique: false });
+            store.createIndex("isImported", "isImported", { unique: false });
         }
     },
 };

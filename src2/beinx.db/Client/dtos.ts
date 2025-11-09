@@ -64,6 +64,70 @@ export interface IDraft {
     id: string; // entityType + entityId or 'draft'
     entityType: string,
     entityId?: number,
-    data: IPaymentMeansBaseDto | IPartyBaseDto,
+    data: IPaymentMeansBaseDto | IPartyBaseDto | InvoiceDtoInfo,
     updatedAt: string;
 };
+
+export interface InvoiceLineDto {
+    id: string;
+    note?: string;
+    quantity: number;
+    quantityCode: string;
+    unitPrice: number;
+    startDate?: string;
+    endDate?: string;
+    description?: string;
+    name: string;
+}
+
+export interface InvoiceDto {
+    globalTaxCategory: string;
+    globalTaxScheme: string;
+    globalTax: number;
+    id: string;
+    issueDate: string;
+    dueDate?: string;
+    invoiceTypeCode: string;
+    note?: string;
+    documentCurrencyCode: string;
+    paymentTermsNote: string;
+    payableAmount: number;
+    additionalDocumentReferences: DocumentReferenceAnnotationDto[];
+    sellerParty: IPartyBaseDto;
+    buyerParty: IPartyBaseDto;
+    paymentMeans: IPaymentMeansBaseDto;
+    invoiceLines: InvoiceLineDto[];
+}
+
+export interface FinalizeResult {
+    xmlInvoiceCreated: string;
+    xmlInvoiceSha1Hash: string;
+    xmlInvoiceBlob: ArrayBuffer;
+}
+
+export interface InvoiceDtoInfo {
+    invoiceDto: InvoiceDto;
+    sellerId: number;
+    buyerId: number;
+    paymentId: number;
+}
+
+export interface InvoiceEntity {
+    id: number;
+    info: InvoiceDtoInfo;
+    year: number;
+    isPaid: boolean;
+    isImported: boolean;
+    finalizeResult?: FinalizeResult;
+    updatedAt: string;
+}
+
+export interface InvoiceListItem {
+  id: number;
+  invoiceId: string;
+  issueDate: string;
+  sellerName: string;
+  buyerName: string;
+  isPaid: boolean;
+  year: number;
+}

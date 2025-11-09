@@ -2,7 +2,7 @@ import { describe, it, expect, afterEach } from 'vitest';
 import { IPartyBaseDto } from '../dtos';
 import { partyRepository } from '../beinx-db';
 
-const getTestParty = (): IPartyBaseDto => ({
+export const getTestParty = (): IPartyBaseDto => ({
     website: 'https://testcompany.com',
     logoReferenceId: undefined,
     name: 'Test Company Ltd.',
