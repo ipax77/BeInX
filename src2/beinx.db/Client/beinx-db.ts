@@ -3,6 +3,7 @@ import { openDB, STORES } from "./db-core";
 import { PaymentRepository } from "./payment-repository";
 import { AppConfigDto } from "./dtos";
 import { DraftRepository } from "./draft-repository";
+import { PartyRepository } from "./party-repository";
 
 export async function getConfig(): Promise<AppConfigDto | undefined> {
     const database = await openDB();
@@ -152,5 +153,6 @@ export function ungzipString(base64: string): string {
 }
 
 export const paymentRepository = new PaymentRepository();
+export const partyRepository = new PartyRepository();
 export const draftRepository = new DraftRepository();
 

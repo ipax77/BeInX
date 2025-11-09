@@ -55,7 +55,6 @@ export interface DocumentReferenceAnnotationDto {
 export interface PartyEntity {
     id?: number;
     party: IPartyBaseDto;
-    isSeller: boolean;
     logo?: DocumentReferenceAnnotationDto;
     createdAt: string; 
     updatedAt: string;

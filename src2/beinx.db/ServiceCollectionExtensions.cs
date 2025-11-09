@@ -16,6 +16,15 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IDraftRepository<PaymentAnnotationDto>>(sp =>
             (IDraftRepository<PaymentAnnotationDto>)sp.GetRequiredService<IPaymentsRepository>());
 
+        // Seller repository and draft
+        services.AddScoped<ISellerRepository, SellerRepository>();
+        services.AddScoped<IDraftRepository<SellerAnnotationDto>>(sp =>
+            (IDraftRepository<SellerAnnotationDto>)sp.GetRequiredService<ISellerRepository>());
+
+        // Buyer repository and draft
+        services.AddScoped<IBuyerRepository, BuyerRepository>();
+        services.AddScoped<IDraftRepository<BuyerAnnotationDto>>(sp =>
+            (IDraftRepository<BuyerAnnotationDto>)sp.GetRequiredService<IBuyerRepository>());
         return services;
     }
 }

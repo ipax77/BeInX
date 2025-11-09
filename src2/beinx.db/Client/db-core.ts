@@ -3,6 +3,8 @@ const DB_VERSION = 1;
 
 export const STORES = {
     payments: "PaymentMeans",
+    buyers: "Buyers",
+    sellers: "Sellers",
     config: "AppConfig",
     drafts: "Drafts",
 };
@@ -89,6 +91,14 @@ export const migration0: Migration = {
 
         if (!db.objectStoreNames.contains(STORES.drafts)) {
             db.createObjectStore(STORES.drafts, { keyPath: "id" });
+        }
+
+        if (!db.objectStoreNames.contains(STORES.buyers)) {
+            db.createObjectStore(STORES.buyers, { keyPath: "id", autoIncrement: true });
+        }
+
+        if (!db.objectStoreNames.contains(STORES.sellers)) {
+            db.createObjectStore(STORES.sellers, { keyPath: "id", autoIncrement: true });
         }
     },
 };
