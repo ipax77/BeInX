@@ -1,0 +1,154 @@
+﻿@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.Extensions.Localization
+@using beinx.loc
+@using beinx.shared
+@using pax.XRechnung.NET.AnnotatedDtos
+@using pax.XRechnung.NET.BaseDtos
+@inject IStringLocalizer<InvoiceLoc> Loc
+
+<div>
+    <EditForm EditContext="invoiceEditContext" FormName="InvoiceLineForm" OnValidSubmit="HandleValidSubmit">
+        <DataAnnotationsValidator />
+        <div class="mb-3">
+            <label for="lid" class="form-label">Auto generated Id</label>
+            <InputText class="form-control" id="lid" aria-describedby="liddesc" disabled @bind-Value="Line.Id" />
+            <small id="liddesc" class="@descClass">@Loc["LID"]</small>
+        </div>
+        <div class="mb-3">
+            <label for="bt127" class="form-label">Note</label>
+            <InputTextArea class="form-control" id="bt127" aria-describedby="bt127desc" @bind-Value="Line.Note" />
+            <small id="bt127desc" class="@descClass">@Loc["BT-127"]</small>
+            <div>
+                <ValidationMessage For="@(() => Line.Note)" />
+            </div>
+        </div>
+        <div class="mb-3">
+            <label for="bt129" class="form-label">
+                Quantity
+                @if (Line.StartDate != null && Line.EndDate != null && Line.StartDate <= Line.EndDate)
+                {
+                    <button type="button" class="btn btn-sm btn-outline-warning" @onclick="CalculateQuantity">Calculate</button>
+                }
+            </label>
+            <InputNumber class="form-control" id="bt129" aria-describedby="bt129desc" min="0" step=".01" placeholder="0.00" @bind-Value="Line.Quantity" />
+            <small id="bt129desc" class="@descClass">@Loc["BT-129"]</small>
+            <div>
+                <ValidationMessage For="@(() => Line.Quantity)" />
+            </div>
+        </div>
+        <div class="mb-3">
+            <label for="bt130" class="form-label">Quantity Code</label>
+            <div class="input-group">
+                <InputText class="form-control" id="bt130" aria-describedby="bt130desc" @bind-Value="Line.QuantityCode" />
+                <button type="button" class="btn btn-sm btn-outline-light ms-1" @onclick="@(() => OnCodeListRequested.InvokeAsync("UN_ECE_Recommendation_N_20"))">Pick</button>
+            </div>
+            <small id="bt130desc" class="@descClass">@Loc["BT-130"] - UN/ECE Recommendation No. 20</small>
+            <div>
+                <ValidationMessage For="@(() => Line.QuantityCode)" />
+            </div>
+        </div>
+        <div class="mb-3">
+            <label for="bt146" class="form-label">Unit Price - Total: <b>@Line.LineTotal</b></label>
+            <InputNumber class="form-control" id="bt146" aria-describedby="bt146desc" min="0" step=".01" placeholder="0.00" @bind-Value="Line.UnitPrice" />
+            <small id="bt146desc" class="@descClass">@Loc["BT-146"]</small>
+            <div>
+                <ValidationMessage For="@(() => Line.UnitPrice)" />
+            </div>
+        </div>
+        <div class="mb-3">
+            <TimeForm TimeValue="Line.StartDate" OnTimeValueChanged="SetStartDate">
+                Start Date
+            </TimeForm>
+            <small id="bt134desc" class="@descClass">@Loc["BT-134"]</small>
+            <div>
+                <ValidationMessage For="@(() => Line.StartDate)" />
+            </div>
+        </div>
+        <div class="mb-3">
+            <TimeForm TimeValue="Line.EndDate" OnTimeValueChanged="SetEndDate">
+                End Date
+            </TimeForm>
+            <small id="bt135desc" class="@descClass">@Loc["BT-135"]</small>
+            <div>
+                <ValidationMessage For="@(() => Line.EndDate)" />
+            </div>
+        </div>
+        <div class="mb-3">
+            <label for="bt154" class="form-label">Description</label>
+            <InputTextArea class="form-control" id="bt154" aria-describedby="bt154desc" @bind-Value="Line.Description" />
+            <small id="bt154desc" class="@descClass">@Loc["BT-154"]</small>
+            <div>
+                <ValidationMessage For="@(() => Line.Description)" />
+            </div>
+        </div>
+        <div class="mb-3">
+            <label for="bt153" class="form-label">Name</label>
+            <InputText class="form-control" id="bt153" aria-describedby="bt153desc" @bind-Value="Line.Name" />
+            <small id="bt153desc" class="@descClass">@Loc["BT-153"]</small>
+            <div>
+                <ValidationMessage For="@(() => Line.Name)" />
+            </div>
+        </div>
+        <div class="mt-3">
+            <button type="button" class="btn btn-danger" @onclick="e => OnCancel.InvokeAsync()">Cancel</button>
+            <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+    </EditForm>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public BlazorInvoiceDto Invoice { get; set; } = null!;
+
+    [Parameter, EditorRequired]
+    public int LineIndex { get; set; } = -1;
+
+    [Parameter]
+    public EventCallback<InvoiceLineAnnotationDto> OnValidSubmit { get; set; }
+
+    [Parameter]
+    public EventCallback OnCancel { get; set; }
+
+    [Parameter]
+    public EventCallback<string> OnCodeListRequested { get; set; }
+
+    [Parameter]
+    public bool ShowDesc { get; set; } = true;
+
+    [CascadingParameter(Name = "invoiceEditContext")]
+    public EditContext invoiceEditContext { get; set; } = null!;
+
+    string descClass => ShowDesc ? "form-text text-muted" : "d-none";
+    InvoiceLineAnnotationDto Line => Invoice.InvoiceLines[LineIndex];
+
+    private void SetStartDate(DateTime? startDate)
+    {
+        Line.StartDate = startDate;
+        invoiceEditContext.NotifyFieldChanged(new FieldIdentifier(Line, nameof(InvoiceLineAnnotationDto.StartDate)));
+    }
+
+    private void SetEndDate(DateTime? endDate)
+    {
+        Line.EndDate = endDate;
+        invoiceEditContext.NotifyFieldChanged(new FieldIdentifier(Line, nameof(InvoiceLineAnnotationDto.EndDate)));
+    }
+
+    private void CalculateQuantity()
+    {
+        if (Line.StartDate is null || Line.EndDate is null || Line.StartDate > Line.EndDate)
+        {
+            return;
+        }
+
+        TimeSpan diff = (Line.EndDate.Value - Line.StartDate.Value);
+        Line.Quantity = Math.Round(diff.TotalHours, 2);
+        invoiceEditContext.NotifyFieldChanged(new FieldIdentifier(Line, nameof(InvoiceLineAnnotationDto.Quantity)));
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        await OnValidSubmit.InvokeAsync(Line);
+    }
+}
+
+

@@ -25,6 +25,11 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IBuyerRepository, BuyerRepository>();
         services.AddScoped<IDraftRepository<BuyerAnnotationDto>>(sp =>
             (IDraftRepository<BuyerAnnotationDto>)sp.GetRequiredService<IBuyerRepository>());
+
+        services.AddScoped<IInvoiceRepository, InvoiceRepository>();
+        services.AddScoped<IDraftRepository<InvoiceDtoInfo>>(sp =>
+            (IDraftRepository<InvoiceDtoInfo>)sp.GetRequiredService<IInvoiceRepository>());
+
         return services;
     }
 }

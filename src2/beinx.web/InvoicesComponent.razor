@@ -1,0 +1,129 @@
+﻿@using beinx.shared
+@using beinx.shared.Interfaces
+@using beinx.web.Bases
+@using beinx.web.Forms
+@using pax.XRechnung.NET.AnnotatedDtos
+@inherits DraftAwareComponentBase<InvoiceDtoInfo, InvoiceEntity>
+@inject IInvoiceRepository InvoiceRepository
+
+<h3>
+    @Loc["Invoices"]
+</h3>
+
+@if (IsLoading)
+{
+    <p><em>Loading...</em></p>
+}
+else if (IsEditing)
+{
+    <CascadingValue Value="EditContext" Name="invoiceEditContext">
+        <InvoiceForm Invoice="@CurrentDraft.Data.InvoiceDto"
+                  />
+    </CascadingValue>
+}
+else
+{
+    <button class="btn btn-primary mb-3" @onclick="NewItem">@Loc["Add New Invoice"]</button>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>@Loc["Invoice ID"]</th>
+                <th>@Loc["Issue Date"]</th>
+                <th>@Loc["Seller"]</th>
+                <th>@Loc["Buyer"]</th>
+                <th>@Loc["Amount"]</th>
+                <th>@Loc["Paid?"]</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var inv in Items)
+            {
+                <tr>
+                    <td>@inv.Info.InvoiceDto.Id</td>
+                    <td>@inv.Info.InvoiceDto.IssueDate.ToShortDateString()</td>
+                    <td>@inv.Info.InvoiceDto.SellerParty?.Name</td>
+                    <td>@inv.Info.InvoiceDto.BuyerParty?.Name</td>
+                    <td>@inv.Info.InvoiceDto.PayableAmount.ToString("C")</td>
+                    <td>@(inv.IsPaid ? "✔️" : "❌")</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-secondary me-1"
+                                @onclick="() => EditItem(inv.Id ?? 0, inv.Info)">
+                            @Loc["Edit"]
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger"
+                                @onclick="() => DeleteItemAsync(inv.Id ?? 0)">
+                            @Loc["Delete"]
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    protected override Task<List<InvoiceEntity>> GetAllAsync()
+        => InvoiceRepository.GetAllAsync();
+
+    protected override Task<int> CreateAsync(InvoiceDtoInfo dto)
+        => InvoiceRepository.CreateAsync(dto);
+
+    protected override Task UpdateAsync(int id, InvoiceDtoInfo dto)
+        => InvoiceRepository.UpdateAsync(id, dto);
+
+    protected override Task DeleteAsync(int id)
+        => InvoiceRepository.DeleteAsync(id);
+
+    protected override InvoiceDtoInfo CreateNewDto()
+    {
+        // Initialize with minimal defaults; the InvoiceForm will handle editing
+        return new InvoiceDtoInfo
+        {
+            InvoiceDto = new BlazorInvoiceDto
+            {
+                Id = Guid.NewGuid().ToString(),
+                IssueDate = DateTime.Today,
+                InvoiceTypeCode = "380",
+                DocumentCurrencyCode = "EUR",
+                GlobalTaxCategory = "S",
+                GlobalTaxScheme = "VAT",
+                GlobalTax = 0,
+                PayableAmount = 0,
+                PaymentTermsNote = "",
+                SellerParty = new SellerAnnotationDto(),
+                BuyerParty = new BuyerAnnotationDto(),
+                PaymentMeans = new PaymentAnnotationDto(),
+                InvoiceLines = []
+            },
+            SellerId = 0,
+            BuyerId = 0,
+            PaymentId = 0
+        };
+    }
+
+    protected override int GetEntityId(InvoiceEntity entity) => entity.Id ?? 0;
+
+    protected override async Task AfterCreatedAsync(int id, InvoiceDtoInfo dto)
+    {
+        Items.Add(new InvoiceEntity
+        {
+            Id = id,
+            Info = dto,
+            Year = dto.InvoiceDto.IssueDate.Year,
+            IsPaid = false,
+            IsImported = false,
+            UpdatedAt = DateTime.UtcNow
+        });
+        await InvokeAsync(StateHasChanged);
+    }
+
+    protected override async Task AfterUpdatedAsync(int id, InvoiceDtoInfo dto)
+    {
+        var existing = Items.FirstOrDefault(i => i.Id == id);
+        if (existing != null)
+            existing.Info = dto;
+        await InvokeAsync(StateHasChanged);
+    }
+}

@@ -26,7 +26,7 @@ public class PartyEntity
 
 public class InvoiceDtoInfo
 {
-    public InvoiceAnnotationDto InvoiceDto { get; set; } = null!;
+    public BlazorInvoiceDto InvoiceDto { get; set; } = null!;
     public int SellerId { get; set; }
     public int BuyerId { get; set; }
     public int PaymentId { get; set; }
