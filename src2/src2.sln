@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
-VisualStudioVersion = 18.0.11201.2 d18.0
+VisualStudioVersion = 18.0.11201.2
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "beinx.db", "beinx.db\beinx.db.csproj", "{2E9EA9C3-27B5-4845-B9A3-5CCC5943085A}"
 EndProject
@@ -12,6 +12,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "beinx.shared", "beinx.shared\beinx.shared.csproj", "{F985C838-448A-4130-A56B-9BCEA3610FB7}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "beinx.loc", "beinx.loc\beinx.loc.csproj", "{54B38BA8-2458-4DF6-99C1-C76DF3D412B8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "beinx.locbuilder", "beinx.locbuilder\beinx.locbuilder.csproj", "{7BAA7C0A-F626-4452-84B6-0545F9C33129}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -83,6 +85,18 @@ Global
 		{54B38BA8-2458-4DF6-99C1-C76DF3D412B8}.Release|x64.Build.0 = Release|Any CPU
 		{54B38BA8-2458-4DF6-99C1-C76DF3D412B8}.Release|x86.ActiveCfg = Release|Any CPU
 		{54B38BA8-2458-4DF6-99C1-C76DF3D412B8}.Release|x86.Build.0 = Release|Any CPU
+		{7BAA7C0A-F626-4452-84B6-0545F9C33129}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7BAA7C0A-F626-4452-84B6-0545F9C33129}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7BAA7C0A-F626-4452-84B6-0545F9C33129}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{7BAA7C0A-F626-4452-84B6-0545F9C33129}.Debug|x64.Build.0 = Debug|Any CPU
+		{7BAA7C0A-F626-4452-84B6-0545F9C33129}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{7BAA7C0A-F626-4452-84B6-0545F9C33129}.Debug|x86.Build.0 = Debug|Any CPU
+		{7BAA7C0A-F626-4452-84B6-0545F9C33129}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7BAA7C0A-F626-4452-84B6-0545F9C33129}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7BAA7C0A-F626-4452-84B6-0545F9C33129}.Release|x64.ActiveCfg = Release|Any CPU
+		{7BAA7C0A-F626-4452-84B6-0545F9C33129}.Release|x64.Build.0 = Release|Any CPU
+		{7BAA7C0A-F626-4452-84B6-0545F9C33129}.Release|x86.ActiveCfg = Release|Any CPU
+		{7BAA7C0A-F626-4452-84B6-0545F9C33129}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

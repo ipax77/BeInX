@@ -9,7 +9,4 @@ public interface IPaymentsRepository
     Task DeleteAsync(int id);
     Task<List<PaymentMeansEntity>> GetAllAsync();
     Task UpdateAsync(PaymentMeansEntity payment);
-    Task SaveDraftAsync(PaymentAnnotationDto dto, int? id);
-    Task<Draft<PaymentAnnotationDto>> LoadDraftAsync();
-    Task ClearDraftAsync();
 }

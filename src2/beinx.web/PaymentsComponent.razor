@@ -1,210 +1,98 @@
 @page "/payments"
-@using Microsoft.AspNetCore.Components.Forms
-@using Microsoft.Extensions.Localization
-@using Microsoft.JSInterop
-@using beinx.loc
 @using beinx.shared
 @using beinx.shared.Interfaces
+@using beinx.web.Bases
 @using beinx.web.Forms
 @using pax.XRechnung.NET.AnnotatedDtos
+@inherits DraftAwareComponentBase<PaymentAnnotationDto, PaymentMeansEntity>
 @inject IPaymentsRepository PaymentsRepository
-@inject IStringLocalizer<InvoiceLoc> Loc
-@inject IJSRuntime JSRuntime
-@implements IDisposable
 
-<h3>Payments</h3>
+<h3>
+@Loc["Payment Means"]</h3>
 
-@if (isLoading)
+@if (IsLoading)
 {
     <p><em>Loading...</em></p>
 }
+else if (IsEditing)
+{
+    <CascadingValue Value="EditContext" Name="paymentEditContext">
+        <PaymentForm Payment="@CurrentDraft.Data"
+                     OnValidSubmit="@SaveItemAsync"
+                     OnCancel="@(() => IsEditing = false)" />
+    </CascadingValue>
+}
 else
 {
-    @if (isEditing)
-    {
-        @if (editingId == null)
-        {
-            <h3>@Loc["Create New Payment Means"]</h3>
-        }
-        else
-        {
-            <h3>@Loc["Edit Payment Means"]</h3>
-        }
-        <CascadingValue Value="editContext" Name="paymentEditContext">
-        <PaymentForm Payment="@currentPayment"
-                     OnValidSubmit="@SavePayment"
-                     OnCancel="@CancelEdit"
-                     OnCodeListRequested="@ShowCodeList" />
-        </CascadingValue>
-    }
-    else
-    {
-        <button class="btn btn-primary mb-3" @onclick="NewPayment">@Loc["Add New Payment Means"]</button>
+    <button class="btn btn-primary mb-3" @onclick="NewItem">@Loc["Add New Payment Means"]</button>
 
-        @if (payments.Count == 0)
-        {
-            <p>No payments found.</p>
-        }
-        else
-        {
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>Bank Name</th>
-                        <th>IBAN</th>
-                        <th>BIC</th>
-                        <th>Type</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var p in payments)
-                    {
-                        <tr>
-                            <td>@p.Payment.Name</td>
-                            <td>@p.Payment.Iban</td>
-                            <td>@p.Payment.Bic</td>
-                            <td>@p.Payment.PaymentMeansTypeCode</td>
-                            <td>
-                                <button class="btn btn-sm btn-outline-secondary me-1" @onclick="() => EditPayment(p)">Edit</button>
-                                <button class="btn btn-sm btn-outline-danger" @onclick="() => DeletePayment(p.Id)">Delete</button>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        }
-    }
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Bank Name</th>
+                <th>IBAN</th>
+                <th>BIC</th>
+                <th>Type</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var p in Items)
+            {
+                <tr>
+                    <td>@p.Payment.Name</td>
+                    <td>@p.Payment.Iban</td>
+                    <td>@p.Payment.Bic</td>
+                    <td>@p.Payment.PaymentMeansTypeCode</td>
+                    <td>
+                        @if (p.Id.HasValue)
+                        {
+                            <button class="btn btn-sm btn-outline-secondary me-1"
+                            @onclick="() => EditItem(p.Id.Value, new PaymentAnnotationDto
+                                {
+                                    Name = p.Payment.Name,
+                                    Iban = p.Payment.Iban,
+                                    Bic = p.Payment.Bic,
+                                    PaymentMeansTypeCode = p.Payment.PaymentMeansTypeCode
+                                })">Edit</button>
+                            <button class="btn btn-sm btn-outline-danger"
+                            @onclick="() => DeleteItemAsync(p.Id.Value)">Delete</button>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
 }
 
 @code {
-    private List<PaymentMeansEntity> payments = new();
-    private bool isLoading = true;
-    private bool isEditing = false;
-    private PaymentAnnotationDto currentPayment = new();
-    private int? editingId = null;
-    EditContext editContext = null!;
-    private SemaphoreSlim darftSs = new(1, 1);
+    protected override Task<List<PaymentMeansEntity>> GetAllAsync()
+        => PaymentsRepository.GetAllAsync();
 
-    protected override async Task OnInitializedAsync()
-    {
-        editContext = new EditContext(currentPayment);
-        await LoadPaymentsAsync();
-        var draft = await PaymentsRepository.LoadDraftAsync();
-        if (draft is not null)
-        {
-            bool restore = await JSRuntime.InvokeAsync<bool>("confirm", "A draft was found. Restore it?");
-            if (restore)
-            {
-                currentPayment = draft.Data;
-                editingId = draft.EntityId > 0 ? draft.EntityId : null;
-                UpdateContext();
-                isEditing = true;
-            }
-            else
-            {
-				await PaymentsRepository.ClearDraftAsync();
-            }
-        }
-    }
+    protected override Task<int> CreateAsync(PaymentAnnotationDto dto)
+        => PaymentsRepository.CreateAsync(dto);
 
-    private async Task LoadPaymentsAsync()
+    protected override Task UpdateAsync(int id, PaymentAnnotationDto dto)
+        => PaymentsRepository.UpdateAsync(new PaymentMeansEntity { Id = id, Payment = dto });
+
+    protected override Task DeleteAsync(int id)
+        => PaymentsRepository.DeleteAsync(id);
+
+    protected override PaymentAnnotationDto CreateNewDto()
+        => new();
+
+    protected override int GetEntityId(PaymentMeansEntity entity) => entity.Id ?? 0;
+
+    protected override async Task AfterCreatedAsync(int id, PaymentAnnotationDto dto)
     {
-        isLoading = true;
-        await InvokeAsync(StateHasChanged);
-        payments = await PaymentsRepository.GetAllAsync();
-        isLoading = false;
+        Items.Add(new PaymentMeansEntity { Id = id, Payment = dto });
         await InvokeAsync(StateHasChanged);
     }
 
-    private void NewPayment()
+    protected override async Task AfterUpdatedAsync(int id, PaymentAnnotationDto dto)
     {
-        currentPayment = new PaymentAnnotationDto();
-        editingId = null;
-        UpdateContext();
-        isEditing = true;
+        var existing = Items.FirstOrDefault(p => p.Id == id);
+        if (existing != null) existing.Payment = dto;
+        await InvokeAsync(StateHasChanged);
     }
-
-    private void EditPayment(PaymentMeansEntity entity)
-    {
-        currentPayment = new PaymentAnnotationDto
-        {
-            Name = entity.Payment.Name,
-            Iban = entity.Payment.Iban,
-            Bic = entity.Payment.Bic,
-            PaymentMeansTypeCode = entity.Payment.PaymentMeansTypeCode
-        };
-        editingId = entity.Id;
-        UpdateContext();
-        isEditing = true;
-    }
-
-    private async Task SavePayment(PaymentAnnotationDto dto)
-    {
-        if (editingId is null)
-        {
-            var id = await PaymentsRepository.CreateAsync(dto);
-            payments.Add(new PaymentMeansEntity { Id = id, Payment = dto });
-        }
-        else
-        {
-            var existing = payments.FirstOrDefault(p => p.Id == editingId);
-            if (existing is not null)
-                existing.Payment = dto;
-            await PaymentsRepository.UpdateAsync(new PaymentMeansEntity { Id = editingId.Value, Payment = dto });
-        }
-        await PaymentsRepository.ClearDraftAsync();
-        isEditing = false;
-    }
-
-
-    private void CancelEdit()
-    {
-        PaymentsRepository.ClearDraftAsync();
-        isEditing = false;
-    }
-
-    private async Task DeletePayment(int? id)
-    {
-        if (!id.HasValue)
-			return;
-        await PaymentsRepository.DeleteAsync(id.Value);
-        payments.RemoveAll(p => p.Id == id.Value);
-    }
-
-
-    private void ShowCodeList(string listName)
-    {
-        // optional: open modal or code picker
-    }
-
-    private void UpdateContext()
-    {
-        editContext.OnFieldChanged -= FieldChanged;
-        editContext = new EditContext(currentPayment);
-        editContext.OnFieldChanged += FieldChanged;
-    }
-
-    private void FieldChanged(object? sender, FieldChangedEventArgs e)
-    {
-        _ = SaveDraft();
-    }
-
-    private async Task SaveDraft()
-    {
-        await darftSs.WaitAsync();
-        try
-        {
-            await PaymentsRepository.SaveDraftAsync(currentPayment, editingId);
-        }
-        finally
-        {
-            darftSs.Release();
-		}
-    }
-
-    public void Dispose()
-    {
-        editContext.OnFieldChanged -= FieldChanged;
-	}
 }

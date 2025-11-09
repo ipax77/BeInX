@@ -102,7 +102,7 @@ export class PaymentRepository {
         return await this.drafts.getDraft(STORES.payments);
     }
 
-    async clearTempPayment() {
-        await this.drafts.clearDraft(STORES.payments);
+    async clearTempPayment(entityId?: number) {
+        await this.drafts.clearDraft(STORES.payments, entityId);
     }
 }

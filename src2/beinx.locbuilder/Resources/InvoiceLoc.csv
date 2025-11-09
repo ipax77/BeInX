@@ -1,0 +1,169 @@
+Name;Value;Value_de-De;Value_es-ES;Value_fr-FR
+BT-1;A unique identifier of the invoice that identifies it in the seller's system. ;Eine eindeutige Kennung der Rechnung, die diese im System des Verkäufers identifiziert.;Un identificador único de la factura que la identifica en el sistema del vendedor. ;Un identifiant unique de la facture qui l'identifie dans le système du vendeur.
+BT-2;The date the invoice was issued. ;Das Datum, an dem die Rechnung ausgestellt wurde.;La fecha en que se emitió la factura. ;La date à laquelle la facture a été émise. 
+BT-9;The due date of the invoice amount. ;Das Fälligkeitsdatum des Rechnungsbetrages.;La fecha de vencimiento del importe de la factura. ;La date d'échéance du montant de la facture.
+BT-3;A code indicating the functional type of the invoice. ;Ein Code, der den Funktionstyp der Rechnung angibt.;Un código que indica el tipo funcional de la factura. ;Un code indiquant le type fonctionnel de la facture. 
+BT-5;The currency in which all invoice amounts are stated.;Die Währung, in der alle Rechnungsbeträge angegeben werden.;La moneda en la que se expresan todos los importes de la factura.;La devise dans laquelle tous les montants de la facture sont indiqués.
+BT-10;An identifier assigned by the buyer and used for internal management purposes. ;Ein vom Erwerber zugewiesener und für interne Lenkungszwecke benutzter Bezeichner.;Un identificador asignado por el comprador y utilizado para fines de gestión interna. ;Un identifiant attribué par l'acheteur et utilisé à des fins de gestion interne. 
+BT-20;A text description of the payment terms applicable to the amount due.;Eine Textbeschreibung der Zahlungsbedingungen, die für den fälligen Zahlungsbetrag gelten.;Una descripción textual de las condiciones de pago aplicables al importe adeudado.;Une description textuelle des conditions de paiement applicables au montant dû.
+BT-27;The full name under which the seller is registered in the national register for legal entities or as a taxable person, or otherwise operates as a business entity (company name). ;Der vollständige Name, unter dem der Verkäufer im nationalen Register für juristische Personen oder als steuerpflichtige Person eingetragen ist oder anderweitig als Person(en) handelt (Firma).;El nombre completo con el que el vendedor está registrado en el registro nacional de entidades legales o como persona sujeta a impuestos, o actúa de otra manera como entidad comercial (nombre de la empresa). ;Le nom complet sous lequel le vendeur est enregistré dans le registre national des entités juridiques ou en tant que personne assujettie à la TVA, ou agit autrement en tant qu'entité commerciale (nom de l'entreprise). 
+BT-28;A name by which the seller is known, if different from the seller's legal name.;Ein Name, unter dem der Verkäufer bekannt ist, sofern abweichend vom Namen des Verkäufers.;Un nombre con el que se conoce al vendedor, si difiere del nombre legal del vendedor.;Un nom sous lequel le vendeur est connu, s’il est différent de son nom légal.
+BT-35;"The main line in an address. This is typically either the street name and house number or the text ""P.O. Box"" followed by the P.O. Box number. ";Die Hauptzeile in einer Anschrift. Üblicherweise ist dies entweder Strasse und Hausnummer oder der Text „Postfach“ gefolgt von der Postfachnummer.;"La línea principal en una dirección. Normalmente, esto es el nombre de la calle y el número de la casa, o el texto ""Apartado de correos"" seguido del número del apartado. ";"La ligne principale d'une adresse. Cela correspond généralement au nom de la rue et au numéro de maison, ou au texte ""Boîte postale"" suivi du numéro de boîte postale. "
+BT-37;The name of the city or municipality where the seller's address is located. ;Die Bezeichnung der Stadt oder Gemeinde, in der sich die Verkäuferanschrift befindet. ;El nombre de la ciudad o municipio donde se encuentra la dirección del vendedor. ;Le nom de la ville ou de la commune où se trouve l'adresse du vendeur. 
+BT-38;The postal code. ;Die Postleitzahl.;El código postal. ;Le code postal.
+BT-31;The VAT identification number of the seller.;Die Umsatzsteuer-Identifikationsnummer des Verkäufers.;El número de identificación del IVA del vendedor.;Le numéro d’identification TVA du vendeur.
+BT-32;A local tax identifier of the seller.;Eine örtliche steuerrechtliche Kennung des Verkäufers.;Un identificador fiscal local del vendedor.;Un identifiant fiscal local du vendeur.
+BT-40;A code used to designate the country.;Ein Code, mit dem das Land bezeichnet wird.;Un código utilizado para designar el país.;Un code utilisé pour désigner le pays.
+BT-41;Details of a contact person or contact point (such as the name of a person, department, or office designation). ;Angaben zu Ansprechpartner oder Kontaktstelle (wie z. B. Name einer Person, Abteilungs- oder Bürobezeichnung).;Detalles de una persona de contacto o punto de contacto (como el nombre de una persona, departamento o designación de oficina).;Détails d'une personne de contact ou d'un point de contact (comme le nom d'une personne, un département ou une désignation de bureau).
+BT-42;Telephone number of the contact person or contact point. ;Telefonnummer des Ansprechpartners oder der Kontaktstelle.;Número de teléfono de la persona de contacto o del punto de contacto. ;Numéro de téléphone de la personne de contact ou du point de contact.
+BT-43;An email address of the contact person or contact point. ;Eine E-Mail-Adresse des Ansprechpartners oder der Kontaktstelle.;Una dirección de correo electrónico de la persona de contacto o del punto de contacto. ;Une adresse e-mail de la personne de contact ou du point de contact. 
+BT-81;The expected or used means of payment expressed as a code.;Das als Code ausgedrückte erwartete oder genutzte Zahlungsmittel.;El medio de pago esperado o utilizado expresado como un código.;Le moyen de paiement prévu ou utilisé, exprimé sous forme de code.
+BT-118;The code for the VAT category applicable to the invoiced item.;Der Code der für den in Rechnung gestellten Posten geltenden Umsatzsteuerkategorie.;El código de la categoría del IVA aplicable al artículo facturado.;Le code de la catégorie de TVA applicable à l'article facturé.
+BT-118-global;Encoded designation of the VAT category, e.g., 'S' for standard.;Codierte Bezeichnung der Umsatzsteuerkategorie, z.B. 'S' für Standard.;Denominación codificada de la categoría del IVA, por ejemplo, 'S' para estándar.;Désignation codée de la catégorie de TVA, par exemple 'S' pour standard.
+BT-119;The percentage of VAT applicable to the invoiced item.;Der Prozentsatz der Umsatzsteuer, der für den in Rechnung gestellten Posten gilt.;El porcentaje de IVA aplicable al artículo facturado.;Le pourcentage de TVA applicable à l'article facturé.
+BT-127;A text note containing unstructured information relevant to the invoice line item.;Ein Textvermerk, der unstrukturierte Informationen enthält, die für die Rechnungsposition maßgeblich sind.;Una nota de texto que contiene información no estructurada relevante para la línea de factura.;Une note textuelle contenant des informations non structurées pertinentes pour la ligne de facture.
+BT-128;An identifier provided by the seller for an item to which the invoice line refers.;Eine vom Verkäufer angegebene Kennung für ein Objekt, auf das sich die Rechnungsposition bezieht.;Un identificador proporcionado por el vendedor para un objeto al que se refiere la línea de factura.;Un identifiant fourni par le vendeur pour un objet auquel se réfère la ligne de facture.
+BT-129;The quantity of the individual items (goods or services) invoiced in the respective line.;Die Menge zu dem in der betreffenden Zeile in Rechnung gestellten Einzelposten (Waren oder Dienstleistungen).;La cantidad de los artículos individuales (bienes o servicios) facturados en la línea correspondiente.;La quantité des articles individuels (biens ou services) facturés dans la ligne correspondante.
+BT-131;The total amount of the invoice line. This is the amount excluding VAT but including all discounts, charges, and other applicable taxes related to the invoice line.;Der Gesamtbetrag der Rechnungsposition. Dies ist der Betrag ohne Umsatzsteuer, aber einschließlich aller für die Rechnungsposition geltenden Nachlässe und Abgaben sowie sonstiger anfallender Steuern.;El importe total de la línea de factura. Este es el importe sin incluir el IVA, pero incluyendo todos los descuentos, cargos y otros impuestos aplicables a la línea de factura.;Le montant total de la ligne de facture. Il s'agit du montant hors TVA, mais incluant tous les remises, charges et autres taxes applicables à la ligne de facture.
+BT-133;A text value indicating where the relevant data should be recorded in the buyer's financial accounts.;Ein Textwert, der angibt, an welcher Stelle die betreffenden Daten in den Finanzkonten des Erwerbers zu buchen sind.;Un valor de texto que indica dónde deben registrarse los datos correspondientes en las cuentas financieras del comprador.;Une valeur textuelle indiquant où les données pertinentes doivent être enregistrées dans les comptes financiers de l'acheteur.
+BT-134;The date on which the billing period for the relevant invoice line begins.;Das Datum, an dem der Abrechnungszeitraum der betreffenden Rechnungsposition beginnt.;La fecha en que comienza el período de facturación de la línea de factura correspondiente.;La date de début de la période de facturation pour la ligne de facture concernée.
+BT-135;The date on which the billing period for the relevant invoice line ends.;Das Datum, an dem der Abrechnungszeitraum der betreffenden Rechnungsposition endet.;La fecha en que finaliza el período de facturación de la línea de factura correspondiente.;La date à laquelle se termine la période de facturation pour la ligne de facture concernée.
+BT-146;The price of an item, excluding VAT, after applying the discount applicable to this invoice line.;Der Preis eines Postens, ohne Umsatzsteuer, nach Abzug des für diese Rechnungsposition geltenden Rabatts.;El precio de un artículo, sin IVA, después de aplicar el descuento correspondiente a esta línea de factura.;Le prix d’un article, hors TVA, après déduction de la remise applicable à cette ligne de facture.
+BT-147;The total discount subtracted from the gross item price to calculate the net item price.;Der gesamte zur Berechnung des Netto-Postenpreises vom Brutto-Postenpreis subtrahierte Rabatt.;El descuento total restado del precio bruto del artículo para calcular el precio neto del artículo.;Le rabais total soustrait du prix brut de l'article pour calculer le prix net de l'article.
+BT-149;The number of units for which the item price applies.;Die Anzahl von Einheiten, für die der Postenpreis gilt.;El número de unidades para las que se aplica el precio del artículo.;Le nombre d'unités pour lesquelles le prix de l'article s'applique.
+BT-153;A name of the item.;Ein Name des Postens.;Un nombre del artículo.;Un nom de l’article.
+BT-154;A description of the item.;Eine Beschreibung des Postens.;Una descripción del artículo.;Une description de l'article.
+BT-155;Seller's identifier for the item. (Optional);Verkäufer-Kennung des Postens. (Optional);Identificador del artículo proporcionado por el vendedor. (Opcional);Identifiant de l'article fourni par le vendeur. (Optionnel)
+BT-156;Buyer's identifier for the item. (Optional);Käufer-Kennung des Postens. (Optional);Identificador del artículo proporcionado por el comprador. (Opcional);Identifiant de l'article fourni par l'acheteur. (Optionnel)
+BT-157;Standard identifier for the item. (Optional);Standard-Kennung des Postens. (Optional);Identificador estándar del artículo. (Opcional);Identifiant standard de l'article. (Optionnel)
+BT-160;"The name of the item's property, such as ""Color.""";"Der Name der Eigenschaft des Postens, wie z. B. ""Farbe"".";"El nombre de la propiedad del artículo, como ""Color.""";"Le nom de la propriété de l'article, comme ""Couleur."""
+BT-161;"The value of the item's property, such as ""red.""";"Der Wert der Eigenschaft des Postens, wie z. B. ""rot"".";"El valor de la propiedad del artículo, como ""rojo.""";"La valeur de la propriété de l'article, comme ""rouge."""
+BG-1;Invoice-relevant notes with references to the invoice subject.;Rechnungsrelevante Erläuterungen mit Hinweisen auf den Rechnungsbetreff.;Notas relevantes para la factura con referencias al asunto de la misma.;Notes pertinentes pour la facture avec des références à l’objet de celle-ci.
+GlobalTaxScheme;Name of the global tax scheme, defaults to 'VAT'.;Name des globalen Steuersystems, Standardwert ist 'VAT'.;Nombre del régimen fiscal global, por defecto es 'VAT'.;Nom du régime fiscal global, la valeur par défaut est 'VAT'.
+GlobalTax;The tax rate for all invoice items. 0% means small business regulation applies.;Der Steuersatz für alle Rechnungspositionen. 0% bedeutet Kleinunternehmerregelung.;El tipo impositivo para todos los conceptos de la factura. 0% significa que se aplica el régimen de pequeña empresa.;Le taux de TVA pour toutes les lignes de facture. 0 % signifie que le régime de la petite entreprise s’applique.
+LID;Auto generated ID;Automatisch generierte ID;ID generada automáticamente;ID généré automatiquement
+Dashboard;Dashboard;Dashboard;Panel de control;Tableau de bord
+Invoice;Invoice;Rechnung;Factura;Facture
+Invoices;Invoices;Rechnungen;Facturas;Factures
+New Invoice;New Invoice;Neue Rechnung;Nueva factura;Nouvelle facture
+Parties;Parties;Parteien;Partes;Parties
+Seller;Seller;Verkäufer;Vendedor;Vendeur
+Sellers;Sellers;Verkäufer;Vendedores;Vendeurs
+Buyer;Buyer;Käufer;Comprador;Acheteur
+Buyers;Buyers;Käufer;Compradores;Acheteurs
+Means of Payments;Means of Payments;Zahlungsmittel;Medios de pago;Moyens de paiement
+Import;Import;Importieren;Importar;Importer
+Settings;Settings;Einstellungen;Configuración;Paramètres
+Total Invoices;Total Invoices;Gesamtzahl der Rechnungen;Total de facturas;Total des factures
+Paid;Paid;Bezahlt;Pagado;Payé
+Unpaid;Unpaid;Unbezahlt;Impago;Impayé
+Unfinished invoice found!;Unfinished invoice found!;Unvollständige Rechnung gefunden!;¡Factura incompleta encontrada!;Facture inachevée trouvée !
+Unpaid Invoices;Unpaid Invoices;Unbezahlte Rechnungen;Facturas impagas;Factures impayées
+Stats For Year;Stats For Year;Statistiken für das Jahr;Estadísticas del año;Statistiques de l’année
+Time Period;Time Period;Zeitraum;Período de tiempo;Période de temps
+Amount;Amount;Betrag;Importe;Montant
+Amount (tax exclusive);Amount (tax exclusive);Betrag (ohne Steuern);Importe (sin impuestos);Montant (hors taxes)
+Total;Total;Gesamt;Total;Total
+Search;Search;Suchen;Buscar;Rechercher
+Issue Date;Issue Date;Ausstellungsdatum;Fecha de emisión;Date d’émission
+Buyer Email;Buyer Email;E-Mail des Käufers;Correo electrónico del comprador;E-mail de l’acheteur
+No data found;No data found;Keine Daten gefunden;No se encontraron datos;Aucune donnée trouvée
+Create New Invoice;Create New Invoice;Neue Rechnung erstellen;Crear nueva factura;Créer une nouvelle facture
+Edit Invoice;Edit Invoice;Rechnung bearbeiten;Editar factura;Modifier la facture
+Show Descriptions;Show Descriptions;Beschreibungen anzeigen;Mostrar descripciones;Afficher les descriptions
+Create New Seller;Create New Seller;Neuen Verkäufer anlegen;Crear nuevo vendedor;Créer un nouveau vendeur
+Edit Seller;Edit Seller;Verkäufer bearbeiten;Editar vendedor;Modifier le vendeur
+Create New Buyer;Create New Buyer;Neuen Käufer anlegen;Crear nuevo comprador;Créer un nouvel acheteur
+Edit Buyer;Edit Buyer;Käufer bearbeiten;Editar comprador;Modifier l’acheteur
+Create New Payment Means;Create New Payment Means;Neues Zahlungsmittel anlegen;Crear nuevo medio de pago;Créer un nouveau moyen de paiement
+Edit Payment Means;Edit Payment Means;Zahlungsmittel bearbeiten;Editar medio de pago;Modifier le moyen de paiement
+Create New Line;Create New Line;Neue Position anlegen;Crear nueva línea;Créer une nouvelle ligne
+Edit Line;Edit Line;Position bearbeiten;Editar línea;Modifier la ligne
+Select or Create Seller;Select or Create Seller;Verkäufer auswählen oder anlegen;Seleccionar o crear vendedor;Sélectionner ou créer un vendeur
+Add New Seller;Add New Seller;Neuen Verkäufer hinzufügen;Agregar nuevo vendedor;Ajouter un nouveau vendeur
+Add New Buyer;Add New Buyer;Neuen Käufer hinzufügen;Agregar nuevo comprador;Ajouter un nouvel acheteur
+Select or Create Buyer;Select or Create Buyer;Käufer auswählen oder anlegen;Seleccionar o crear comprador;Sélectionner ou créer un acheteur
+Select or Create Payment Means;Select or Create Payment Means;Zahlungsmittel auswählen oder anlegen;Seleccionar o crear medio de pago;Sélectionner ou créer un moyen de paiement
+Add New Payment Means;Add New Payment Means;Neues Zahlungsmittel hinzufügen;Agregar nuevo medio de pago;Ajouter un nouveau moyen de paiement
+Payment Means;Payment Means;Zahlungsmittel;Medios de pago;Moyens de paiement
+Invoice Lines;Invoice Lines;Rechnungspositionen;Líneas de factura;Lignes de facture
+Import Lines;Import Lines;Importierte Positionen;Líneas importadas;Lignes importées
+Line Import;Line Import;Positionsimport;Importación de líneas;Importation de lignes
+Line;Line;Position;Línea;Ligne
+Add New Line;Add New Line;Neue Position hinzufügen;Agregar nueva línea;Ajouter une nouvelle ligne
+Save;Save;Speichern;Guardar;Enregistrer
+Export;Export;Exportieren;Exportar;Exporter
+Edit;Edit;Bearbeiten;Editar;Modifier
+Remove;Remove;Entfernen;Eliminar;Supprimer
+Validation;Validation;Validierung;Validación;Validation
+LineImpDesc;Paste your time tracking data in the following tab-separated format (TSV). Each line should include:;Fügen Sie Ihre Zeiterfassungsdaten im folgenden tabulatorgetrennten Format (TSV) ein. Jede Zeile sollte enthalten:;Pegue sus datos de seguimiento de tiempo en el siguiente formato separado por tabulaciones (TSV). Cada línea debe incluir:;Collez vos données de suivi du temps au format suivant, séparé par des tabulations (TSV). Chaque ligne doit inclure :
+ImpDesc;Copy Paste the xml text here or select file;Kopieren Sie den XML-Text hierher oder wählen Sie eine Datei aus;Copie y pegue el texto XML aquí o seleccione un archivo;Copiez-collez le texte XML ici ou sélectionnez un fichier
+ValFailed;validation failed. Please check the XML structure.;Validierung fehlgeschlagen. Bitte überprüfen Sie die XML-Struktur.;La validación falló. Por favor, revise la estructura del XML.;Échec de la validation. Veuillez vérifier la structure du XML.
+ParseFailed;Failed to parse XML.;XML konnte nicht geparst werden.;No se pudo analizar el XML.;Échec de l’analyse du XML.
+Delete;Delete;Löschen;Eliminar;Supprimer
+DeleteInvoice;Are you sure you want to delete this invoice?;Möchten Sie diese Rechnung wirklich löschen?;¿Está seguro de que desea eliminar esta factura?;Êtes-vous sûr de vouloir supprimer cette facture ?
+Cancel;Cancel;Abbrechen;Cancelar;Annuler
+Delete Invoice;Delete Invoice;Rechnung löschen;Eliminar factura;Supprimer la facture
+Invoice deleted.;Invoice deleted.;Rechnung gelöscht.;Factura eliminada.;Facture supprimée.
+Select File;Select File;Datei auswählen;Seleccionar archivo;Sélectionner un fichier
+Set Paid;Set Paid;Als bezahlt markieren;Marcar como pagado;Marquer comme payé
+Set Unpaid;Set Unpaid;Als unbezahlt markieren;Marcar como no pagado;Marquer comme non payé
+Copy;Copy;Kopieren;Copiar;Copier
+Delete Party;Delete Party;Partei löschen;Eliminar parte;Supprimer la partie
+DeleteParty;Are you sure you want to delete this party?;Möchten Sie diese Partei wirklich löschen?;¿Está seguro de que desea eliminar esta parte?;Êtes-vous sûr de vouloir supprimer cette partie ?
+Delete Payment Means;Delete Payment Means;Zahlungsmittel löschen;Eliminar medio de pago;Supprimer le moyen de paiement
+DeletePaymentMeans;Are you sure you want to delete this payment means?;Möchten Sie dieses Zahlungsmittel wirklich löschen?;¿Está seguro de que desea eliminar este medio de pago?;Êtes-vous sûr de vouloir supprimer ce moyen de paiement ?
+Kosit validator uri;Kosit validator uri;Kosit-Validator-URI;URI del validador Kosit;URI du validateur Kosit
+KositDesc;Kosit validation URI. You can use {0} for testing.;Kosit-Validierungs-URI. Sie können {0} zum Testen verwenden.;URI de validación de Kosit. Puede usar {0} para pruebas.;URI de validation Kosit. Vous pouvez utiliser {0} pour les tests.
+Show Form Descriptions;Show Form Descriptions;Formularbeschreibungen anzeigen;Mostrar descripciones del formulario;Afficher les descriptions du formulaire
+Show XML Validation Warnings;Show XML Validation Warnings;XML-Validierungswarnungen anzeigen;Mostrar advertencias de validación XML;Afficher les avertissements de validation XML
+Backup Options;Backup Options;Sicherungsoptionen;Opciones de respaldo;Options de sauvegarde
+Folder;Folder;Ordner;Carpeta;Dossier
+Interval;Interval;Intervall;Intervalo;Intervalle
+No Backup;No Backup;Keine Sicherung;Sin copia de seguridad;Pas de sauvegarde
+On Close;On Close;Beim Schließen;Al cerrar;À la fermeture
+Every 30 days;Every 30 days;Alle 30 Tage;Cada 30 días;Tous les 30 jours
+Every 90 days;Every 90 days;Alle 90 Tage;Cada 90 días;Tous les 90 jours
+Export Options;Export Options;Exportoptionen;Opciones de exportación;Options d’exportation
+Embed PDF;Embed PDF;PDF einbetten;In PDF einbetten;Intégrer le PDF
+EmbedPDF;Embed invoice as PDF in the XML document.;Rechnung als PDF im XML-Dokument einbetten.;Incluir la factura como PDF en el documento XML.;Intégrer la facture en PDF dans le document XML.
+Validate XML;Validate XML;XML validieren;Validar XML;Valider XML
+ValidateXML;Validate XML before export.;XML vor dem Export validieren.;Validar XML antes de la exportación.;Valider le XML avant l’exportation.
+Finalize;Finalize;Abschließen;Finalizar;Finaliser
+FinalizeDesc;Store XML and Hash in the database.;XML und Hash in der Datenbank speichern.;Almacenar XML y hash en la base de datos.;Stocker le XML et le hash dans la base de données.
+Stats Options;Stats Options;Statistikoptionen;Opciones de estadísticas;Options de statistiques
+StatsOptions;Day of the end of the month of the pre-registration period.;Tag des Monatsendes des Voranmeldezeitraums.;Día del final del mes del período de preregistro.;Jour de la fin du mois de la période de préinscription.
+Monthly Period;Monthly Period;Monatlicher Zeitraum;Periodo mensual;Période mensuelle
+MonthlyPeriod;Monthly or quarterly period.;Monatlicher oder vierteljährlicher Zeitraum.;Periodo mensual o trimestral.;Période mensuelle ou trimestrielle.
+Backup;Backup;Sicherung;Copia de seguridad;Sauvegarde
+Restore;Restore;Wiederherstellen;Restaurar;Restaurer
+Month End Day;Month End Day;Monatsletzter Tag;Día de fin de mes;Jour de fin de mois
+Backup Database;Backup Database;Datenbank sichern;Respaldar base de datos;Sauvegarder la base de données
+Restore Database;Restore Database. WARNING: All current data will be overwritten!;Datenbank wiederherstellen. WARNUNG: Alle aktuellen Daten werden überschrieben!;Restaurar base de datos. ¡ADVERTENCIA: Todos los datos actuales serán sobrescritos!;Restaurer la base de données. ATTENTION : Toutes les données actuelles seront écrasées !
+Warning;Warning;Warnung;Advertencia;Avertissement
+SaveWarning;You have unsaved changes. Do you want to save, now?;Sie haben ungespeicherte Änderungen. Möchten Sie jetzt speichern?;Tiene cambios no guardados. ¿Desea guardar ahora?;Vous avez des modifications non enregistrées. Voulez-vous enregistrer maintenant ?
+Invoice Export;Invoice Export;Rechnungsexport;Exportación de facturas;Exportation de factures
+Close;Close;Schließen;Cerrar;Fermer
+Unfinished Invoice;Unfinished Invoice;Unvollständige Rechnung;Factura incompleta;Facture inachevée
+InvContinue;It seems you have an unfinished invoice. Would you like to continue working on it?;Es scheint, dass Sie eine unvollständige Rechnung haben. Möchten Sie weiter daran arbeiten?;Parece que tiene una factura incompleta. ¿Desea continuar trabajando en ella?;Il semble que vous avez une facture inachevée. Voulez-vous continuer à y travailler ?
+Continue;Continue;Weiter;Continuar;Continuer
+Discard;Discard;Verwerfen;Descartar;Jeter
+DiscardDesc;Click {0} to resume editing or {1} to start a new invoice.;Klicken Sie auf {0}, um die Bearbeitung fortzusetzen, oder auf {1}, um eine neue Rechnung zu beginnen.;Haga clic en {0} para reanudar la edición o en {1} para comenzar una nueva factura.;Cliquez sur {0} pour reprendre la modification ou sur {1} pour commencer une nouvelle facture.
+Language;Language;Sprache;Idioma;Langue
+ChartTitle;Paid Invoices Tax Exclusive Amount;Bezahlt: Betrag ohne Umsatzsteuer;Importe sin impuestos de facturas pagadas;Montant hors taxes des factures payées
+Create Sample Invoice;Create Sample Invoice;Beispielrechnung erstellen;Crear factura de ejemplo;Créer une facture d'exemple
+KositWarn;Only enter trusted Servers or setup your own.;Geben Sie nur vertrauenswürdige Server ein oder richten Sie Ihren eigenen ein.;Ingrese solo servidores confiables o configure el suyo propio.;N'entrez que des serveurs de confiance ou configurez le vôtre.
+External Link;External Link;Externer Link;Enlace externo;Lien externe
+Update Check;Update Check;Update-Prüfung;Verificación de actualizaciones;Vérification des mises à jour
+UpdateCheck;Check for new version on app start;Beim Start der App nach neuer Version suchen;Buscar nueva versión al iniciar la aplicación;Vérifier une nouvelle version au démarrage de l'application
+Update Available;Update Available;Update verfügbar;Actualización disponible;Mise à jour disponible
+UpdateAvailable;A new version is available. Do you want to update?;Eine neue Version ist verfügbar. Möchten Sie aktualisieren?;Hay una nueva versión disponible. ¿Desea actualizar?;Une nouvelle version est disponible. Voulez-vous mettre à jour ?
+Yes;Yes;Ja;Sí;Oui
+No;No;Nein;No;Non
+ExportXmlAndPdf;Export both XML and PDF as zip file.;XML und PDF gemeinsam als ZIP-Datei exportieren.;Exportar tanto XML como PDF como archivo zip.;Exporter à la fois le XML et le PDF en fichier zip.
+ExportXml;Export only XML file.;Nur XML-Datei exportieren.;Exportar solo archivo XML.;Exporter uniquement le fichier XML.
+ExportPdf;Export only PDF file.;Nur PDF-Datei exportieren.;Exportar solo archivo PDF.;Exporter uniquement le fichier PDF.
+ExportPdfA3;Export PDF with embedded XML for ZUGFeRD compatibility (PDF/A3b).;PDF mit eingebettetem XML für ZUGFeRD-Kompatibilität exportieren (PDF/A3b).;Exportar PDF con XML incrustado para compatibilidad con ZUGFeRD (PDF/A3b).;Exporter le PDF avec XML intégré pour compatibilité ZUGFeRD (PDF/A3b).
+Parse;Parse;Parsen;Analizar;Analyser
+Clear;Clear;Löschen;Limpiar;Effacer
+DraftRestore;A draft was found. Restore it?;Es wurde ein Entwurf gefunden. Wiederherstellen?;Se encontró un borrador. ¿Restaurarlo?;Un brouillon a été trouvé. Le restaurer ?

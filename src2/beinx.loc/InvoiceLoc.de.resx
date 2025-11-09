@@ -559,4 +559,7 @@
   <data name="Clear" xml:space="preserve">
     <value>Löschen</value>
   </data>
+  <data name="DraftRestore" xml:space="preserve">
+    <value>Es wurde ein Entwurf gefunden. Wiederherstellen?</value>
+  </data>
 </root>

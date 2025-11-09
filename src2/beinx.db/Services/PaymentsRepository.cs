@@ -4,7 +4,7 @@ using pax.XRechnung.NET.AnnotatedDtos;
 
 namespace beinx.db.Services;
 
-public class PaymentsRepository(IIndexedDbInterop _interop) : IPaymentsRepository
+public class PaymentsRepository(IIndexedDbInterop _interop) : IPaymentsRepository, IDraftRepository<PaymentAnnotationDto>
 {
 
     public Task<int> CreateAsync(PaymentAnnotationDto dto)
@@ -22,12 +22,25 @@ public class PaymentsRepository(IIndexedDbInterop _interop) : IPaymentsRepositor
     public async Task Clear()
         => await _interop.CallVoidAsync("paymentRepository.clea");
 
-    public async Task SaveDraftAsync(PaymentAnnotationDto dto, int? id)
-        => await _interop.CallVoidAsync("paymentRepository.saveTempPayment", dto, id ?? default);
+    public async Task<DraftState<PaymentAnnotationDto>?> LoadDraftAsync()
+    {
+        var draft = await _interop.CallAsync<Draft<PaymentAnnotationDto>>("paymentRepository.loadTempPayment");
+        if (draft == null)
+            return null;
+        return new DraftState<PaymentAnnotationDto>()
+        {
+            EntityId = draft.EntityId,
+            Data = draft.Data
+        };
+    }
 
-    public async Task<Draft<PaymentAnnotationDto>> LoadDraftAsync()
-        => await _interop.CallAsync<Draft<PaymentAnnotationDto>>("paymentRepository.loadTempPayment");
+    public async Task SaveDraftAsync(DraftState<PaymentAnnotationDto> draft)
+    {
+        await _interop.CallVoidAsync("paymentRepository.saveTempPayment", draft.Data, draft.EntityId ?? default);
+    }
 
-    public async Task ClearDraftAsync()
-        => await _interop.CallVoidAsync("paymentRepository.clearTempPayment");
+    public async Task ClearDraftAsync(int? entityId)
+    {
+        await _interop.CallVoidAsync("paymentRepository.clearTempPayment", entityId ?? default);
+    }
 }

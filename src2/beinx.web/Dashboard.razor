@@ -1,10 +1,12 @@
 @using Microsoft.Extensions.Localization
+@using Microsoft.Extensions.Logging
 @using beinx.loc
 @using beinx.shared
 @using beinx.shared.Interfaces
 @inject IIndexedDbInterop IndexedDbInterop
 @inject IStringLocalizer<InvoiceLoc> Loc
 @inject NavigationManager NavigationManager
+@inject ILogger<Dashboard> Logger
 
 <div class="container-fluid mt-3">
 	<div class="row">
@@ -61,23 +63,15 @@
 	protected override async Task OnInitializedAsync()
 	{
 		drafts = await IndexedDbInterop.GetAllDrafts();
-	}
-
-	protected override void OnAfterRender(bool firstRender)
-	{
-		if (firstRender)
+		if (drafts.Count > 0)
 		{
-			if (drafts.Count > 0)
-			{
-				NavigateToDraft(drafts[0]);
-			}
+			NavigateToDraft(drafts[0]);
 		}
-		base.OnAfterRender(firstRender);
 	}
 
 	private void NavigateToDraft(Draft<object> draft)
 	{
-		Console.WriteLine(draft.EntityType);
+		Logger.LogWarning(draft.EntityType);
 		switch (draft.EntityType)
 		{
 			case "PaymentMeans":
