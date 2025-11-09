@@ -51,6 +51,8 @@ bld/
 /src2/beinx.db/wwwroot/js/*.js
 /src2/beinx.db/wwwroot/js/*.js.map
 
+/src2/beinx.pwa/dist
+
 # Visual Studio 2017 auto generated files
 Generated\ Files/
 
