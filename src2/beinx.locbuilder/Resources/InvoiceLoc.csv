@@ -167,3 +167,6 @@ ExportPdfA3;Export PDF with embedded XML for ZUGFeRD compatibility (PDF/A3b).;PD
 Parse;Parse;Parsen;Analizar;Analyser
 Clear;Clear;Löschen;Limpiar;Effacer
 DraftRestore;A draft was found. Restore it?;Es wurde ein Entwurf gefunden. Wiederherstellen?;Se encontró un borrador. ¿Restaurarlo?;Un brouillon a été trouvé. Le restaurer ?
+PaymentSelect;Select a payment;Zahlung auswählen;Seleccionar un pago;Sélectionner un paiement
+BuyerSelect;Select a buyer;Käufer auswählen;Seleccionar un comprador;Sélectionner un acheteur
+SellerSelect;Select a seller;Verkäufer auswählen;Seleccionar un vendedor;Sélectionner un vendeur

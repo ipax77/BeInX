@@ -3,7 +3,7 @@
 @using beinx.web.Bases
 @using beinx.web.Forms
 @using pax.XRechnung.NET.AnnotatedDtos
-@inherits DraftAwareComponentBase<SellerAnnotationDto, PartyEntity>
+@inherits DraftAwareComponentBase<SellerAnnotationDto, PartyEntity<SellerAnnotationDto>>
 @inject ISellerRepository SellerRepository
 
 <h3>Sellers</h3>
@@ -59,7 +59,7 @@ else
 }
 
 @code {
-    protected override Task<List<PartyEntity>> GetAllAsync()
+    protected override Task<List<PartyEntity<SellerAnnotationDto>>> GetAllAsync()
         => SellerRepository.GetAllAsync();
 
     protected override Task<int> CreateAsync(SellerAnnotationDto dto)
@@ -73,11 +73,11 @@ else
 
     protected override SellerAnnotationDto CreateNewDto() => new();
 
-    protected override int GetEntityId(PartyEntity entity) => entity.Id ?? 0;
+    protected override int GetEntityId(PartyEntity<SellerAnnotationDto> entity) => entity.Id ?? 0;
 
     protected override async Task AfterCreatedAsync(int id, SellerAnnotationDto dto)
     {
-        Items.Add(new PartyEntity { Id = id, Party = dto });
+        Items.Add(new PartyEntity<SellerAnnotationDto> { Id = id, Party = dto });
         await InvokeAsync(StateHasChanged);
     }
 

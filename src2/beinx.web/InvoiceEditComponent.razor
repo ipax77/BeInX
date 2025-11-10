@@ -1,0 +1,236 @@
+@using Microsoft.Extensions.Logging
+@using beinx.shared
+@using beinx.shared.Interfaces
+@using beinx.web.Bases
+@using beinx.web.Forms
+@using beinx.web.Modals
+@using pax.XRechnung.NET.AnnotatedDtos
+@inherits DraftAwareComponentBase<InvoiceDtoInfo, InvoiceEntity>
+@inject IInvoiceRepository InvoiceRepository
+
+<div class="container-fluid mt-2 mb-5">
+	@if (IsLoading)
+	{
+		<p><em>Loading ...</em></p>
+	}
+	else
+	{
+		<div class="row">
+			<div class="col-5">
+				<hr />
+				<div class="d-flex">
+					<div class="align-self-center">
+						<span class="badge text-truncate" style="width: 250px;">@CurrentDraft.Data.InvoiceDto.SellerParty.Name</span>
+					</div>
+					<div class="ms-2">
+						@if (CurrentDraft.Data.SellerId == 0)
+						{
+							<button type="button" class="btn btn-sm btn-outline-light" @onclick="e => sellerSelectModal?.Show(null)">
+								@Loc["Create New Seller"]
+							</button>
+						}
+						else
+						{
+							<div class="btn-group">
+								<button type="button" class="btn btn-sm btn-outline-light" @onclick="e => sellerSelectModal?.Show(CurrentDraft.Data.SellerId)">
+									@Loc["Edit Seller"]
+								</button>
+								<button type="button" class="btn btn-sm btn-outline-warning" @onclick="() => { CurrentDraft.Data.SellerId = 0; CurrentDraft.Data.InvoiceDto.SellerParty = new(); }">
+									@Loc["Delete"]
+								</button>
+							</div>
+						}
+					</div>
+				</div>
+				<div class="d-flex">
+					<div class="align-self-center">
+						<span class="badge text-truncate" style="width: 250px;">@CurrentDraft.Data.InvoiceDto.BuyerParty.Name</span>
+					</div>
+					<div class="ms-2">
+						@if (CurrentDraft.Data.BuyerId == 0)
+						{
+							<button type="button" class="btn btn-sm btn-outline-light" @onclick="e => buyerSelectModal?.Show(null)">
+								@Loc["Create New Buyer"]
+							</button>
+						}
+						else
+						{
+							<div class="btn-group">
+								<button type="button" class="btn btn-sm btn-outline-light" @onclick="e => buyerSelectModal?.Show(CurrentDraft.Data.BuyerId)">
+									@Loc["Edit Buyer"]
+								</button>
+								<button type="button" class="btn btn-sm btn-outline-warning" @onclick="() => { CurrentDraft.Data.BuyerId = 0; CurrentDraft.Data.InvoiceDto.BuyerParty = new(); }">
+									@Loc["Delete"]
+								</button>
+							</div>
+						}
+					</div>
+				</div>
+				<div class="d-flex">
+					<div class="align-self-center">
+						<span class="badge text-truncate" style="width: 250px;">@CurrentDraft.Data.InvoiceDto.PaymentMeans.Name</span>
+					</div>
+					<div class="ms-2">
+						@if (CurrentDraft.Data.PaymentId == 0)
+						{
+							<button type="button" class="btn btn-sm btn-outline-light" @onclick="e => paymentsSelectModal?.Show(null)">
+								@Loc["Create New Payment Means"]
+							</button>
+						}
+						else
+						{
+							<div class="btn-group">
+								<button type="button" class="btn btn-sm btn-outline-light" @onclick="e => paymentsSelectModal?.Show(CurrentDraft.Data.PaymentId)">
+									@Loc["Edit Payment Means"]
+								</button>
+								<button type="button" class="btn btn-sm btn-outline-warning" @onclick="() => { CurrentDraft.Data.PaymentId = 0; CurrentDraft.Data.InvoiceDto.PaymentMeans = new(); }">
+									@Loc["Delete"]
+								</button>
+							</div>
+						}
+					</div>
+				</div>
+				@if (prerequisitesSatisfied)
+				{
+					<CascadingValue Value="EditContext" Name="invoiceEditContext">
+						<InvoiceForm Invoice="@CurrentDraft.Data.InvoiceDto" />
+					</CascadingValue>
+				}
+			</div>
+		</div>
+		<PaymentsSelectModal @ref="paymentsSelectModal" SelectedPaymentId="CurrentDraft.Data.PaymentId"
+							 OnPaymentSelected="OnPaymentSelected" />
+		<SellerSelectModal @ref="sellerSelectModal" SelectedSellerId="CurrentDraft.Data.SellerId"
+						   OnSellerSelected="OnSellerSelected" />
+		<BuyerSelectModal @ref="buyerSelectModal" SelectedBuyerId="CurrentDraft.Data.BuyerId"
+						  OnBuyerSelected="OnBuyerSelected" />
+	}
+</div>
+
+
+@code {
+	[Parameter, EditorRequired]
+	public int? SelectedInvoiceId { get; set; }
+
+	PaymentsSelectModal? paymentsSelectModal;
+	SellerSelectModal? sellerSelectModal;
+	BuyerSelectModal? buyerSelectModal;
+
+	private bool prerequisitesSatisfied => CurrentDraft.Data.PaymentId > 0
+		&& CurrentDraft.Data.SellerId > 0
+		&& CurrentDraft.Data.BuyerId > 0;
+
+	protected override async Task OnInitializedAsync()
+	{
+		if (SelectedInvoiceId.HasValue)
+		{
+			var entity = await InvoiceRepository.GetByIdAsync(SelectedInvoiceId.Value);
+			if (entity != null)
+			{
+				EditItem(SelectedInvoiceId.Value, entity.Info);
+			}
+		}
+		else
+		{
+			var dto = CreateNewDto();
+			EditItem(0, dto);
+		}
+		var json = System.Text.Json.JsonSerializer.Serialize(CurrentDraft.Data, new System.Text.Json.JsonSerializerOptions() { WriteIndented = true });
+		Logger.LogInformation("Initialized InvoiceEditComponent with InvoiceDtoInfo: {InvoiceDtoInfo}", json);
+		await base.OnInitializedAsync();
+	}
+
+	private void OnPaymentSelected(PaymentMeansEntity args)
+	{
+		CurrentDraft.Data.PaymentId = args.Id ?? 0;
+		CurrentDraft.Data.InvoiceDto.PaymentMeans = new PaymentAnnotationDto
+		{
+			Name = args.Payment.Name,
+			Iban = args.Payment.Iban,
+			Bic = args.Payment.Bic,
+			PaymentMeansTypeCode = args.Payment.PaymentMeansTypeCode
+		};
+		StateHasChanged();
+	}
+
+	private void OnSellerSelected(PartyEntity<SellerAnnotationDto> args)
+	{
+		CurrentDraft.Data.SellerId = args.Id ?? 0;
+		CurrentDraft.Data.InvoiceDto.SellerParty = args.Party;
+		StateHasChanged();
+	}
+
+	private void OnBuyerSelected(PartyEntity<BuyerAnnotationDto> args)
+	{
+		CurrentDraft.Data.BuyerId = args.Id ?? 0;
+		CurrentDraft.Data.InvoiceDto.BuyerParty = args.Party;
+		StateHasChanged();
+	}
+
+	protected override Task<List<InvoiceEntity>> GetAllAsync()
+	{
+		return Task.FromResult(new List<InvoiceEntity>());
+	}
+
+	protected override Task<int> CreateAsync(InvoiceDtoInfo dto)
+		=> InvoiceRepository.CreateAsync(dto);
+
+	protected override Task UpdateAsync(int id, InvoiceDtoInfo dto)
+		=> InvoiceRepository.UpdateAsync(id, dto);
+
+	protected override Task DeleteAsync(int id)
+		=> InvoiceRepository.DeleteAsync(id);
+
+	protected override InvoiceDtoInfo CreateNewDto()
+	{
+		// Initialize with minimal defaults; the InvoiceForm will handle editing
+		return new InvoiceDtoInfo
+		{
+			InvoiceDto = new BlazorInvoiceDto
+			{
+				Id = Guid.NewGuid().ToString(),
+				IssueDate = DateTime.Today,
+				DueDate = DateTime.Today.AddDays(14),
+				InvoiceTypeCode = "380",
+				DocumentCurrencyCode = "EUR",
+				GlobalTaxCategory = "S",
+				GlobalTaxScheme = "VAT",
+				GlobalTax = 0,
+				PayableAmount = 0,
+				PaymentTermsNote = "",
+				SellerParty = new SellerAnnotationDto(),
+				BuyerParty = new BuyerAnnotationDto(),
+				PaymentMeans = new PaymentAnnotationDto(),
+				InvoiceLines = []
+			},
+			SellerId = 0,
+			BuyerId = 0,
+			PaymentId = 0
+		};
+	}
+
+	protected override int GetEntityId(InvoiceEntity entity) => entity.Id ?? 0;
+
+	protected override async Task AfterCreatedAsync(int id, InvoiceDtoInfo dto)
+	{
+		Items.Add(new InvoiceEntity
+		{
+			Id = id,
+			Info = dto,
+			Year = dto.InvoiceDto.IssueDate.Year,
+			IsPaid = false,
+			IsImported = false,
+			UpdatedAt = DateTime.UtcNow
+		});
+		await InvokeAsync(StateHasChanged);
+	}
+
+	protected override async Task AfterUpdatedAsync(int id, InvoiceDtoInfo dto)
+	{
+		var existing = Items.FirstOrDefault(i => i.Id == id);
+		if (existing != null)
+			existing.Info = dto;
+		await InvokeAsync(StateHasChanged);
+	}
+
+}

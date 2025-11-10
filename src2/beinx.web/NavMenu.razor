@@ -34,7 +34,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="create">
+                    <a class="nav-link" href="invoice">
                         <i class="bi bi-pencil-square"></i> @Loc["New Invoice"]
                     </a>
                 </li>
@@ -83,8 +83,6 @@
 @code {
     AppConfigDto appConfig = new();
     string cultureName = "iv";
-    private int updateProgress = 0;
-    private bool isCheckingForUpdate = false;
 
     protected override async Task OnInitializedAsync()
     {

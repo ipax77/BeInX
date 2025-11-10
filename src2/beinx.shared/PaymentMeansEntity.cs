@@ -18,10 +18,10 @@ public class Draft<T>
     public DateTime UpdatedAt { get; set; }
 }
 
-public class PartyEntity
+public class PartyEntity<TPartyDto> where TPartyDto : IPartyBaseDto
 {
     public int? Id { get; set; }
-    public IPartyBaseDto Party { get; set; } = null!;
+    public TPartyDto Party { get; set; } = default!;
 }
 
 public class InvoiceDtoInfo

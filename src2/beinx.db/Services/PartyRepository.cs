@@ -28,8 +28,8 @@ public abstract class BasePartyRepository<TDto> : IBasePartyRepository<TDto>, ID
         => await _interop.CallVoidAsync("partyRepository.deleteParty", id, _isSeller);
 
     // Get all parties (sellers or buyers)
-    public Task<List<PartyEntity>> GetAllAsync()
-        => _interop.CallAsync<List<PartyEntity>>("partyRepository.getAllParties", _isSeller);
+    public Task<List<PartyEntity<TDto>>> GetAllAsync()
+        => _interop.CallAsync<List<PartyEntity<TDto>>>("partyRepository.getAllParties", _isSeller);
 
     // Clear all parties from both stores
     public async Task Clear()

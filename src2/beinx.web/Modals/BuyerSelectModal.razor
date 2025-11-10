@@ -1,0 +1,119 @@
+﻿@using Microsoft.JSInterop
+@using beinx.shared
+@using beinx.shared.Interfaces
+@using beinx.web.Bases
+@using beinx.web.Forms
+@using pax.XRechnung.NET.AnnotatedDtos
+@inherits DraftAwareComponentBase<BuyerAnnotationDto, PartyEntity<BuyerAnnotationDto>>
+@inject IBuyerRepository BuyerRepository
+
+<div class="modal" id="@modalId" aria-hidden="true" aria-labelledby="@modalId" tabindex="-1">
+	<div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-fullscreen">
+		<div class="modal-content">
+			<div class="modal-body">
+				@if (IsLoading)
+				{
+					<p><em>Loading...</em></p>
+				}
+				else if (IsEditing)
+				{
+					<CascadingValue Value="EditContext" Name="partyEditContext">
+						<BuyerForm Party="@CurrentDraft.Data"
+								   OnValidSubmit="@SaveItemAsync"
+								   OnCancel="@(() => IsEditing = false)" />
+					</CascadingValue>
+				}
+				else
+				{
+					<button class="btn btn-primary mb-3" @onclick="NewItem">@Loc["Add New Buyer"]</button>
+
+					<select class="form-select" @bind="SelectedBuyerId" @bind:after="BuyerSelected">
+						<option value="">-- @Loc["Select a buyer"] --</option>
+						@foreach (var payment in Items)
+						{
+							<option value="@payment.Id">@payment.Party.Name</option>
+						}
+					</select>
+				}
+			</div>
+		</div>
+	</div>
+</div>
+
+@code {
+	private string modalId = "buyerSelectModal";
+
+	[Parameter, EditorRequired]
+	public int? SelectedBuyerId { get; set; }
+
+	[Parameter]
+	public EventCallback<PartyEntity<BuyerAnnotationDto>> OnBuyerSelected { get; set; }
+
+	[Parameter]
+	public EventCallback OnClose { get; set; }
+
+	public void Show(int? selectedPaymentId)
+	{
+		SelectedBuyerId = selectedPaymentId;
+		if (SelectedBuyerId.HasValue)
+		{
+			var seller = Items.FirstOrDefault(p => p.Id == SelectedBuyerId.Value);
+			if (seller != null)
+			{
+				EditItem(SelectedBuyerId.Value, seller.Party);
+			}
+		}
+		InvokeAsync(StateHasChanged);
+		JSRuntime.InvokeVoidAsync("openModalById", modalId);
+	}
+
+	public void Close()
+	{
+		IsEditing = false;
+		JSRuntime.InvokeVoidAsync("closeModalById", modalId);
+		OnClose.InvokeAsync();
+	}
+
+	protected override Task<List<PartyEntity<BuyerAnnotationDto>>> GetAllAsync()
+	=> BuyerRepository.GetAllAsync();
+
+	protected override Task<int> CreateAsync(BuyerAnnotationDto dto)
+		=> BuyerRepository.CreateAsync(dto);
+
+	protected override Task UpdateAsync(int id, BuyerAnnotationDto dto)
+		=> BuyerRepository.UpdateAsync(id, dto);
+
+	protected override Task DeleteAsync(int id)
+		=> BuyerRepository.DeleteAsync(id);
+
+	protected override BuyerAnnotationDto CreateNewDto()
+		=> new();
+
+	protected override async Task AfterCreatedAsync(int id, BuyerAnnotationDto dto)
+	{
+		Items.Add(new PartyEntity<BuyerAnnotationDto> { Id = id, Party = dto });
+		await InvokeAsync(StateHasChanged);
+		var existing = Items.FirstOrDefault(p => p.Id == id);
+		await OnBuyerSelected.InvokeAsync(existing);
+	}
+
+	protected override int GetEntityId(PartyEntity<BuyerAnnotationDto> entity) => entity.Id ?? 0;
+
+	protected override async Task AfterUpdatedAsync(int id, BuyerAnnotationDto dto)
+	{
+		var existing = Items.FirstOrDefault(p => p.Id == id);
+		if (existing != null) existing.Party = dto;
+		await InvokeAsync(StateHasChanged);
+		await OnBuyerSelected.InvokeAsync(existing);
+		Close();
+	}
+
+	private void BuyerSelected()
+	{
+		var existing = Items.FirstOrDefault(p => p.Id == SelectedBuyerId);
+		OnBuyerSelected.InvokeAsync(existing);
+		Close();
+	}
+}
+
+

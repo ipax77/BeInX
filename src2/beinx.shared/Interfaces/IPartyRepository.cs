@@ -9,7 +9,7 @@ public interface IBasePartyRepository<TDto> where TDto : IPartyBaseDto
     Task ClearDraftAsync(int? entityId);
     Task<int> CreateAsync(TDto dto);
     Task DeleteAsync(int id);
-    Task<List<PartyEntity>> GetAllAsync();
+    Task<List<PartyEntity<TDto>>> GetAllAsync();
     Task<DraftState<TDto>?> LoadDraftAsync();
     Task SaveDraftAsync(DraftState<TDto> draft);
     Task UpdateAsync(int id, IPartyBaseDto dto);
