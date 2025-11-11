@@ -97,8 +97,16 @@
 				@if (prerequisitesSatisfied)
 				{
 					<CascadingValue Value="EditContext" Name="invoiceEditContext">
-						<InvoiceForm Invoice="@CurrentDraft.Data.InvoiceDto" 
-							OnCodeListRequested="HandleCodeListRequest" />
+						<div>
+							<InvoiceForm Invoice="@CurrentDraft.Data.InvoiceDto"
+										 OnCodeListRequested="HandleCodeListRequest" />
+						</div>
+						<hr />
+						<div>
+							<InvoiceLinesSection Invoice="@CurrentDraft.Data.InvoiceDto"
+												 OnCodeListRequested="HandleCodeListRequest"
+												 OnInvoiceChanged="@(e => UpdateAsync(SelectedInvoiceId ?? 0, CurrentDraft.Data))" />
+						</div>
 					</CascadingValue>
 				}
 			</div>
@@ -132,7 +140,7 @@
 		&& CurrentDraft.Data.SellerId > 0
 		&& CurrentDraft.Data.BuyerId > 0;
 
-	string editOrCreateText = string.Empty;
+	private string editOrCreateText = string.Empty;
 
 	protected override async Task OnInitializedAsync()
 	{

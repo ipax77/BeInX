@@ -1,0 +1,171 @@
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.Extensions.Localization
+@using beinx.loc
+@using beinx.shared
+@using beinx.web.Forms
+@using pax.XRechnung.NET.AnnotatedDtos
+@inject IStringLocalizer<InvoiceLoc> Loc
+@implements IDisposable
+
+<div>
+	@if (editingLineIndex >= 0)
+	{
+		<div class="card p-3 bg-dark-subtle shadow-sm rounded-3">
+			<div class="d-flex justify-content-between align-items-center mb-3">
+				<h5 class="mb-0">@lineEditOrCreateText</h5>
+				<button class="btn btn-sm btn-outline-secondary" @onclick="CancelLineEdit">@Loc["Back to Lines"]</button>
+			</div>
+			<CascadingValue Value="invoiceEditContext" Name="invoiceEditContext">
+				<InvoiceLineForm Invoice="Invoice"
+								 LineIndex="editingLineIndex"
+								 OnValidSubmit="OnLineSaved"
+								 OnCancel="CancelLineEdit"
+								 OnCodeListRequested="OnCodeListRequested" />
+			</CascadingValue>
+		</div>
+	}
+	else
+	{
+		<h4>@Loc["Invoice Lines"]</h4>
+		<table class="table table-sm">
+			<thead>
+				<tr>
+					<th>@Loc["Name"]</th>
+					<th>@Loc["Description"]</th>
+					<th>@Loc["Quantity"]</th>
+					<th>@Loc["Unit Price"]</th>
+					<th>@Loc["Line Total"]</th>
+					<th></th>
+				</tr>
+			</thead>
+			<tbody>
+				@if (Invoice.InvoiceLines?.Any() == true)
+				{
+					@foreach (var (line, index) in Invoice.InvoiceLines.Select((l, i) => (l, i)))
+					{
+						<tr>
+							<td>@line.Name</td>
+							<td class="text-truncate" style="max-width:200px">@line.Description</td>
+							<td>@line.Quantity</td>
+							<td>@line.UnitPrice</td>
+							<td>@(line.LineTotal)</td>
+							<td>
+								<div class="btn-group">
+									<button class="btn btn-sm btn-outline-light" @onclick="() => EditLine(index)">
+										@Loc["Edit"]
+									</button>
+									<button class="btn btn-sm btn-outline-warning" @onclick="() => DeleteLine(index)">
+										@Loc["Delete"]
+									</button>
+								</div>
+							</td>
+						</tr>
+					}
+				}
+				else
+				{
+					<tr><td colspan="6"><em>@Loc["No invoice lines yet."]</em></td></tr>
+				}
+			</tbody>
+			<tfoot>
+				<tr>
+					<td colspan="3">
+						<button class="btn btn-sm btn-outline-light mt-2" @onclick="AddNewLine">+ @Loc["Add New Line"]</button>
+					</td>
+					<td class="text-end"><strong>@Loc["Total"]:</strong></td>
+					<td><strong>@Invoice.InvoiceLines?.Sum(l => l.LineTotal).ToString("N2")</strong></td>
+				</tr>
+			</tfoot>
+		</table>
+	}
+</div>
+
+@code {
+	[Parameter, EditorRequired]
+	public BlazorInvoiceDto Invoice { get; set; } = default!;
+
+	[Parameter]
+	public EventCallback<CodeListRequest> OnCodeListRequested { get; set; }
+
+	[Parameter]
+	public EventCallback OnInvoiceChanged { get; set; }
+
+	[CascadingParameter(Name = "invoiceEditContext")]
+	public EditContext invoiceEditContext { get; set; } = null!;
+
+	private int editingLineIndex = -1;
+	private string lineEditOrCreateText = string.Empty;
+
+	protected override void OnInitialized()
+	{
+		invoiceEditContext.OnFieldChanged += OnFieldChanged;
+	}
+
+	private void OnFieldChanged(object? sender, FieldChangedEventArgs e)
+	{
+		// refresh for codeList updates
+		InvokeAsync(StateHasChanged);
+	}
+
+	private void AddNewLine()
+	{
+		Invoice.InvoiceLines ??= new List<InvoiceLineAnnotationDto>();
+
+		var newLine = new InvoiceLineAnnotationDto
+		{
+			Id = Guid.NewGuid().ToString(),
+			Quantity = 1,
+			UnitPrice = 0,
+			Description = "",
+			Name = ""
+		};
+
+		Invoice.InvoiceLines.Add(newLine);
+		lineEditOrCreateText = Loc["Create New Line"];
+		editingLineIndex = Invoice.InvoiceLines.Count - 1;
+	}
+
+	private void EditLine(int index)
+	{
+		lineEditOrCreateText = Loc["Edit Line"];
+		editingLineIndex = index;
+	}
+
+	private void CancelLineEdit()
+	{
+		if (editingLineIndex >= 0)
+		{
+			var line = Invoice.InvoiceLines[editingLineIndex];
+			if (string.IsNullOrWhiteSpace(line.Name) && line.Quantity == 1 && line.UnitPrice == 0)
+			{
+				Invoice.InvoiceLines.RemoveAt(editingLineIndex);
+			}
+		}
+		editingLineIndex = -1;
+	}
+
+	private void DeleteLine(int index)
+	{
+		if (Invoice?.InvoiceLines != null && index >= 0 && index < Invoice.InvoiceLines.Count)
+		{
+			Invoice.InvoiceLines.RemoveAt(index);
+		}
+	}
+
+	private void OnLineSaved(InvoiceLineAnnotationDto line)
+	{
+		if (editingLineIndex >= 0)
+		{
+			Invoice.InvoiceLines[editingLineIndex] = line;
+		}
+
+		editingLineIndex = -1;
+
+		OnInvoiceChanged.InvokeAsync();
+	}
+
+	public void Dispose()
+	{
+		invoiceEditContext.OnFieldChanged -= OnFieldChanged;
+	}
+}

@@ -40,7 +40,7 @@
             <label for="bt130" class="form-label">Quantity Code</label>
             <div class="input-group">
                 <InputText class="form-control" id="bt130" aria-describedby="bt130desc" @bind-Value="Line.QuantityCode" />
-                <button type="button" class="btn btn-sm btn-outline-light ms-1" @onclick="@(() => OnCodeListRequested.InvokeAsync("UN_ECE_Recommendation_N_20"))">Pick</button>
+                <button type="button" class="btn btn-sm btn-outline-light ms-1" @onclick="@(() => RequestCodeList(nameof(Line.QuantityCode), "UN_ECE_Recommendation_N_20"))">Pick</button>
             </div>
             <small id="bt130desc" class="@descClass">@Loc["BT-130"] - UN/ECE Recommendation No. 20</small>
             <div>
@@ -110,7 +110,7 @@
     public EventCallback OnCancel { get; set; }
 
     [Parameter]
-    public EventCallback<string> OnCodeListRequested { get; set; }
+    public EventCallback<CodeListRequest> OnCodeListRequested { get; set; }
 
     [Parameter]
     public bool ShowDesc { get; set; } = true;
@@ -143,6 +143,19 @@
         TimeSpan diff = (Line.EndDate.Value - Line.StartDate.Value);
         Line.Quantity = Math.Round(diff.TotalHours, 2);
         invoiceEditContext.NotifyFieldChanged(new FieldIdentifier(Line, nameof(InvoiceLineAnnotationDto.Quantity)));
+    }
+
+    private async Task RequestCodeList(string propertyName, string codeListName)
+    {
+        var request = new CodeListRequest
+        {
+            Target = Invoice,
+            PropertyName = propertyName,
+            CodeList = codeListName,
+            EditContext = invoiceEditContext,
+        };
+
+        await OnCodeListRequested.InvokeAsync(request);
     }
 
     private async Task HandleValidSubmit()
