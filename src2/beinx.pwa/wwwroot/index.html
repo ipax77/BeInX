@@ -33,14 +33,14 @@
         <a href="." class="reload">Reload</a>
         <span class="dismiss">🗙</span>
     </div>
-    <script src="_framework/blazor.webassembly#[.{fingerprint}].js" autostart="false"></script>
-    <script>
+    <script src="_framework/blazor.webassembly#[.{fingerprint}].js" autostart="true"></script>
+    <!--<script>
         Blazor.start({
             loadBootResource: function (type, name, defaultUri, integrity) {
                 return `${defaultUri}?v=2`;
             }
         })
-    </script>
+    </script>-->
     <script>navigator.serviceWorker.register('service-worker.js', { updateViaCache: 'none' });</script>
     <script src="_content/beinx.web/js/bootstrap.bundle.min.js"></script>
     <script src="_content/beinx.web/js/blazorinvoice.js"></script>
