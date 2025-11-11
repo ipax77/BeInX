@@ -20,7 +20,8 @@
 					<CascadingValue Value="EditContext" Name="partyEditContext">
 						<BuyerForm Party="@CurrentDraft.Data"
 								   OnValidSubmit="@SaveItemAsync"
-								   OnCancel="@(() => IsEditing = false)" />
+								   OnCodeListRequested="OnCodeListRequested"
+								   OnCancel="Close" />
 					</CascadingValue>
 				}
 				else
@@ -28,7 +29,7 @@
 					<button class="btn btn-primary mb-3" @onclick="NewItem">@Loc["Add New Buyer"]</button>
 
 					<select class="form-select" @bind="SelectedBuyerId" @bind:after="BuyerSelected">
-						<option value="">-- @Loc["Select a buyer"] --</option>
+						<option value="">-- @Loc["BuyerSelect"] --</option>
 						@foreach (var payment in Items)
 						{
 							<option value="@payment.Id">@payment.Party.Name</option>
@@ -45,6 +46,9 @@
 
 	[Parameter, EditorRequired]
 	public int? SelectedBuyerId { get; set; }
+
+	[Parameter]
+	public EventCallback<CodeListRequest> OnCodeListRequested { get; set; }
 
 	[Parameter]
 	public EventCallback<PartyEntity<BuyerAnnotationDto>> OnBuyerSelected { get; set; }

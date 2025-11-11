@@ -20,6 +20,7 @@
                     <CascadingValue Value="EditContext" Name="paymentEditContext">
                         <PaymentForm Payment="@CurrentDraft.Data"
                                      OnValidSubmit="@SaveItemAsync"
+									 OnCodeListRequested="OnCodeListRequested"
                                      OnCancel="Close" />
                     </CascadingValue>
                 }
@@ -28,7 +29,7 @@
 					<button class="btn btn-primary mb-3" @onclick="NewItem">@Loc["Add New Payment Means"]</button>
 
                     <select class="form-select" @bind="SelectedPaymentId" @bind:after="PaymentSelected">
-                        <option value="">-- @Loc["Select a payment"] --</option>
+                        <option value="">-- @Loc["PaymentSelect"] --</option>
                         @foreach (var payment in Items)
                         {
                             <option value="@payment.Id">@payment.Payment.Name</option>
@@ -46,6 +47,9 @@
 
 	[Parameter, EditorRequired]
 	public int? SelectedPaymentId { get; set; }
+
+	[Parameter]
+	public EventCallback<CodeListRequest> OnCodeListRequested { get; set; }
 
 	[Parameter]
 	public EventCallback<PaymentMeansEntity> OnPaymentSelected { get; set; }

@@ -52,7 +52,7 @@
             <label for="bt40" class="form-label">Country</label>
             <div class="input-group">
                 <InputText class="form-control" id="bt40" aria-describedby="bt40desc" @bind-Value="Party.CountryCode" />
-                <button type="button" class="btn btn-sm btn-outline-light ms-1" @onclick="@(() => OnCodeListRequested.InvokeAsync("Country_Codes"))">Pick</button>
+                <button type="button" class="btn btn-sm btn-outline-light ms-1" @onclick="@(() => RequestCodeList(nameof(Party.CountryCode), "Country_Codes"))">Pick</button>
             </div>
             <small id="bt40desc" class="@descClass">@Loc["BT-40"] - ISO 3166</small>
             <div>
@@ -101,7 +101,7 @@
     public EventCallback OnCancel { get; set; }
 
     [Parameter]
-    public EventCallback<string> OnCodeListRequested { get; set; }
+    public EventCallback<CodeListRequest> OnCodeListRequested { get; set; }
 
     [Parameter]
     public bool ShowDesc { get; set; } = true;
@@ -111,6 +111,19 @@
     public EditContext partyEditContext { get; set; } = null!;
 
     string descClass => ShowDesc ? "form-text text-muted" : "d-none";
+
+    private async Task RequestCodeList(string propertyName, string codeListName)
+    {
+        var request = new CodeListRequest
+        {
+            Target = Party,
+            PropertyName = propertyName,
+            CodeList = codeListName,
+            EditContext = partyEditContext,
+        };
+
+        await OnCodeListRequested.InvokeAsync(request);
+    }
 
     private async Task HandleValidSubmit()
     {

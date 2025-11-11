@@ -87,6 +87,8 @@ public abstract class DraftAwareComponentBase<TDto, TEntity> : ComponentBase, ID
     private void OnFieldChanged(object? sender, FieldChangedEventArgs e)
     {
         _ = SaveDraftAsync();
+        // refresh for codeList updates
+        InvokeAsync(StateHasChanged);
     }
 
     protected virtual async Task SaveDraftAsync()

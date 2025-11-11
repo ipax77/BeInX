@@ -12,7 +12,7 @@
             <label for="gtax" class="form-label">Tax Category</label>
             <div class="input-group">
                 <InputText class="form-control" id="gtax" aria-describedby="gtaxdesc" @bind-Value="Invoice.GlobalTaxCategory" />
-                <button type="button" class="btn btn-sm btn-outline-light ms-1" @onclick="@(() => OnCodeListRequested.InvokeAsync("UNTDID_5305"))">Pick</button>
+                <button type="button" class="btn btn-sm btn-outline-light ms-1" @onclick="@(() => RequestCodeList(nameof(Invoice.GlobalTaxCategory), "UNTDID_5305"))">Pick</button>
             </div>
             <small id="gtaxdesc" class="@descClass">
                 @Loc["BT-118-global"] - UNTDID 5305
@@ -65,7 +65,7 @@
             <label for="bt3" class="form-label">Typ</label>
             <div class="input-group">
                 <InputText class="form-control" id="bt3" aria-describedby="bt3desc" @bind-Value="Invoice.InvoiceTypeCode" />
-                <button type="button" class="btn btn-sm btn-outline-light ms-1" @onclick="@(() => OnCodeListRequested.InvokeAsync("UNTDID_1001"))">Pick</button>
+                <button type="button" class="btn btn-sm btn-outline-light ms-1" @onclick="@(() => RequestCodeList(nameof(Invoice.InvoiceTypeCode), "UNTDID_1001"))">Pick</button>
             </div>
             <small id="bt3desc" class="@descClass">
                 @Loc["BT-3"] - UNTDID 1001
@@ -86,7 +86,7 @@
             <label for="bt5" class="form-label">Currency</label>
             <div class="input-group">
                 <InputText class="form-control" id="bt5" aria-describedby="bt5desc" @bind-Value="Invoice.DocumentCurrencyCode" />
-                <button type="button" class="btn btn-sm btn-outline-light ms-1" @onclick="@(() => OnCodeListRequested.InvokeAsync("Currency_Codes"))">Pick</button>
+                <button type="button" class="btn btn-sm btn-outline-light ms-1" @onclick="@(() => RequestCodeList(nameof(Invoice.DocumentCurrencyCode), "Currency_Codes"))">Pick</button>
             </div>
             <small id="bt5desc" class="@descClass">
                 @Loc["BT-5"]
@@ -111,7 +111,7 @@
     public BlazorInvoiceDto Invoice { get; set; } = new();
 
     [Parameter]
-    public EventCallback<string> OnCodeListRequested { get; set; }
+    public EventCallback<CodeListRequest> OnCodeListRequested { get; set; }
 
     [Parameter]
     public bool ShowDesc { get; set; } = true;
@@ -120,6 +120,20 @@
     public EditContext invoiceEditContext { get; set; } = null!;
 
     string descClass => ShowDesc ? "form-text text-muted" : "d-none";
+
+
+    private async Task RequestCodeList(string propertyName, string codeListName)
+    {
+        var request = new CodeListRequest
+        {
+            Target = Invoice,
+            PropertyName = propertyName,
+            CodeList = codeListName,
+            EditContext = invoiceEditContext,
+        };
+
+        await OnCodeListRequested.InvokeAsync(request);
+    }
 }
 
 

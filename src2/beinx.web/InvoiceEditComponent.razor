@@ -1,3 +1,4 @@
+@using Microsoft.AspNetCore.Components.Forms
 @using Microsoft.Extensions.Logging
 @using beinx.shared
 @using beinx.shared.Interfaces
@@ -15,6 +16,9 @@
 	}
 	else
 	{
+		<div>
+			<h2>@editOrCreateText</h2>
+		</div>
 		<div class="row">
 			<div class="col-5">
 				<hr />
@@ -26,7 +30,7 @@
 						@if (CurrentDraft.Data.SellerId == 0)
 						{
 							<button type="button" class="btn btn-sm btn-outline-light" @onclick="e => sellerSelectModal?.Show(null)">
-								@Loc["Create New Seller"]
+								@Loc["Select or Create Seller"]
 							</button>
 						}
 						else
@@ -50,7 +54,7 @@
 						@if (CurrentDraft.Data.BuyerId == 0)
 						{
 							<button type="button" class="btn btn-sm btn-outline-light" @onclick="e => buyerSelectModal?.Show(null)">
-								@Loc["Create New Buyer"]
+								@Loc["Select or Create Buyer"]
 							</button>
 						}
 						else
@@ -74,7 +78,7 @@
 						@if (CurrentDraft.Data.PaymentId == 0)
 						{
 							<button type="button" class="btn btn-sm btn-outline-light" @onclick="e => paymentsSelectModal?.Show(null)">
-								@Loc["Create New Payment Means"]
+								@Loc["Select or Create Payment Means"]
 							</button>
 						}
 						else
@@ -93,17 +97,22 @@
 				@if (prerequisitesSatisfied)
 				{
 					<CascadingValue Value="EditContext" Name="invoiceEditContext">
-						<InvoiceForm Invoice="@CurrentDraft.Data.InvoiceDto" />
+						<InvoiceForm Invoice="@CurrentDraft.Data.InvoiceDto" 
+							OnCodeListRequested="HandleCodeListRequest" />
 					</CascadingValue>
 				}
 			</div>
 		</div>
 		<PaymentsSelectModal @ref="paymentsSelectModal" SelectedPaymentId="CurrentDraft.Data.PaymentId"
+							 OnCodeListRequested="HandleCodeListRequest"
 							 OnPaymentSelected="OnPaymentSelected" />
 		<SellerSelectModal @ref="sellerSelectModal" SelectedSellerId="CurrentDraft.Data.SellerId"
+						   OnCodeListRequested="HandleCodeListRequest"
 						   OnSellerSelected="OnSellerSelected" />
 		<BuyerSelectModal @ref="buyerSelectModal" SelectedBuyerId="CurrentDraft.Data.BuyerId"
+						  OnCodeListRequested="HandleCodeListRequest"
 						  OnBuyerSelected="OnBuyerSelected" />
+		<CodeListModal @ref="codeListModal" OnSelected="HandleCodeSelected" />
 	}
 </div>
 
@@ -115,13 +124,19 @@
 	PaymentsSelectModal? paymentsSelectModal;
 	SellerSelectModal? sellerSelectModal;
 	BuyerSelectModal? buyerSelectModal;
+	CodeListModal? codeListModal;
+
+	private CodeListRequest? _pendingRequest;
 
 	private bool prerequisitesSatisfied => CurrentDraft.Data.PaymentId > 0
 		&& CurrentDraft.Data.SellerId > 0
 		&& CurrentDraft.Data.BuyerId > 0;
 
+	string editOrCreateText = string.Empty;
+
 	protected override async Task OnInitializedAsync()
 	{
+		editOrCreateText = SelectedInvoiceId.HasValue ? Loc["Edit Invoice"] : Loc["Create New Invoice"];
 		if (SelectedInvoiceId.HasValue)
 		{
 			var entity = await InvoiceRepository.GetByIdAsync(SelectedInvoiceId.Value);
@@ -164,6 +179,30 @@
 	{
 		CurrentDraft.Data.BuyerId = args.Id ?? 0;
 		CurrentDraft.Data.InvoiceDto.BuyerParty = args.Party;
+		StateHasChanged();
+	}
+
+	private void HandleCodeListRequest(CodeListRequest request)
+	{
+		_pendingRequest = request;
+		codeListModal?.Show(request.CodeList);
+	}
+
+	private void HandleCodeSelected(KeyValuePair<string, string> selection)
+	{
+		if (_pendingRequest?.Target == null)
+			return;
+
+		var target = _pendingRequest.Target;
+		var prop = target.GetType().GetProperty(_pendingRequest.PropertyName);
+		if (prop != null && prop.CanWrite)
+		{
+			prop.SetValue(target, selection.Value);
+			var field = new FieldIdentifier(target, _pendingRequest.PropertyName);
+			_pendingRequest.EditContext.NotifyFieldChanged(field);
+		}
+
+		_pendingRequest = null;
 		StateHasChanged();
 	}
 

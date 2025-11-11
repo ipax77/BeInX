@@ -1,12 +1,13 @@
 ﻿@using beinx.loc
 @using Microsoft.AspNetCore.Components.Forms
 @using Microsoft.Extensions.Localization
+@using beinx.shared
 @using pax.XRechnung.NET.AnnotatedDtos
 @using pax.XRechnung.NET.BaseDtos
 @inject IStringLocalizer<InvoiceLoc> Loc
 
 <div>
-    <EditForm EditContext="partyEditContext" FormName="InvoicePartyForm" OnValidSubmit="HandleValidSubmit">
+    <EditForm EditContext="editContext" FormName="InvoicePartyForm" OnValidSubmit="HandleValidSubmit">
         <DataAnnotationsValidator />
         <div class="mb-3">
             <label for="iban" class="form-label">IBAN</label>
@@ -33,7 +34,7 @@
             <label for="bt81" class="form-label">Payment Code</label>
             <div class="input-group">
                 <InputText class="form-control" id="bt81" aria-describedby="bt81desc" @bind-Value="Payment.PaymentMeansTypeCode" />
-                <button type="button" class="btn btn-sm btn-outline-light ms-1" @onclick="@(() => OnCodeListRequested.InvokeAsync("UNTDID_4461"))">Pick</button>
+                <button type="button" class="btn btn-sm btn-outline-light ms-1" @onclick="@(() => RequestCodeList(nameof(Payment.PaymentMeansTypeCode), "UNTDID_4461"))">Pick</button>
             </div>
             <small id="bt81desc" class="@descClass">
                 @Loc["BT-81"] - UNTDID 4461
@@ -60,15 +61,28 @@
     public EventCallback OnCancel { get; set; }
 
     [Parameter]
-    public EventCallback<string> OnCodeListRequested { get; set; }
+    public EventCallback<CodeListRequest> OnCodeListRequested { get; set; }
 
     [Parameter]
     public bool ShowDesc { get; set; } = true;
 
     [CascadingParameter(Name = "paymentEditContext")]
-    public EditContext partyEditContext { get; set; } = null!;
+    public EditContext editContext { get; set; } = null!;
 
     string descClass => ShowDesc ? "form-text text-muted" : "d-none";
+
+    private async Task RequestCodeList(string propertyName, string codeListName)
+    {
+        var request = new CodeListRequest
+        {
+            Target = Payment,
+            PropertyName = propertyName,
+            CodeList = codeListName,
+            EditContext = editContext,
+        };
+
+        await OnCodeListRequested.InvokeAsync(request);
+    }
 
     private async Task HandleValidSubmit()
     {
