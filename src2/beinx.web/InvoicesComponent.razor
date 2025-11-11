@@ -1,25 +1,21 @@
-﻿@using beinx.shared
+﻿@using Microsoft.Extensions.Localization
+@using beinx.loc
+@using beinx.shared
 @using beinx.shared.Interfaces
 @using beinx.web.Bases
 @using beinx.web.Forms
 @using pax.XRechnung.NET.AnnotatedDtos
-@inherits DraftAwareComponentBase<InvoiceDtoInfo, InvoiceEntity>
 @inject IInvoiceRepository InvoiceRepository
+@inject IStringLocalizer<InvoiceLoc> Loc
+@inject NavigationManager NavigationManager
 
 <h3>
     @Loc["Invoices"]
 </h3>
 
-@if (IsLoading)
+@if (isLoading)
 {
     <p><em>Loading...</em></p>
-}
-else if (IsEditing)
-{
-    <CascadingValue Value="EditContext" Name="invoiceEditContext">
-        <InvoiceForm Invoice="@CurrentDraft.Data.InvoiceDto"
-                  />
-    </CascadingValue>
 }
 else
 {
@@ -48,8 +44,9 @@ else
                     <td>@inv.Info.InvoiceDto.PayableAmount.ToString("C")</td>
                     <td>@(inv.IsPaid ? "✔️" : "❌")</td>
                     <td>
+
                         <button class="btn btn-sm btn-outline-secondary me-1"
-                                @onclick="() => EditItem(inv.Id ?? 0, inv.Info)">
+                                @onclick="() => EditItem(inv.Id ?? 0, inv.Info.InvoiceDto)">
                             @Loc["Edit"]
                         </button>
                         <button class="btn btn-sm btn-outline-danger"
@@ -64,66 +61,28 @@ else
 }
 
 @code {
-    protected override Task<List<InvoiceEntity>> GetAllAsync()
-        => InvoiceRepository.GetAllAsync();
 
-    protected override Task<int> CreateAsync(InvoiceDtoInfo dto)
-        => InvoiceRepository.CreateAsync(dto);
+    private bool isLoading = true;
+	private List<InvoiceEntity> Items = new();
 
-    protected override Task UpdateAsync(int id, InvoiceDtoInfo dto)
-        => InvoiceRepository.UpdateAsync(id, dto);
-
-    protected override Task DeleteAsync(int id)
-        => InvoiceRepository.DeleteAsync(id);
-
-    protected override InvoiceDtoInfo CreateNewDto()
+    protected override async Task OnInitializedAsync()
     {
-        // Initialize with minimal defaults; the InvoiceForm will handle editing
-        return new InvoiceDtoInfo
-        {
-            InvoiceDto = new BlazorInvoiceDto
-            {
-                Id = Guid.NewGuid().ToString(),
-                IssueDate = DateTime.Today,
-                InvoiceTypeCode = "380",
-                DocumentCurrencyCode = "EUR",
-                GlobalTaxCategory = "S",
-                GlobalTaxScheme = "VAT",
-                GlobalTax = 0,
-                PayableAmount = 0,
-                PaymentTermsNote = "",
-                SellerParty = new SellerAnnotationDto(),
-                BuyerParty = new BuyerAnnotationDto(),
-                PaymentMeans = new PaymentAnnotationDto(),
-                InvoiceLines = []
-            },
-            SellerId = 0,
-            BuyerId = 0,
-            PaymentId = 0
-        };
-    }
+		Items = await InvoiceRepository.GetAllAsync();
+        isLoading = false;
+	}
 
-    protected override int GetEntityId(InvoiceEntity entity) => entity.Id ?? 0;
-
-    protected override async Task AfterCreatedAsync(int id, InvoiceDtoInfo dto)
+    private void NewItem()
     {
-        Items.Add(new InvoiceEntity
-        {
-            Id = id,
-            Info = dto,
-            Year = dto.InvoiceDto.IssueDate.Year,
-            IsPaid = false,
-            IsImported = false,
-            UpdatedAt = DateTime.UtcNow
-        });
-        await InvokeAsync(StateHasChanged);
+        NavigationManager.NavigateTo("/invoice");
     }
-
-    protected override async Task AfterUpdatedAsync(int id, InvoiceDtoInfo dto)
+    private void EditItem(int id, InvoiceAnnotationDto dto)
     {
-        var existing = Items.FirstOrDefault(i => i.Id == id);
-        if (existing != null)
-            existing.Info = dto;
-        await InvokeAsync(StateHasChanged);
+        NavigationManager.NavigateTo($"/invoice/{id}");
     }
+    private async Task DeleteItemAsync(int id)
+    {
+        await InvoiceRepository.DeleteAsync(id);
+        Items = await InvoiceRepository.GetAllAsync();
+        StateHasChanged();
+	}
 }

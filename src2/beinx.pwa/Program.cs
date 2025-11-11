@@ -1,8 +1,10 @@
 using beinx.db;
 using beinx.pwa;
+using BlazorInvoice.Pdf;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.JSInterop;
+using pax.BBToast;
 using System.Globalization;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
@@ -13,6 +15,8 @@ builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.
 
 builder.Services.AddLocalization();
 builder.Services.AddBeinxDbServices();
+builder.Services.AddBbToast();
+builder.Services.AddPdfGenerator();
 
 var host = builder.Build();
 

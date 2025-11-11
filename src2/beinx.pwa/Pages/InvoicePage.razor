@@ -1,7 +1,9 @@
 ﻿@page "/invoice"
+@page "/invoice/{Id:int}"
 
-<beinx.web.InvoiceEditComponent SelectedInvoiceId="null" />
+<beinx.web.InvoiceEditComponent SelectedInvoiceId="Id" />
 
 @code {
-
+	[Parameter]
+	public int? Id { get; set; }
 }

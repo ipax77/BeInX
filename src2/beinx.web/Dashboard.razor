@@ -75,13 +75,16 @@
 		switch (draft.EntityType)
 		{
 			case "PaymentMeans":
-				NavigationManager.NavigateTo($"/payments");
+				NavigationManager.NavigateTo("/payments");
 				break;
-			case "party":
-				NavigationManager.NavigateTo($"/parties");
+			case "Buyers":
+				NavigationManager.NavigateTo("/buyers");
 				break;
-			case "invoice":
-				NavigationManager.NavigateTo($"/invoices");
+			case "Sellers":
+				NavigationManager.NavigateTo("/sellers");
+				break;
+			case "Invoices":
+				NavigationManager.NavigateTo("/invoice");
 				break;
 			default:
 				break;

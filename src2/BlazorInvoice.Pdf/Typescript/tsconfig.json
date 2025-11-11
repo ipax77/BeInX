@@ -1,0 +1,19 @@
+{
+    "compilerOptions": {
+      "outDir": "./dist",
+      "types": ["jest", "node"],
+      "alwaysStrict": true,
+      "strictNullChecks": true,
+      "noImplicitAny": false,
+      "noEmitOnError": true,
+      "sourceMap": true,
+      "target": "ESNext",
+      "module": "ESNext",
+      "moduleResolution": "node",
+      "incremental": true,
+      "tsBuildInfoFile": ".tsbuildinfo",
+      "esModuleInterop": true,
+    },
+    "include": ["*.ts", "__tests__/*.ts"],
+    "exclude": ["node_modules", "dist"]
+  }

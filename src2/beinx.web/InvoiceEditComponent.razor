@@ -1,3 +1,4 @@
+@using BlazorInvoice.Pdf
 @using Microsoft.AspNetCore.Components.Forms
 @using Microsoft.Extensions.Logging
 @using beinx.shared
@@ -5,9 +6,11 @@
 @using beinx.web.Bases
 @using beinx.web.Forms
 @using beinx.web.Modals
+@using pax.BBToast
 @using pax.XRechnung.NET.AnnotatedDtos
 @inherits DraftAwareComponentBase<InvoiceDtoInfo, InvoiceEntity>
 @inject IInvoiceRepository InvoiceRepository
+@inject IToastService ToastService
 
 <div class="container-fluid mt-2 mb-5">
 	@if (IsLoading)
@@ -110,6 +113,40 @@
 					</CascadingValue>
 				}
 			</div>
+			<div class="col-7">
+				@if (prerequisitesSatisfied)
+				{
+					<div class="sticky-top mt-2">
+						<div class="btn-group p-1 border rounded bg-dark-subtle">
+							<button type="button" class="btn btn-outline-success"
+									@onclick="Save">
+								@Loc["Save"]
+							</button>
+						</div>
+
+						<div class="mb-2">
+							<button class="btn btn-outline-light" type="button" @onclick="e => ShowPdfComponent = !ShowPdfComponent">
+								@if (ShowPdfComponent)
+								{
+									<i class="bi bi-chevron-double-up"></i>
+									<span>Hide PDF</span>
+								}
+								else
+								{
+									<i class="bi bi-chevron-double-down"></i>
+									<span>Show PDF</span>
+								}
+							</button>
+						</div>
+						@if (ShowPdfComponent)
+						{
+							<div class="mt-2 w-100">
+								<InvoicePdfComponent @ref="invoicePdfComponent" Invoice="CurrentDraft.Data.InvoiceDto" />
+							</div>
+						}
+					</div>
+				}
+			</div>
 		</div>
 		<PaymentsSelectModal @ref="paymentsSelectModal" SelectedPaymentId="CurrentDraft.Data.PaymentId"
 							 OnCodeListRequested="HandleCodeListRequest"
@@ -134,6 +171,8 @@
 	BuyerSelectModal? buyerSelectModal;
 	CodeListModal? codeListModal;
 
+	InvoicePdfComponent? invoicePdfComponent;
+
 	private CodeListRequest? _pendingRequest;
 
 	private bool prerequisitesSatisfied => CurrentDraft.Data.PaymentId > 0
@@ -142,9 +181,10 @@
 
 	private string editOrCreateText = string.Empty;
 
+	private bool ShowPdfComponent = true;
+
 	protected override async Task OnInitializedAsync()
 	{
-		editOrCreateText = SelectedInvoiceId.HasValue ? Loc["Edit Invoice"] : Loc["Create New Invoice"];
 		if (SelectedInvoiceId.HasValue)
 		{
 			var entity = await InvoiceRepository.GetByIdAsync(SelectedInvoiceId.Value);
@@ -158,9 +198,9 @@
 			var dto = CreateNewDto();
 			EditItem(0, dto);
 		}
-		var json = System.Text.Json.JsonSerializer.Serialize(CurrentDraft.Data, new System.Text.Json.JsonSerializerOptions() { WriteIndented = true });
-		Logger.LogInformation("Initialized InvoiceEditComponent with InvoiceDtoInfo: {InvoiceDtoInfo}", json);
 		await base.OnInitializedAsync();
+		SelectedInvoiceId = CurrentDraft.EntityId;
+		editOrCreateText = SelectedInvoiceId.HasValue ? Loc["Edit Invoice"] : Loc["Create New Invoice"];
 	}
 
 	private void OnPaymentSelected(PaymentMeansEntity args)
@@ -212,6 +252,34 @@
 
 		_pendingRequest = null;
 		StateHasChanged();
+	}
+
+	private async Task Save()
+	{
+		try
+		{
+			if (SelectedInvoiceId.HasValue)
+			{
+				await UpdateAsync(SelectedInvoiceId.Value, CurrentDraft.Data);
+			}
+			else
+			{
+				var newId = await CreateAsync(CurrentDraft.Data);
+				SelectedInvoiceId = newId;
+			}
+			ToastService.ShowSuccess(Loc["Invoice saved successfully."]);
+		}
+		catch (Exception ex)
+		{
+			ToastService.ShowError(Loc["An error occurred while saving the invoice: {0}", ex.Message]);
+			return;
+		}
+	}
+
+	protected override async Task SaveDraftAsync()
+	{
+		invoicePdfComponent?.Update(CurrentDraft.Data.InvoiceDto);
+		await base.SaveDraftAsync();
 	}
 
 	protected override Task<List<InvoiceEntity>> GetAllAsync()
