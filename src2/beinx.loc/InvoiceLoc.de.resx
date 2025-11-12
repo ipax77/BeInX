@@ -592,4 +592,16 @@
   <data name="Amount" xml:space="preserve">
     <value>Betrag</value>
   </data>
+  <data name="Download a backup copy of your app data." xml:space="preserve">
+    <value>Laden Sie eine Sicherungskopie Ihrer App-Daten herunter.</value>
+  </data>
+  <data name="Restore your app data from a backup file." xml:space="preserve">
+    <value>Stellen Sie Ihre App-Daten aus einer Sicherungsdatei wieder her.</value>
+  </data>
+  <data name="BackupInfo" xml:space="preserve">
+    <value>Sicherungen umfassen alle Ihre gespeicherten Einstellungen und Daten. Das Wiederherstellen ersetzt vorhandene Daten.</value>
+  </data>
+  <data name="BackupWarning" xml:space="preserve">
+    <value>Dies ersetzt alle Ihre aktuellen Daten durch eine Sicherungsdatei. Fortfahren?</value>
+  </data>
 </root>

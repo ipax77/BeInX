@@ -592,4 +592,16 @@
   <data name="Amount" xml:space="preserve">
     <value>Amount</value>
   </data>
+  <data name="Download a backup copy of your app data." xml:space="preserve">
+    <value>Download a backup copy of your app data.</value>
+  </data>
+  <data name="Restore your app data from a backup file." xml:space="preserve">
+    <value>Restore your app data from a backup file.</value>
+  </data>
+  <data name="BackupInfo" xml:space="preserve">
+    <value>Backups include all your saved settings and data. Restoring replaces existing data.</value>
+  </data>
+  <data name="BackupWarning" xml:space="preserve">
+    <value>This will replace all your current data with a backup file. Continue?</value>
+  </data>
 </root>

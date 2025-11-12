@@ -592,4 +592,16 @@
   <data name="Amount" xml:space="preserve">
     <value>Importe</value>
   </data>
+  <data name="Download a backup copy of your app data." xml:space="preserve">
+    <value>Descargue una copia de seguridad de los datos de su aplicación.</value>
+  </data>
+  <data name="Restore your app data from a backup file." xml:space="preserve">
+    <value>Restaure los datos de su aplicación desde un archivo de respaldo.</value>
+  </data>
+  <data name="BackupInfo" xml:space="preserve">
+    <value>Las copias de seguridad incluyen toda la configuración y los datos guardados. La restauración reemplaza los datos existentes.</value>
+  </data>
+  <data name="BackupWarning" xml:space="preserve">
+    <value>Esto reemplazará todos sus datos actuales con un archivo de respaldo. ¿Continuar?</value>
+  </data>
 </root>
