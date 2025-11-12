@@ -2,72 +2,77 @@
 @using beinx.shared.Interfaces
 @using beinx.web.Bases
 @using beinx.web.Forms
+@using beinx.web.Modals
 @using pax.XRechnung.NET.AnnotatedDtos
 @inherits DraftAwareComponentBase<PaymentAnnotationDto, PaymentMeansEntity>
 @inject IPaymentsRepository PaymentsRepository
 
-<h3>
-    @Loc["Payment Means"]
-</h3>
+<div class="container-fluid mt-2 mb-5">
+    <h3>
+        @Loc["Payment Means"]
+    </h3>
 
-@if (IsLoading)
-{
-    <p><em>Loading...</em></p>
-}
-else if (IsEditing)
-{
-    <CascadingValue Value="EditContext" Name="paymentEditContext">
-        <PaymentForm Payment="@CurrentDraft.Data"
-                     OnValidSubmit="@SaveItemAsync"
-                     OnCancel="@(() => IsEditing = false)" />
-    </CascadingValue>
-}
-else
-{
-    <button class="btn btn-primary mb-3" @onclick="NewItem">@Loc["Add New Payment Means"]</button>
+    @if (IsLoading)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else if (IsEditing)
+    {
+        <CascadingValue Value="EditContext" Name="paymentEditContext">
+            <PaymentForm Payment="@CurrentDraft.Data"
+                         OnValidSubmit="@SaveItemAsync"
+                         OnCodeListRequested="HandleCodeListRequest"
+                         OnCancel="@(() => IsEditing = false)" />
+        </CascadingValue>
+    }
+    else
+    {
+        <button class="btn btn-primary mb-3" @onclick="NewItem">@Loc["Add New Payment Means"]</button>
 
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Bank Name</th>
-                <th>IBAN</th>
-                <th>BIC</th>
-                <th>Type</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var p in Items)
-            {
+        <table class="table table-striped">
+            <thead>
                 <tr>
-                    <td>@p.Payment.Name</td>
-                    <td>@p.Payment.Iban</td>
-                    <td>@p.Payment.Bic</td>
-                    <td>@p.Payment.PaymentMeansTypeCode</td>
-                    <td>
-                        @if (p.Id.HasValue)
-                        {
-                            <button class="btn btn-sm btn-outline-secondary me-1"
-                                    @onclick="() => EditItem(p.Id.Value, new PaymentAnnotationDto
-                                    {
-                                        Name = p.Payment.Name,
-                                                            Iban = p.Payment.Iban,
-                                                            Bic = p.Payment.Bic,
-                                                            PaymentMeansTypeCode = p.Payment.PaymentMeansTypeCode
-                                                        })">
-                    Edit
-                </button>
-                <button class="btn btn-sm btn-outline-danger"
-                        @onclick="() => DeleteItemAsync(p.Id.Value)">
-                    Delete
-                </button>
-                                }
-                    </td>
+                    <th>Bank Name</th>
+                    <th>IBAN</th>
+                    <th>BIC</th>
+                    <th>Type</th>
+                    <th></th>
                 </tr>
-            }
-        </tbody>
-    </table>
-}
+            </thead>
+            <tbody>
+                @foreach (var p in Items)
+                {
+                    <tr>
+                        <td>@p.Payment.Name</td>
+                        <td>@p.Payment.Iban</td>
+                        <td>@p.Payment.Bic</td>
+                        <td>@p.Payment.PaymentMeansTypeCode</td>
+                        <td>
+                            @if (p.Id.HasValue)
+                            {
+                                <button class="btn btn-sm btn-outline-secondary me-1"
+                                        @onclick="() => EditItem(p.Id.Value, new PaymentAnnotationDto
+                                        {
+                                            Name = p.Payment.Name,
+                                            Iban = p.Payment.Iban,
+                                            Bic = p.Payment.Bic,
+                                            PaymentMeansTypeCode = p.Payment.PaymentMeansTypeCode
+                                        })">
+                                    Edit
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger"
+                                        @onclick="() => DeleteItemAsync(p.Id.Value)">
+                                    Delete
+                                </button>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    <CodeListModal @ref="codeListModal" OnSelected="HandleCodeSelected" />
+</div>
 
 @code {
     protected override Task<List<PaymentMeansEntity>> GetAllAsync()

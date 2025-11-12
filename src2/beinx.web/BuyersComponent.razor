@@ -2,89 +2,97 @@
 @using beinx.shared.Interfaces
 @using beinx.web.Bases
 @using beinx.web.Forms
+@using beinx.web.Modals
 @using pax.XRechnung.NET.AnnotatedDtos
 @inherits DraftAwareComponentBase<BuyerAnnotationDto, PartyEntity<BuyerAnnotationDto>>
 @inject IBuyerRepository BuyerRepository
 
-<h3>Buyers</h3>
+<div class="container-fluid mt-2 mb-5">
+	<h3>Buyers</h3>
 
-@if (IsLoading)
-{
-    <p><em>Loading...</em></p>
-}
-else if (IsEditing)
-{
-    <CascadingValue Value="EditContext" Name="partyEditContext">
-        <BuyerForm Party="@CurrentDraft.Data"
-                   OnValidSubmit="@SaveItemAsync"
-                   OnCancel="@(() => IsEditing = false)" />
-    </CascadingValue>
-}
-else
-{
-    <button class="btn btn-primary mb-3" @onclick="NewItem">Add New Buyer</button>
+	@if (IsLoading)
+	{
+		<p><em>Loading...</em></p>
+	}
+	else if (IsEditing)
+	{
+		<CascadingValue Value="EditContext" Name="partyEditContext">
+			<BuyerForm Party="@CurrentDraft.Data"
+					   OnValidSubmit="@SaveItemAsync"
+					   OnCodeListRequested="HandleCodeListRequest"
+					   OnCancel="@(() => IsEditing = false)" />
+		</CascadingValue>
+	}
+	else
+	{
+		<button class="btn btn-primary mb-3" @onclick="NewItem">Add New Buyer</button>
 
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Tax ID</th>
-                <th>Address</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var b in Items)
-            {
-                <tr>
-                    <td>@b.Party.Name</td>
-                    <td>@b.Party.TaxId</td>
-                    <td>
-                        @if (b.Id.HasValue)
-                        {
-                            <button class="btn btn-sm btn-outline-secondary me-1"
-                                    @onclick="() => EditItem(b.Id.Value, new BuyerAnnotationDto
-                                    {
-                                        Name = b.Party.Name,
-                                        TaxId = b.Party.TaxId,
-                                    })">Edit</button>
-                            <button class="btn btn-sm btn-outline-danger"
-                                    @onclick="() => DeleteItemAsync(b.Id.Value)">Delete</button>
-                        }
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
-}
-
+		<table class="table table-striped">
+			<thead>
+				<tr>
+					<th>Name</th>
+					<th>Tax ID</th>
+					<th>Address</th>
+					<th></th>
+				</tr>
+			</thead>
+			<tbody>
+				@foreach (var b in Items)
+				{
+					<tr>
+						<td>@b.Party.Name</td>
+						<td>@b.Party.TaxId</td>
+						<td>
+							@if (b.Id.HasValue)
+							{
+								<button class="btn btn-sm btn-outline-secondary me-1"
+										@onclick="() => EditItem(b.Id.Value, new BuyerAnnotationDto
+										{
+											Name = b.Party.Name,
+                                        	TaxId = b.Party.TaxId,
+                                    	})">
+										Edit
+								</button>
+								<button class="btn btn-sm btn-outline-danger"
+										@onclick="() => DeleteItemAsync(b.Id.Value)">
+									Delete
+								</button>
+							}
+						</td>
+					</tr>
+				}
+			</tbody>
+		</table>
+	}
+	<CodeListModal @ref="codeListModal" OnSelected="HandleCodeSelected" />
+</div>
 @code {
-    protected override Task<List<PartyEntity<BuyerAnnotationDto>>> GetAllAsync()
-        => BuyerRepository.GetAllAsync();
+	protected override Task<List<PartyEntity<BuyerAnnotationDto>>> GetAllAsync()
+		=> BuyerRepository.GetAllAsync();
 
-    protected override Task<int> CreateAsync(BuyerAnnotationDto dto)
-        => BuyerRepository.CreateAsync(dto);
+	protected override Task<int> CreateAsync(BuyerAnnotationDto dto)
+		=> BuyerRepository.CreateAsync(dto);
 
-    protected override Task UpdateAsync(int id, BuyerAnnotationDto dto)
-        => BuyerRepository.UpdateAsync(id, dto);
+	protected override Task UpdateAsync(int id, BuyerAnnotationDto dto)
+		=> BuyerRepository.UpdateAsync(id, dto);
 
-    protected override Task DeleteAsync(int id)
-        => BuyerRepository.DeleteAsync(id);
+	protected override Task DeleteAsync(int id)
+		=> BuyerRepository.DeleteAsync(id);
 
-    protected override BuyerAnnotationDto CreateNewDto() => new();
+	protected override BuyerAnnotationDto CreateNewDto() => new();
 
-    protected override int GetEntityId(PartyEntity<BuyerAnnotationDto> entity) => entity.Id ?? 0;
+	protected override int GetEntityId(PartyEntity<BuyerAnnotationDto> entity) => entity.Id ?? 0;
 
-    protected override async Task AfterCreatedAsync(int id, BuyerAnnotationDto dto)
-    {
-        Items.Add(new PartyEntity<BuyerAnnotationDto> { Id = id, Party = dto });
-        await InvokeAsync(StateHasChanged);
-    }
+	protected override async Task AfterCreatedAsync(int id, BuyerAnnotationDto dto)
+	{
+		Items.Add(new PartyEntity<BuyerAnnotationDto> { Id = id, Party = dto });
+		await InvokeAsync(StateHasChanged);
+	}
 
-    protected override async Task AfterUpdatedAsync(int id, BuyerAnnotationDto dto)
-    {
-        var existing = Items.FirstOrDefault(p => p.Id == id);
-        if (existing != null) existing.Party = dto;
-        await InvokeAsync(StateHasChanged);
-    }
+	protected override async Task AfterUpdatedAsync(int id, BuyerAnnotationDto dto)
+	{
+		var existing = Items.FirstOrDefault(p => p.Id == id);
+		if (existing != null) existing.Party = dto;
+		await InvokeAsync(StateHasChanged);
+	}
 }

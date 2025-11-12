@@ -2,6 +2,7 @@
 
 using beinx.loc;
 using beinx.shared;
+using beinx.web.Modals;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.Extensions.Localization;
@@ -20,6 +21,9 @@ public abstract class DraftAwareComponentBase<TDto, TEntity> : ComponentBase, ID
     protected bool IsEditing = false;
     protected DraftState<TDto> CurrentDraft = new();
     protected EditContext EditContext = default!;
+
+    public CodeListModal? codeListModal;
+    private CodeListRequest? _pendingRequest;
 
     protected override async Task OnInitializedAsync()
     {
@@ -124,6 +128,30 @@ public abstract class DraftAwareComponentBase<TDto, TEntity> : ComponentBase, ID
 
     protected virtual Task AfterCreatedAsync(int id, TDto dto) => Task.CompletedTask;
     protected virtual Task AfterUpdatedAsync(int id, TDto dto) => Task.CompletedTask;
+
+    public virtual void HandleCodeListRequest(CodeListRequest request)
+    {
+        _pendingRequest = request;
+        codeListModal?.Show(request.CodeList);
+    }
+
+    public virtual void HandleCodeSelected(KeyValuePair<string, string> selection)
+    {
+        if (_pendingRequest?.Target == null)
+            return;
+
+        var target = _pendingRequest.Target;
+        var prop = target.GetType().GetProperty(_pendingRequest.PropertyName);
+        if (prop != null && prop.CanWrite)
+        {
+            prop.SetValue(target, selection.Value);
+            var field = new FieldIdentifier(target, _pendingRequest.PropertyName);
+            _pendingRequest.EditContext.NotifyFieldChanged(field);
+        }
+
+        _pendingRequest = null;
+        StateHasChanged();
+    }
 
     public void Dispose()
     {

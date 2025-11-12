@@ -169,11 +169,8 @@
 	PaymentsSelectModal? paymentsSelectModal;
 	SellerSelectModal? sellerSelectModal;
 	BuyerSelectModal? buyerSelectModal;
-	CodeListModal? codeListModal;
 
 	InvoicePdfComponent? invoicePdfComponent;
-
-	private CodeListRequest? _pendingRequest;
 
 	private bool prerequisitesSatisfied => CurrentDraft.Data.PaymentId > 0
 		&& CurrentDraft.Data.SellerId > 0
@@ -227,30 +224,6 @@
 	{
 		CurrentDraft.Data.BuyerId = args.Id ?? 0;
 		CurrentDraft.Data.InvoiceDto.BuyerParty = args.Party;
-		StateHasChanged();
-	}
-
-	private void HandleCodeListRequest(CodeListRequest request)
-	{
-		_pendingRequest = request;
-		codeListModal?.Show(request.CodeList);
-	}
-
-	private void HandleCodeSelected(KeyValuePair<string, string> selection)
-	{
-		if (_pendingRequest?.Target == null)
-			return;
-
-		var target = _pendingRequest.Target;
-		var prop = target.GetType().GetProperty(_pendingRequest.PropertyName);
-		if (prop != null && prop.CanWrite)
-		{
-			prop.SetValue(target, selection.Value);
-			var field = new FieldIdentifier(target, _pendingRequest.PropertyName);
-			_pendingRequest.EditContext.NotifyFieldChanged(field);
-		}
-
-		_pendingRequest = null;
 		StateHasChanged();
 	}
 
