@@ -13,6 +13,7 @@ public interface IBasePartyRepository<TDto> where TDto : IPartyBaseDto
     Task<DraftState<TDto>?> LoadDraftAsync();
     Task SaveDraftAsync(DraftState<TDto> draft);
     Task UpdateAsync(int id, IPartyBaseDto dto);
+    Task SetPartyLogo(int id, DocumentReferenceAnnotationDto? logo);
 }
 
 public interface ISellerRepository : IBasePartyRepository<SellerAnnotationDto> { }

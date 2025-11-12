@@ -1,6 +1,6 @@
 import { openDB, STORES } from "./db-core";
 import { DraftRepository } from "./draft-repository";
-import { IDraft, IPartyBaseDto, PartyEntity } from "./dtos";
+import { DocumentReferenceAnnotationDto, IDraft, IPartyBaseDto, PartyEntity } from "./dtos";
 
 export class PartyRepository {
     private drafts = new DraftRepository();
@@ -80,6 +80,32 @@ export class PartyRepository {
             req.onsuccess = () => resolve(req.result as PartyEntity[]);
             req.onerror = () => reject(req.error);
         });
+    }
+
+    async setPartyLogo(id: number, logoData: DocumentReferenceAnnotationDto | null, isSeller: boolean): Promise<void> {
+        const db = await openDB();
+        const storeName = isSeller ? STORES.sellers : STORES.buyers;
+        const transaction = db.transaction(storeName, "readwrite");
+        const store = transaction.objectStore(storeName);
+        const existingReq = store.get(id);
+        return new Promise((resolve, reject) => {
+            existingReq.onsuccess = () => {
+                const existing = existingReq.result as PartyEntity | undefined;
+                if (!existing) {
+                    reject(new Error(`Party with id ${id} not found`));
+                    return;
+                } else {
+                    existing.party.logoReferenceId = logoData?.id;
+                    const updated: PartyEntity = {
+                        ...existing,
+                        logo: logoData ?? undefined,
+                        updatedAt: new Date().toISOString(),
+                }
+                const updateReq = store.put(updated);
+                updateReq.onsuccess = () => resolve();
+                updateReq.onerror = () => reject(updateReq.error);
+            };
+        }});
     }
 
     async clear(): Promise<void> {

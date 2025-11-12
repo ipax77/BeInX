@@ -13,13 +13,13 @@ public class IndexedDbInterop : IDisposable, IIndexedDbInterop
             "import", "./_content/beinx.db/js/beinx-db.bundle.js").AsTask());
     }
 
-    public async Task<T> CallAsync<T>(string method, params object[] args)
+    public async Task<T> CallAsync<T>(string method, params object?[] args)
     {
         var module = await _moduleTask.Value;
         return await module.InvokeAsync<T>(method, args);
     }
 
-    public async Task CallVoidAsync(string method, params object[] args)
+    public async Task CallVoidAsync(string method, params object?[] args)
     {
         var module = await _moduleTask.Value;
         await module.InvokeVoidAsync(method, args);

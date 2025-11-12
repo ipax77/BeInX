@@ -18,8 +18,10 @@
 	{
 			<CascadingValue Value="EditContext" Name="partyEditContext">
 				<SellerForm Party="@CurrentDraft.Data"
+							Logo="@current.Logo"
 							OnValidSubmit="@SaveItemAsync"
 							OnCodeListRequested="HandleCodeListRequest"
+							OnLogoChanged="LogoChanged"
 							OnCancel="@(() => IsEditing = false)" />
 			</CascadingValue>
 	}
@@ -64,6 +66,18 @@
 	<CodeListModal @ref="codeListModal" OnSelected="HandleCodeSelected" />
 </div>
 @code {
+	PartyEntity<SellerAnnotationDto>? current => Items.FirstOrDefault(f => f.Id == CurrentDraft.EntityId);
+
+	private async Task LogoChanged(DocumentReferenceAnnotationDto? newLogo)
+	{
+		if (current is not null)
+		{
+			current.Logo = newLogo;
+			await SellerRepository.SetPartyLogo(current.Id ?? 0, newLogo);
+			await InvokeAsync(StateHasChanged);
+		}
+	}
+
 	protected override Task<List<PartyEntity<SellerAnnotationDto>>> GetAllAsync()
 	=> SellerRepository.GetAllAsync();
 

@@ -220,13 +220,16 @@
 		CurrentDraft.Data.PaymentId = args.Id ?? 0;
 		CurrentDraft.Data.InvoiceDto.PaymentMeans = args.Payment;
 		StateHasChanged();
+		UpdateVisuals();
 	}
 
 	private void OnSellerSelected(PartyEntity<SellerAnnotationDto> args)
 	{
 		CurrentDraft.Data.SellerId = args.Id ?? 0;
 		CurrentDraft.Data.InvoiceDto.SellerParty = args.Party;
+		CurrentDraft.Data.InvoiceDto.EmbedSellerLogo(args.Logo);
 		StateHasChanged();
+		UpdateVisuals();
 	}
 
 	private void OnBuyerSelected(PartyEntity<BuyerAnnotationDto> args)
@@ -234,6 +237,7 @@
 		CurrentDraft.Data.BuyerId = args.Id ?? 0;
 		CurrentDraft.Data.InvoiceDto.BuyerParty = args.Party;
 		StateHasChanged();
+		UpdateVisuals();
 	}
 
 	private void HandleSellerDelete()
@@ -310,9 +314,7 @@
 
 	protected override async Task SaveDraftAsync()
 	{
-		invoicePdfComponent?.Update(CurrentDraft.Data.InvoiceDto);
-		invoiceXmlComponent?.Update(CurrentDraft.Data.InvoiceDto);
-		invoiceJsonComponent?.Update(CurrentDraft.Data.InvoiceDto);
+		UpdateVisuals();
 		await base.SaveDraftAsync();
 	}
 
@@ -380,6 +382,13 @@
 		if (existing != null)
 			existing.Info = dto;
 		await InvokeAsync(StateHasChanged);
+	}
+
+	private void UpdateVisuals()
+	{
+		invoicePdfComponent?.Update(CurrentDraft.Data.InvoiceDto);
+		invoiceXmlComponent?.Update(CurrentDraft.Data.InvoiceDto);
+		invoiceJsonComponent?.Update(CurrentDraft.Data.InvoiceDto);
 	}
 
 }

@@ -31,6 +31,9 @@ public abstract class BasePartyRepository<TDto> : IBasePartyRepository<TDto>, ID
     public Task<List<PartyEntity<TDto>>> GetAllAsync()
         => _interop.CallAsync<List<PartyEntity<TDto>>>("partyRepository.getAllParties", _isSeller);
 
+    public Task SetPartyLogo(int id, DocumentReferenceAnnotationDto? logo)
+        => _interop.CallVoidAsync("partyRepository.setPartyLogo", id, logo, _isSeller);
+
     // Clear all parties from both stores
     public async Task Clear()
         => await _interop.CallVoidAsync("partyRepository.clear");

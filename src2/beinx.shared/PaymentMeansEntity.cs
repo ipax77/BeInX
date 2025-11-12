@@ -22,6 +22,7 @@ public class PartyEntity<TPartyDto> where TPartyDto : IPartyBaseDto
 {
     public int? Id { get; set; }
     public TPartyDto Party { get; set; } = default!;
+    public DocumentReferenceAnnotationDto? Logo { get; set; }
 }
 
 public class InvoiceDtoInfo
