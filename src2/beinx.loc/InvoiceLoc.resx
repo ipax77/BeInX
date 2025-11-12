@@ -562,4 +562,34 @@
   <data name="DraftRestore" xml:space="preserve">
     <value>A draft was found. Restore it?</value>
   </data>
+  <data name="PaymentSelect" xml:space="preserve">
+    <value>Select a payment</value>
+  </data>
+  <data name="BuyerSelect" xml:space="preserve">
+    <value>Select a buyer</value>
+  </data>
+  <data name="SellerSelect" xml:space="preserve">
+    <value>Select a seller</value>
+  </data>
+  <data name="Invoice saved successfully." xml:space="preserve">
+    <value>Invoice saved successfully.</value>
+  </data>
+  <data name="Prerequisites" xml:space="preserve">
+    <value>Prerequisites</value>
+  </data>
+  <data name="NoLines" xml:space="preserve">
+    <value>No invoice lines yet.</value>
+  </data>
+  <data name="Description" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="Quantity" xml:space="preserve">
+    <value>Quantity</value>
+  </data>
+  <data name="Unit Price" xml:space="preserve">
+    <value>Unit Price</value>
+  </data>
+  <data name="Amount" xml:space="preserve">
+    <value>Amount</value>
+  </data>
 </root>

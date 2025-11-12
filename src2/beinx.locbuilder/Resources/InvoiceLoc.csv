@@ -171,3 +171,9 @@ PaymentSelect;Select a payment;Zahlung auswählen;Seleccionar un pago;Sélection
 BuyerSelect;Select a buyer;Käufer auswählen;Seleccionar un comprador;Sélectionner un acheteur
 SellerSelect;Select a seller;Verkäufer auswählen;Seleccionar un vendedor;Sélectionner un vendeur
 Invoice saved successfully.;Invoice saved successfully.;Rechnung erfolgreich gespeichert.;Factura guardada con éxito.;Facture enregistrée avec succès.
+Prerequisites;Prerequisites;Voraussetzungen;Requisitos previos;Prérequis
+NoLines;No invoice lines yet.;Noch keine Rechnungspositionen.;Aún no hay líneas de factura.;Pas encore de lignes de facture.
+Description;Description;Beschreibung;Descripción;Description
+Quantity;Quantity;Menge;Cantidad;Quantité
+Unit Price;Unit Price;Stückpreis;Precio unitario;Prix unitaire
+Amount;Amount;Betrag;Importe;Montant

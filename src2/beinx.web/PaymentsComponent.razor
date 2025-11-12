@@ -51,13 +51,7 @@
                             @if (p.Id.HasValue)
                             {
                                 <button class="btn btn-sm btn-outline-secondary me-1"
-                                        @onclick="() => EditItem(p.Id.Value, new PaymentAnnotationDto
-                                        {
-                                            Name = p.Payment.Name,
-                                            Iban = p.Payment.Iban,
-                                            Bic = p.Payment.Bic,
-                                            PaymentMeansTypeCode = p.Payment.PaymentMeansTypeCode
-                                        })">
+                                        @onclick="() => EditItem(p.Id.Value, p.Payment)">
                                     Edit
                                 </button>
                                 <button class="btn btn-sm btn-outline-danger"

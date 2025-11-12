@@ -562,4 +562,34 @@
   <data name="DraftRestore" xml:space="preserve">
     <value>Es wurde ein Entwurf gefunden. Wiederherstellen?</value>
   </data>
+  <data name="PaymentSelect" xml:space="preserve">
+    <value>Zahlung auswählen</value>
+  </data>
+  <data name="BuyerSelect" xml:space="preserve">
+    <value>Käufer auswählen</value>
+  </data>
+  <data name="SellerSelect" xml:space="preserve">
+    <value>Verkäufer auswählen</value>
+  </data>
+  <data name="Invoice saved successfully." xml:space="preserve">
+    <value>Rechnung erfolgreich gespeichert.</value>
+  </data>
+  <data name="Prerequisites" xml:space="preserve">
+    <value>Voraussetzungen</value>
+  </data>
+  <data name="NoLines" xml:space="preserve">
+    <value>Noch keine Rechnungspositionen.</value>
+  </data>
+  <data name="Description" xml:space="preserve">
+    <value>Beschreibung</value>
+  </data>
+  <data name="Quantity" xml:space="preserve">
+    <value>Menge</value>
+  </data>
+  <data name="Unit Price" xml:space="preserve">
+    <value>Stückpreis</value>
+  </data>
+  <data name="Amount" xml:space="preserve">
+    <value>Betrag</value>
+  </data>
 </root>

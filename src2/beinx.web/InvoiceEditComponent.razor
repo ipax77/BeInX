@@ -25,78 +25,41 @@
 		<div class="row">
 			<div class="col-5">
 				<hr />
-				<div class="d-flex">
-					<div class="align-self-center">
-						<span class="badge text-truncate" style="width: 250px;">@CurrentDraft.Data.InvoiceDto.SellerParty.Name</span>
-					</div>
-					<div class="ms-2">
-						@if (CurrentDraft.Data.SellerId == 0)
-						{
-							<button type="button" class="btn btn-sm btn-outline-light" @onclick="e => sellerSelectModal?.Show(null)">
-								@Loc["Select or Create Seller"]
-							</button>
-						}
-						else
-						{
-							<div class="btn-group">
-								<button type="button" class="btn btn-sm btn-outline-light" @onclick="e => sellerSelectModal?.Show(CurrentDraft.Data.SellerId)">
-									@Loc["Edit Seller"]
-								</button>
-								<button type="button" class="btn btn-sm btn-outline-warning" @onclick="() => { CurrentDraft.Data.SellerId = 0; CurrentDraft.Data.InvoiceDto.SellerParty = new(); }">
-									@Loc["Delete"]
-								</button>
-							</div>
-						}
-					</div>
+				@if (!prerequisitesSatisfied)
+				{
+					<h6 class="text-uppercase text-muted fw-bold mb-3">
+						@Loc["Prerequisites"]
+					</h6>
+				}
+				<div>
+					<EntitySelector DisplayName="@CurrentDraft.Data.InvoiceDto.SellerParty.Name"
+									EntityId="CurrentDraft.Data.SellerId"
+									SelectOrCreateLabel="@Loc["Select or Create Seller"]"
+									EditLabel="@Loc["Edit Seller"]"
+									DeleteLabel="@Loc["Delete"]"
+									OnSelectOrCreate="() => sellerSelectModal?.Show(null)"
+									OnEdit="(id) => sellerSelectModal?.Show(id)"
+									OnDelete="HandleSellerDelete" />
+
+					<EntitySelector DisplayName="@CurrentDraft.Data.InvoiceDto.BuyerParty.Name"
+									EntityId="CurrentDraft.Data.BuyerId"
+									SelectOrCreateLabel="@Loc["Select or Create Buyer"]"
+									EditLabel="@Loc["Edit Buyer"]"
+									DeleteLabel="@Loc["Delete"]"
+									OnSelectOrCreate="() => buyerSelectModal?.Show(null)"
+									OnEdit="(id) => buyerSelectModal?.Show(id)"
+									OnDelete="HandleBuyerDelete" />
+
+					<EntitySelector DisplayName="@CurrentDraft.Data.InvoiceDto.PaymentMeans.Name"
+									EntityId="CurrentDraft.Data.PaymentId"
+									SelectOrCreateLabel="@Loc["Select or Create Payment Means"]"
+									EditLabel="@Loc["Edit Payment Means"]"
+									DeleteLabel="@Loc["Delete"]"
+									OnSelectOrCreate="() => paymentsSelectModal?.Show(null)"
+									OnEdit="(id) => paymentsSelectModal?.Show(id)"
+									OnDelete="HandlePaymentDelete" />
 				</div>
-				<div class="d-flex">
-					<div class="align-self-center">
-						<span class="badge text-truncate" style="width: 250px;">@CurrentDraft.Data.InvoiceDto.BuyerParty.Name</span>
-					</div>
-					<div class="ms-2">
-						@if (CurrentDraft.Data.BuyerId == 0)
-						{
-							<button type="button" class="btn btn-sm btn-outline-light" @onclick="e => buyerSelectModal?.Show(null)">
-								@Loc["Select or Create Buyer"]
-							</button>
-						}
-						else
-						{
-							<div class="btn-group">
-								<button type="button" class="btn btn-sm btn-outline-light" @onclick="e => buyerSelectModal?.Show(CurrentDraft.Data.BuyerId)">
-									@Loc["Edit Buyer"]
-								</button>
-								<button type="button" class="btn btn-sm btn-outline-warning" @onclick="() => { CurrentDraft.Data.BuyerId = 0; CurrentDraft.Data.InvoiceDto.BuyerParty = new(); }">
-									@Loc["Delete"]
-								</button>
-							</div>
-						}
-					</div>
-				</div>
-				<div class="d-flex">
-					<div class="align-self-center">
-						<span class="badge text-truncate" style="width: 250px;">@CurrentDraft.Data.InvoiceDto.PaymentMeans.Name</span>
-					</div>
-					<div class="ms-2">
-						@if (CurrentDraft.Data.PaymentId == 0)
-						{
-							<button type="button" class="btn btn-sm btn-outline-light" @onclick="e => paymentsSelectModal?.Show(null)">
-								@Loc["Select or Create Payment Means"]
-							</button>
-						}
-						else
-						{
-							<div class="btn-group">
-								<button type="button" class="btn btn-sm btn-outline-light" @onclick="e => paymentsSelectModal?.Show(CurrentDraft.Data.PaymentId)">
-									@Loc["Edit Payment Means"]
-								</button>
-								<button type="button" class="btn btn-sm btn-outline-warning" @onclick="() => { CurrentDraft.Data.PaymentId = 0; CurrentDraft.Data.InvoiceDto.PaymentMeans = new(); }">
-									@Loc["Delete"]
-								</button>
-							</div>
-						}
-					</div>
-				</div>
+				<hr />
 				@if (prerequisitesSatisfied)
 				{
 					<CascadingValue Value="EditContext" Name="invoiceEditContext">
@@ -225,6 +188,24 @@
 		CurrentDraft.Data.BuyerId = args.Id ?? 0;
 		CurrentDraft.Data.InvoiceDto.BuyerParty = args.Party;
 		StateHasChanged();
+	}
+
+	private void HandleSellerDelete()
+	{
+		CurrentDraft.Data.SellerId = 0;
+		CurrentDraft.Data.InvoiceDto.SellerParty = new();
+	}
+
+	private void HandleBuyerDelete()
+	{
+		CurrentDraft.Data.BuyerId = 0;
+		CurrentDraft.Data.InvoiceDto.BuyerParty = new();
+	}
+
+	private void HandlePaymentDelete()
+	{
+		CurrentDraft.Data.PaymentId = 0;
+		CurrentDraft.Data.InvoiceDto.PaymentMeans = new();
 	}
 
 	private async Task Save()

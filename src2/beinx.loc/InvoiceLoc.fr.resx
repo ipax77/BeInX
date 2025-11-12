@@ -562,4 +562,34 @@
   <data name="DraftRestore" xml:space="preserve">
     <value>Un brouillon a été trouvé. Le restaurer ?</value>
   </data>
+  <data name="PaymentSelect" xml:space="preserve">
+    <value>Sélectionner un paiement</value>
+  </data>
+  <data name="BuyerSelect" xml:space="preserve">
+    <value>Sélectionner un acheteur</value>
+  </data>
+  <data name="SellerSelect" xml:space="preserve">
+    <value>Sélectionner un vendeur</value>
+  </data>
+  <data name="Invoice saved successfully." xml:space="preserve">
+    <value>Facture enregistrée avec succès.</value>
+  </data>
+  <data name="Prerequisites" xml:space="preserve">
+    <value>Prérequis</value>
+  </data>
+  <data name="NoLines" xml:space="preserve">
+    <value>Pas encore de lignes de facture.</value>
+  </data>
+  <data name="Description" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="Quantity" xml:space="preserve">
+    <value>Quantité</value>
+  </data>
+  <data name="Unit Price" xml:space="preserve">
+    <value>Prix unitaire</value>
+  </data>
+  <data name="Amount" xml:space="preserve">
+    <value>Montant</value>
+  </data>
 </root>

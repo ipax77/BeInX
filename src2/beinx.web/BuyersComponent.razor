@@ -8,7 +8,7 @@
 @inject IBuyerRepository BuyerRepository
 
 <div class="container-fluid mt-2 mb-5">
-	<h3>Buyers</h3>
+	<h3>@Loc["Buyers"]</h3>
 
 	@if (IsLoading)
 	{
@@ -46,12 +46,8 @@
 							@if (b.Id.HasValue)
 							{
 								<button class="btn btn-sm btn-outline-secondary me-1"
-										@onclick="() => EditItem(b.Id.Value, new BuyerAnnotationDto
-										{
-											Name = b.Party.Name,
-                                        	TaxId = b.Party.TaxId,
-                                    	})">
-										Edit
+										@onclick="() => EditItem(b.Id.Value, b.Party)">
+									Edit
 								</button>
 								<button class="btn btn-sm btn-outline-danger"
 										@onclick="() => DeleteItemAsync(b.Id.Value)">
