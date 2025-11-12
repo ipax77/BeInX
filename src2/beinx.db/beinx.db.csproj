@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\beinx.shared\beinx.shared.csproj" />
+    <ProjectReference Include="..\BlazorInvoice.Pdf\BlazorInvoice.Pdf.csproj" />
   </ItemGroup>
 
 </Project>

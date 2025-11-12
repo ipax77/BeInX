@@ -69,6 +69,13 @@ public class ConfigService(IIndexedDbInterop _interop) : IConfigService
         try
         {
             await _interop.CallVoidAsync("downloadBackup");
+            if (_appConfig is null)
+            {
+                _appConfig = await _interop.CallAsync<AppConfigDto>("getConfig");
+            }
+            _appConfig.LastBackup = DateTime.UtcNow;
+            await _interop.CallVoidAsync("saveConfig", _appConfig);
+            OnUpdate?.Invoke(_appConfig);
         }
         finally
         {

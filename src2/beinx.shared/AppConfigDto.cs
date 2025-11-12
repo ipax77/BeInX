@@ -13,7 +13,7 @@ public record AppConfigDto
     public bool ExportEmbedPdf { get; set; } = true;
     public bool ExportValidate { get; set; } = true;
     public bool ExportFinalize { get; set; } = true;
-    public ExportType ExportType { get; set; }
+    public ExportType ExportType { get; set; } = ExportType.PdfA3;
     public int StatsMonthEndDay { get; set; } = 10;
     public bool StatsIsMonthNotQuater { get; set; }
 }

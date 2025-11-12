@@ -50,3 +50,37 @@ public class BlazorInvoiceMapper : InvoiceMapperBase<BlazorInvoiceDto, DocumentR
     {
     }
 }
+
+public static class BlazorInvoiceDtoExtensions
+{
+    public static void EmbedPdf(this BlazorInvoiceDto invoice, DocumentReferenceAnnotationDto? doc)
+    {
+        var existingDoc = invoice.AdditionalDocumentReferences.FirstOrDefault(d => d.FileName == "Invoice.pdf");
+        if (existingDoc != null)
+        {
+            invoice.AdditionalDocumentReferences.Remove(existingDoc);
+        }
+        if (doc != null)
+        {
+            invoice.AdditionalDocumentReferences.Add(doc);
+        }
+    }
+
+    public static void EmbedSellerLogo(this BlazorInvoiceDto invoice, DocumentReferenceAnnotationDto? doc)
+    {
+        var existingDoc = invoice.AdditionalDocumentReferences.FirstOrDefault(d => d.Id == doc?.Id);
+        if (existingDoc != null)
+        {
+            invoice.AdditionalDocumentReferences.Remove(existingDoc);
+        }
+        if (doc != null)
+        {
+            invoice.AdditionalDocumentReferences.Add(doc);
+            invoice.SellerParty.LogoReferenceId = doc.Id;
+        }
+        else
+        {
+            invoice.SellerParty.LogoReferenceId = null;
+        }
+    }
+}

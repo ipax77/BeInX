@@ -99,6 +99,7 @@
 		await InvokeAsync(StateHasChanged);
 		var existing = Items.FirstOrDefault(p => p.Id == id);
 		await OnSellerSelected.InvokeAsync(existing);
+		Close();
 	}
 
 	protected override int GetEntityId(PartyEntity<SellerAnnotationDto> entity) => entity.Id ?? 0;

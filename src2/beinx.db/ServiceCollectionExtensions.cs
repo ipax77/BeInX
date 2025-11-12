@@ -30,6 +30,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IDraftRepository<InvoiceDtoInfo>>(sp =>
             (IDraftRepository<InvoiceDtoInfo>)sp.GetRequiredService<IInvoiceRepository>());
 
+        services.AddScoped<IInvoiceService, InvoiceService>();
         return services;
     }
 }

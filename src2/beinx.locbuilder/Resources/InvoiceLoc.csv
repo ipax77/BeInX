@@ -176,8 +176,8 @@ NoLines;No invoice lines yet.;Noch keine Rechnungspositionen.;Aún no hay línea
 Description;Description;Beschreibung;Descripción;Description
 Quantity;Quantity;Menge;Cantidad;Quantité
 Unit Price;Unit Price;Stückpreis;Precio unitario;Prix unitaire
-Amount;Amount;Betrag;Importe;Montant
 Download a backup copy of your app data.;Download a backup copy of your app data.;Laden Sie eine Sicherungskopie Ihrer App-Daten herunter.;Descargue una copia de seguridad de los datos de su aplicación.;Téléchargez une copie de sauvegarde des données de votre application.
 Restore your app data from a backup file.;Restore your app data from a backup file.;Stellen Sie Ihre App-Daten aus einer Sicherungsdatei wieder her.;Restaure los datos de su aplicación desde un archivo de respaldo.;Restaurez les données de votre application à partir d'un fichier de sauvegarde.
 BackupInfo;Backups include all your saved settings and data. Restoring replaces existing data.;Sicherungen umfassen alle Ihre gespeicherten Einstellungen und Daten. Das Wiederherstellen ersetzt vorhandene Daten.;Las copias de seguridad incluyen toda la configuración y los datos guardados. La restauración reemplaza los datos existentes.;Les sauvegardes incluent tous vos paramètres et données enregistrés. La restauration remplace les données existantes.
 BackupWarning;This will replace all your current data with a backup file. Continue?;Dies ersetzt alle Ihre aktuellen Daten durch eine Sicherungsdatei. Fortfahren?;Esto reemplazará todos sus datos actuales con un archivo de respaldo. ¿Continuar?;Cela remplacera toutes vos données actuelles par un fichier de sauvegarde. Continuer ?
+OldBackup;Your backup is older than 7 days. Click to back up now.;Ihre Sicherung ist älter als 7 Tage. Klicken Sie hier, um jetzt eine Sicherung zu erstellen.;Su copia de seguridad tiene más de 7 días. Haga clic para hacer una copia de seguridad ahora.;Votre sauvegarde a plus de 7 jours. Cliquez pour sauvegarder maintenant.

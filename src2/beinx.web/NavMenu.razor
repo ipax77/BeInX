@@ -1,4 +1,5 @@
 @using System.Globalization
+@using Microsoft.AspNetCore.Components.Routing
 @using Microsoft.Extensions.Localization
 @using beinx.loc
 @using beinx.shared
@@ -8,6 +9,7 @@
 @inject IJSRuntime JSRuntime
 @inject NavigationManager NavigationManager
 @inject IConfigService ConfigService
+@implements IDisposable
 
 <nav class="navbar navbar-expand-lg bg-body-tertiary">
     <div class="container-fluid">
@@ -63,19 +65,38 @@
                     </a>
                 </li>
             </ul>
-            <form class="d-flex" name="cultureselect">
-                <fieldset>
-                    <label class="form-label">
-                        <select class="form-select" required @bind="cultureName" @bind:after="@(() => SetCulture(cultureName))">
-                            <option value="iv">@Loc["Language"] ..</option>
-                            @foreach (var culture in ConfigService.GetSupportedCultures())
-                            {
-                                <option value="@culture.TwoLetterISOLanguageName">@culture.NativeName</option>
-                            }
-                        </select>
-                    </label>
-                </fieldset>
-            </form>
+            @if (IsBackupOld)
+            {
+                <div class="alert alert-warning py-1 px-2 mb-0 me-3 pointer" style="font-size: 0.9rem;" @onclick="e => ConfigService.DownloadBackup()">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                    @Loc["OldBackup"]
+                </div>
+            }
+            @if (IsHomePage)
+            {
+                <form class="d-flex" name="cultureselect">
+                    <fieldset>
+                        <label class="form-label">
+                            <select class="form-select"
+                                    required
+                                    @bind="cultureName"
+                                    @bind:after="@(() => SetCulture(cultureName))">
+                                <option value="iv">@Loc["Language"] ..</option>
+                                @foreach (var culture in ConfigService.GetSupportedCultures())
+                                {
+                                    <option value="@culture.TwoLetterISOLanguageName">@culture.NativeName</option>
+                                }
+                            </select>
+                        </label>
+                    </fieldset>
+                </form>
+            }
+            else
+            {
+                <div class="navbar-text text-muted me-3">
+                    <i class="bi bi-translate"></i> @CultureInfo.CurrentCulture.NativeName
+                </div>
+            }
         </div>
     </div>
 </nav>
@@ -84,6 +105,10 @@
     AppConfigDto appConfig = new();
     string cultureName = "iv";
 
+    private bool IsBackupOld => (DateTime.UtcNow - appConfig.LastBackup).TotalDays > 7;
+    private bool IsHomePage =>
+    string.IsNullOrEmpty(NavigationManager.ToBaseRelativePath(NavigationManager.Uri));
+
     protected override async Task OnInitializedAsync()
     {
         appConfig = await ConfigService.GetConfig();
@@ -91,6 +116,14 @@
         {
             cultureName = appConfig.CultureName;
         }
+        ConfigService.OnUpdate += UpdateConfig;
+        NavigationManager.LocationChanged += LocationChanged;
+    }
+
+    private void UpdateConfig(AppConfigDto newConfig)
+    {
+        appConfig = newConfig;
+        InvokeAsync(StateHasChanged);
     }
 
     private async Task SetCulture(string name)
@@ -114,5 +147,16 @@
                 NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
             }
         }
+    }
+
+    private void LocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+		InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        ConfigService.OnUpdate -= UpdateConfig;
+		NavigationManager.LocationChanged -= LocationChanged;
     }
 }

@@ -32,13 +32,6 @@ public class InvoiceDtoInfo
     public int PaymentId { get; set; }
 }
 
-public class FinalizeResult
-{
-    public DateTime XmlInvoiceCreated { get; set; }
-    public string XmlInvoiceSha1Hash { get; set; } = string.Empty;
-    public byte[] XmlInvoiceBlob { get; set; } = [];
-}   
-
 public class InvoiceEntity
 {
     public int? Id { get; set; }

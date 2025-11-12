@@ -589,9 +589,6 @@
   <data name="Unit Price" xml:space="preserve">
     <value>Prix unitaire</value>
   </data>
-  <data name="Amount" xml:space="preserve">
-    <value>Montant</value>
-  </data>
   <data name="Download a backup copy of your app data." xml:space="preserve">
     <value>Téléchargez une copie de sauvegarde des données de votre application.</value>
   </data>
@@ -603,5 +600,8 @@
   </data>
   <data name="BackupWarning" xml:space="preserve">
     <value>Cela remplacera toutes vos données actuelles par un fichier de sauvegarde. Continuer ?</value>
+  </data>
+  <data name="OldBackup" xml:space="preserve">
+    <value>Votre sauvegarde a plus de 7 jours. Cliquez pour sauvegarder maintenant.</value>
   </data>
 </root>
