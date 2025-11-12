@@ -10,4 +10,6 @@ public interface IConfigService
     event Action<AppConfigDto>? OnUpdate;
     Task Reload();
     Task<bool> IsBackupNeeded();
+    Task DownloadBackup();
+    Task RestoreBackup();
 }

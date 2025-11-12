@@ -4,7 +4,7 @@ using System.Globalization;
 
 namespace beinx.db.Services;
 
-public class ConfigService : IConfigService
+public class ConfigService(IIndexedDbInterop _interop) : IConfigService
 {
     public event Action<AppConfigDto>? OnUpdate;
     private AppConfigDto? _appConfig;
@@ -19,7 +19,7 @@ public class ConfigService : IConfigService
             {
                 return _appConfig;
             }
-            // _appConfig = await indexedDbService.GetConfig();
+            _appConfig = await _interop.CallAsync<AppConfigDto>("getConfig");
             return _appConfig ?? new AppConfigDto();
         }
         finally
@@ -53,9 +53,35 @@ public class ConfigService : IConfigService
         await ss.WaitAsync();
         try
         {
-            // await indexedDbService.SaveConfig(configDto);
+            await _interop.CallVoidAsync("saveConfig", configDto);
             _appConfig = configDto;
             OnUpdate?.Invoke(_appConfig);
+        }
+        finally
+        {
+            ss.Release();
+        }
+    }
+
+    public async Task DownloadBackup()
+    {
+        await ss.WaitAsync();
+        try
+        {
+            await _interop.CallVoidAsync("downloadBackup");
+        }
+        finally
+        {
+            ss.Release();
+        }
+    }
+
+    public async Task RestoreBackup()
+    {
+        await ss.WaitAsync();
+        try
+        {
+            await _interop.CallVoidAsync("uploadBackup");
         }
         finally
         {

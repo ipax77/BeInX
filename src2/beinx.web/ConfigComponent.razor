@@ -1,0 +1,158 @@
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components.Routing
+@using Microsoft.Extensions.Localization
+@using Microsoft.JSInterop
+@using beinx.loc
+@using beinx.shared
+@using beinx.shared.Interfaces
+@using pax.BBToast
+@inject IToastService ToastService
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
+@inject IConfigService ConfigService
+@inject IStringLocalizer<InvoiceLoc> Loc
+@implements IDisposable
+
+<h3 class="mt-2">@Loc["Settings"]</h3>
+<div style="max-width: 800px;">
+	<EditForm EditContext="editContext" FormName="ConfigFrom" OnValidSubmit="SaveChanges">
+		<div class="mb-1 form-check form-switch">
+			<label for="desc" class="form-label">@Loc["Show Form Descriptions"]</label>
+			<InputCheckbox id="desc" class="form-check-input" role="switch" @bind-Value="appConfig.ShowFormDescriptions" />
+		</div>
+		<div class="mb-3 p-3 border rounded">
+			<h3>@Loc["Export Options"]</h3>
+			<div class="mb-1">
+				<div class="form-switch form-check">
+					<label for="pdf" class="form-check-label">@Loc["Embed PDF"]</label>
+					<InputCheckbox id="pdf" class="form-check-input" aria-describedby="pdfdesc" role="switch" @bind-Value="appConfig.ExportEmbedPdf" />
+				</div>
+				<small id="pdfdesc" class="form-text">@Loc["EmbedPDF"]</small>
+			</div>
+			<div class="mb-1">
+				<div class="form-switch form-check">
+					<label for="validate" class="form-check-label">@Loc["Validate XML"]</label>
+					<InputCheckbox id="validate" class="form-check-input" aria-describedby="validatedesc" role="switch" @bind-Value="appConfig.ExportValidate" />
+				</div>
+				<small id="validatedesc" class="form-text">@Loc["ValidateXML"]</small>
+			</div>
+			<div class="mb-1">
+				<div class="form-switch form-check">
+					<label for="finalize" class="form-check-label">@Loc["Finalize"]</label>
+					<InputCheckbox id="finalize" class="form-check-input" aria-describedby="finalizedesc" role="switch" @bind-Value="appConfig.ExportFinalize" />
+				</div>
+				<small id="finalizedesc" class="form-text">@Loc["FinalizeDesc"]</small>
+			</div>
+			<div class="mb-1" style="max-width: 300px;">
+				<label for="exporttpye" class="form-label">Type</label>
+				<InputSelect id="exporttype" class="form-select" @bind-Value="appConfig.ExportType">
+					@foreach (ExportType exportType in Enum.GetValues(typeof(ExportType)))
+					{
+						<option value="@exportType">@exportType.Desc()</option>
+					}
+				</InputSelect>
+			</div>
+		</div>
+		<div class="mb-3 p-3 border rounded">
+			<h3>@Loc["Stats Options"]</h3>
+			<div class="mb-1">
+				<label for="startday" class="form-label">@Loc["Month End Day"]</label>
+				<InputNumber id="startday" class="form-control" step="1" min="1" max="26" aria-describedby="startdaydesc" @bind-Value="appConfig.StatsMonthEndDay" />
+				<small id="startdaydesc" class="form-text">@Loc["StatsOptions"]</small>
+			</div>
+			<div class="mb-1">
+				<div class="form-switch form-check">
+					<label for="statsperiod" class="form-check-label">@Loc["Monthly Period"]</label>
+					<InputCheckbox id="statsperiod" class="form-check-input" aria-describedby="statsperioddesc" role="switch" @bind-Value="appConfig.StatsIsMonthNotQuater" />
+				</div>
+				<small id="statsperioddesc" class="form-text">@Loc["MonthlyPeriod"]</small>
+			</div>
+		</div>
+		<hr />
+		<div id="configbuttons" class="btn-group mt-2 mb-5">
+			<button type="submit" class="btn btn-outline-success">@Loc["Save"]</button>
+			@if (isLoading)
+			{
+
+			}
+			else
+			{
+				<button type="button" class="btn btn-outline-warning" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="@Loc["Backup Database"]"
+						@onclick="e => ConfigService.DownloadBackup()">
+					@Loc["Backup"]
+				</button>
+				<button type="button" class="btn btn-outline-danger" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="@Loc["Restore Database"]"
+						@onclick="e => ConfigService.RestoreBackup()">
+					@Loc["Restore"]
+				</button>
+			}
+		</div>
+	</EditForm>
+</div>
+
+@code {
+	private AppConfigDto appConfig = new();
+
+	EditContext editContext = null!;
+	bool hasChanges;
+	bool isLoading;
+
+	protected override async Task OnInitializedAsync()
+	{
+		editContext = new(appConfig);
+		appConfig = await ConfigService.GetConfig();
+		editContext = new EditContext(appConfig);
+		editContext.OnFieldChanged += OnFieldChanged;
+		NavigationManager.LocationChanged += LeavePage;
+	}
+
+	private async void LeavePage(object? sender, LocationChangedEventArgs e)
+	{
+		if (hasChanges)
+		{
+			bool result = await JSRuntime.InvokeAsync<bool>("confirm", Loc["SaveWarning"].ToString());
+			if (result)
+			{
+				await SaveChanges();
+			}
+			else
+			{
+				hasChanges = false;
+			}
+		}
+	}
+
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		if (firstRender)
+		{
+			await JSRuntime.InvokeVoidAsync("enableTooltips", "configbuttons");
+		}
+	}
+
+	private void OnFieldChanged(object? sender, FieldChangedEventArgs e)
+	{
+		hasChanges = true;
+	}
+
+	private async Task SaveChanges()
+	{
+		if (hasChanges)
+		{
+			await ConfigService.UpdateConfig(appConfig);
+			hasChanges = false;
+			ToastService.ShowSuccess("Settings have been saved successfully.");
+		}
+	}
+
+	public void Dispose()
+	{
+		if (editContext != null)
+		{
+			editContext.OnFieldChanged -= OnFieldChanged;
+		}
+		NavigationManager.LocationChanged -= LeavePage;
+
+		JSRuntime.InvokeVoidAsync("disableTooltips", "configbuttons");
+	}
+}

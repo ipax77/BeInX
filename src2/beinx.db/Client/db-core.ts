@@ -1,5 +1,5 @@
 const DB_NAME = "BeInXDB";
-const DB_VERSION = 1;
+export const DB_VERSION = 1;
 
 export const STORES = {
     payments: "PaymentMeans",
