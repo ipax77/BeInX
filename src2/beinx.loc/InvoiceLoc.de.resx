@@ -604,4 +604,7 @@
   <data name="OldBackup" xml:space="preserve">
     <value>Ihre Sicherung ist älter als 7 Tage. Klicken Sie hier, um jetzt eine Sicherung zu erstellen.</value>
   </data>
+  <data name="PngUpload" xml:space="preserve">
+    <value>Laden Sie eine einzelne PNG-Datei hoch (maximale Abmessungen: 250x250).</value>
+  </data>
 </root>

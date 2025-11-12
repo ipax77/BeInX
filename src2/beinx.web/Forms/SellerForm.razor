@@ -102,17 +102,18 @@
 			</div>
 		</div>
 		<hr />
+		<p>Logo</p>
 		@if (Logo is not null)
 		{
-			<p>Logo</p>
 			<img src="data:@Logo.MimeCode;base64, @Logo.Content" alt="Logo" />
 			<div class="btn-group">
-				<button type="button" class="btn btn-danger" @onclick="e => OnLogoChanged.InvokeAsync(null)">@Loc["Delete"]</button>
+				<button type="button" class="btn btn-danger" @onclick="DeleteLogo">@Loc["Delete"]</button>
 			</div>
 		}
 		else
 		{
 			<InputFile @ref="inputFile" class="form-control" OnChange="LoadFiles" multiple />
+			<p><small>@Loc["PngUpload"]</small></p>
 		}
 		<hr />
 		<div class="mt-3">

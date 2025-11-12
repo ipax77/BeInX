@@ -604,4 +604,7 @@
   <data name="OldBackup" xml:space="preserve">
     <value>Your backup is older than 7 days. Click to back up now.</value>
   </data>
+  <data name="PngUpload" xml:space="preserve">
+    <value>Upload a single PNG file (maximum dimensions: 250x250).</value>
+  </data>
 </root>

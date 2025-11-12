@@ -604,4 +604,7 @@
   <data name="OldBackup" xml:space="preserve">
     <value>Votre sauvegarde a plus de 7 jours. Cliquez pour sauvegarder maintenant.</value>
   </data>
+  <data name="PngUpload" xml:space="preserve">
+    <value>Téléchargez un seul fichier PNG (dimensions maximales : 250x250</value>
+  </data>
 </root>

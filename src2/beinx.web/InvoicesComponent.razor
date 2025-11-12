@@ -1,4 +1,5 @@
 ﻿@using Microsoft.Extensions.Localization
+@using Microsoft.JSInterop
 @using beinx.loc
 @using beinx.shared
 @using beinx.shared.Interfaces
@@ -8,81 +9,143 @@
 @inject IInvoiceRepository InvoiceRepository
 @inject IStringLocalizer<InvoiceLoc> Loc
 @inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
 
 <h3>
-    @Loc["Invoices"]
+	@Loc["Invoices"]
 </h3>
 
 @if (isLoading)
 {
-    <p><em>Loading...</em></p>
+	<p><em>Loading...</em></p>
 }
 else
 {
-    <button class="btn btn-primary mb-3" @onclick="NewItem">@Loc["Add New Invoice"]</button>
+	<button class="btn btn-primary mb-3" @onclick="NewItem">@Loc["Add New Invoice"]</button>
 
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>@Loc["Invoice ID"]</th>
-                <th>@Loc["Issue Date"]</th>
-                <th>@Loc["Seller"]</th>
-                <th>@Loc["Buyer"]</th>
-                <th>@Loc["Amount"]</th>
-                <th>@Loc["Paid?"]</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var inv in Items)
-            {
-                <tr>
-                    <td>@inv.Info.InvoiceDto.Id</td>
-                    <td>@inv.Info.InvoiceDto.IssueDate.ToShortDateString()</td>
-                    <td>@inv.Info.InvoiceDto.SellerParty?.Name</td>
-                    <td>@inv.Info.InvoiceDto.BuyerParty?.Name</td>
-                    <td>@inv.Info.InvoiceDto.PayableAmount.ToString("C")</td>
-                    <td>@(inv.IsPaid ? "✔️" : "❌")</td>
-                    <td>
+	<table class="table table-striped">
+		<thead>
+			<tr>
+				<th>@Loc["Invoice ID"]</th>
+				<th>@Loc["Issue Date"]</th>
+				<th>@Loc["Seller"]</th>
+				<th>@Loc["Buyer"]</th>
+				<th>@Loc["Amount"]</th>
+				<th>@Loc["Paid?"]</th>
+				<th></th>
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (var inv in Items)
+			{
+				<tr>
+					<td>@inv.Info.InvoiceDto.Id</td>
+					<td>@inv.Info.InvoiceDto.IssueDate.ToShortDateString()</td>
+					<td>@inv.Info.InvoiceDto.SellerParty?.Name</td>
+					<td>@inv.Info.InvoiceDto.BuyerParty?.Name</td>
+					<td>@inv.Info.InvoiceDto.PayableAmount.ToString("C")</td>
+					<td>@(inv.IsPaid ? "✔️" : "❌")</td>
+					<td>
 
-                        <button class="btn btn-sm btn-outline-secondary me-1"
-                                @onclick="() => EditItem(inv.Id ?? 0, inv.Info.InvoiceDto)">
-                            @Loc["Edit"]
-                        </button>
-                        <button class="btn btn-sm btn-outline-danger"
-                                @onclick="() => DeleteItemAsync(inv.Id ?? 0)">
-                            @Loc["Delete"]
-                        </button>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+						<button class="btn btn-sm btn-outline-warning me-1"
+								@onclick="() => EditItem(inv.Id ?? 0, inv.Info.InvoiceDto)">
+							@Loc["Edit"]
+						</button>
+						@if (inv.IsPaid)
+						{
+							<button class="btn btn-sm btn-outline-info me-1"
+									@onclick="() => SetPaid(inv.Id ?? 0, false)">
+								@Loc["Set Unpaid"]
+							</button>
+						}
+						else
+						{
+							<button class="btn btn-sm btn-outline-light me-1"
+									@onclick="() => SetPaid(inv.Id ?? 0, true)">
+								@Loc["Set Paid"]
+							</button>
+						}
+						<button class="btn btn-sm btn-outline-secondary"
+								@onclick="() => Copy(inv.Id ?? 0)">
+							@Loc["Copy"]
+						</button>
+						<button class="btn btn-sm btn-outline-danger"
+								@onclick="() => DeleteItemAsync(inv.Id ?? 0)">
+							@Loc["Delete"]
+						</button>
+					</td>
+				</tr>
+			}
+		</tbody>
+	</table>
 }
 
 @code {
 
-    private bool isLoading = true;
+	private bool isLoading = true;
 	private List<InvoiceEntity> Items = new();
 
-    protected override async Task OnInitializedAsync()
-    {
+	protected override async Task OnInitializedAsync()
+	{
 		Items = await InvoiceRepository.GetAllAsync();
-        isLoading = false;
+		isLoading = false;
 	}
 
-    private void NewItem()
-    {
-        NavigationManager.NavigateTo("/invoice");
-    }
-    private void EditItem(int id, InvoiceAnnotationDto dto)
-    {
-        NavigationManager.NavigateTo($"/invoice/{id}");
-    }
-    private async Task DeleteItemAsync(int id)
-    {
-        await InvoiceRepository.DeleteAsync(id);
-        Items = await InvoiceRepository.GetAllAsync();
-        StateHasChanged();
+	private void NewItem()
+	{
+		NavigationManager.NavigateTo("/invoice");
+	}
+
+	private void EditItem(int id, InvoiceAnnotationDto dto)
+	{
+		NavigationManager.NavigateTo($"/invoice/{id}");
+	}
+
+	private async Task SetPaid(int id, bool isPaid)
+	{
+		var item = Items.FirstOrDefault(f => f.Id == id);
+		if (item != null)
+		{
+			item.IsPaid = isPaid;
+			await InvoiceRepository.SetPaidAsync(id, isPaid);
+			StateHasChanged();
+		}
+	}
+
+	private async Task DeleteItemAsync(int id)
+	{
+		var item = Items.FirstOrDefault(f => f.Id == id);
+		if (item is null)
+		{
+			return;
+		}
+		bool result = await JSRuntime.InvokeAsync<bool>("confirm", Loc["DeleteInvoice"].ToString());
+		if (!result)
+		{
+			return;
+		}
+		Items.Remove(item);
+		await InvoiceRepository.DeleteAsync(id);
+		await InvokeAsync(StateHasChanged);
+	}
+
+	private async Task Copy(int id)
+	{
+		var item = Items.FirstOrDefault(f => f.Id == id);
+		if (item is null)
+		{
+			return;
+		}
+		var invoiceDto = item.Info.InvoiceDto;
+		invoiceDto.Id = invoiceDto.Id + "_copy";
+		invoiceDto.IssueDate = DateTime.UtcNow;
+		invoiceDto.DueDate = DateTime.UtcNow.AddDays(14);
+		invoiceDto.InvoiceLines.Clear();
+		invoiceDto.AdditionalDocumentReferences.Clear();
+		invoiceDto.PayableAmount = 0;
+
+		await InvoiceRepository.CreateAsync(item.Info);
+		Items = await InvoiceRepository.GetAllAsync();
+		await InvokeAsync(StateHasChanged);
 	}
 }

@@ -8,7 +8,7 @@ public interface IInvoiceRepository
     Task<List<InvoiceEntity>> GetAllAsync();
     Task<InvoiceEntity?> GetByIdAsync(int id);
     Task<List<InvoiceEntity>> FindByYearAsync(int year);
-    Task MarkAsPaidAsync(int id);
+    Task SetPaidAsync(int id, bool isPaid);
     Task FinalizeAsync(int id, FinalizeResult finalizeResult);
     Task<List<InvoiceListItem>> GetListAsync(int limit = 50, int offset = 0);
     Task<int> GetCountAsync();

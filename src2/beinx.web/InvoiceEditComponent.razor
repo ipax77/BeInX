@@ -262,6 +262,7 @@
 	{
 		try
 		{
+			CurrentDraft.Data.InvoiceDto.UpdateAmount();
 			if (SelectedInvoiceId.HasValue && SelectedInvoiceId.Value > 0)
 			{
 				await UpdateAsync(SelectedInvoiceId.Value, CurrentDraft.Data);

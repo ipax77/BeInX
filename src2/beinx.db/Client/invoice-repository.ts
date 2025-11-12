@@ -115,7 +115,7 @@ export class InvoiceRepository {
         });
     }
 
-    async markAsPaid(id: number): Promise<void> {
+    async setPaid(id: number, isPaid: boolean): Promise<void> {
         const db = await openDB();
         const transaction = db.transaction(STORES.invoices, "readwrite");
         const store = transaction.objectStore(STORES.invoices);
@@ -132,7 +132,7 @@ export class InvoiceRepository {
 
                 const updated: InvoiceEntity = {
                     ...existing,
-                    isPaid: true,
+                    isPaid: isPaid,
                     updatedAt: new Date().toISOString(),
                 };
 

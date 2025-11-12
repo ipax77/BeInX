@@ -604,4 +604,7 @@
   <data name="OldBackup" xml:space="preserve">
     <value>Su copia de seguridad tiene más de 7 días. Haga clic para hacer una copia de seguridad ahora.</value>
   </data>
+  <data name="PngUpload" xml:space="preserve">
+    <value>Cargue un solo archivo PNG (dimensiones máximas: 250x250).</value>
+  </data>
 </root>

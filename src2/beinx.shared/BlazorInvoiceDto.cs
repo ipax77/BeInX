@@ -83,4 +83,13 @@ public static class BlazorInvoiceDtoExtensions
             invoice.SellerParty.LogoReferenceId = null;
         }
     }
+
+    public static void UpdateAmount(this BlazorInvoiceDto invoice)
+    {
+        decimal taxRate = (decimal)invoice.GlobalTax / 100.0m;
+        decimal taxExclusiveAmount = Math.Round((decimal)invoice.InvoiceLines.Sum(s => s.LineTotal), 2);
+        decimal payableAmount = Math.Round(taxExclusiveAmount + taxExclusiveAmount * taxRate, 2);
+        invoice.PayableAmount = (double)payableAmount;
+
+    }
 }

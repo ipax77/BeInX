@@ -24,8 +24,8 @@ public class InvoiceRepository(IIndexedDbInterop _interop)
     public Task<List<InvoiceEntity>> FindByYearAsync(int year)
         => _interop.CallAsync<List<InvoiceEntity>>("invoiceRepository.findByYear", year);
 
-    public Task MarkAsPaidAsync(int id)
-        => _interop.CallVoidAsync("invoiceRepository.markAsPaid", id);
+    public Task SetPaidAsync(int id, bool isPaid)
+        => _interop.CallVoidAsync("invoiceRepository.setPaid", id, isPaid);
 
     public Task FinalizeAsync(int id, FinalizeResult finalizeResult)
         => _interop.CallVoidAsync("invoiceRepository.finalizeInvoice", id, finalizeResult);
