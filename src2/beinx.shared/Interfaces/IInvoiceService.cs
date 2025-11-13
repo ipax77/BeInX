@@ -9,4 +9,5 @@ public interface IInvoiceService
     Task<DocumentReferenceAnnotationDto?> AddReplaceOrDeletePdf(string? base64String, int invoiceId);
     Task<ExportResult> ExportInvoice(int invoiceId);
     Task<FinalizeResult> FinalizeInvoice(int invoiceId, XmlInvoice xmlInvoice);
+    Task<StatsResponse> GetStats(int year);
 }

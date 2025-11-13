@@ -649,4 +649,7 @@
   <data name="Items per page" xml:space="preserve">
     <value>Elemente pro Seite</value>
   </data>
+  <data name="Disclaimer" xml:space="preserve">
+    <value>**Haftungsausschluss:** Die Erstellung und Verwendung von Rechnungen mit dieser App erfolgt auf eigenes Risiko. Wir übernehmen keine Verantwortung für finanzielle Verluste oder rechtliche Konsequenzen, die sich aus deren Verwendung ergeben.</value>
+  </data>
 </root>

@@ -4,6 +4,7 @@
 @using beinx.shared
 @using beinx.shared.Interfaces
 @inject IIndexedDbInterop IndexedDbInterop
+@inject IInvoiceService InvoiceService
 @inject IStringLocalizer<InvoiceLoc> Loc
 @inject NavigationManager NavigationManager
 @inject ILogger<Dashboard> Logger
@@ -14,6 +15,9 @@
 			<div class="p-3 border rounded bgchart">
 				<h3>Blazor eInvoice XRechung App</h3>
 				<p class="text-muted">Manage and view your eInvoices effortlessly</p>
+				<p class="small text-warning mt-3">
+					Use of this application is subject to our <a href="https://github.com/ipax77/BeInX/blob/main/DISCLAIMER.md" target="_blank">Full Disclaimer</a> (external link).
+				</p>
 			</div>
 		</div>
 		<div class="col-7">
@@ -36,7 +40,7 @@
 								@Loc["Paid"]
 							</div>
 							<div class="card-body bgchart text-center">
-								@statsResponse.PaidInvoices.ToString("N0")
+								@((statsResponse.TotalInvoices - statsResponse.UnpaidInvoices.Count).ToString("N0"))
 							</div>
 						</div>
 					</div>
@@ -46,7 +50,7 @@
 								@Loc["Unpaid"]
 							</div>
 							<div class="card-body bgchart text-center">
-								@((statsResponse.TotalInvoices - statsResponse.PaidInvoices).ToString("N0"))
+								@(statsResponse.UnpaidInvoices.Count.ToString("N0"))
 							</div>
 						</div>
 					</div>
@@ -57,8 +61,9 @@
 </div>
 
 @code {
-	StatsResponse statsResponse = new();
+	StatsResponse? statsResponse = null;
 	List<Draft<object>> drafts = [];
+	int year = DateTime.Now.Year;
 
 	protected override async Task OnInitializedAsync()
 	{
@@ -67,6 +72,13 @@
 		{
 			NavigateToDraft(drafts[0]);
 		}
+		await LoadStats(year);
+	}
+
+	private async Task LoadStats(int year)
+	{
+		statsResponse = await InvoiceService.GetStats(year);
+		await InvokeAsync(StateHasChanged);
 	}
 
 	private void NavigateToDraft(Draft<object> draft)

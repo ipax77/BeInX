@@ -649,4 +649,7 @@
   <data name="Items per page" xml:space="preserve">
     <value>Articles par page</value>
   </data>
+  <data name="Disclaimer" xml:space="preserve">
+    <value>**Avertissement :** La création et l'utilisation de factures avec cette application se font à vos propres</value>
+  </data>
 </root>

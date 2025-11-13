@@ -649,4 +649,7 @@
   <data name="Items per page" xml:space="preserve">
     <value>Items per page</value>
   </data>
+  <data name="Disclaimer" xml:space="preserve">
+    <value>**Disclaimer:** Creating and using invoices with this app is at your own risk. We do not take responsibility for any money losses or legal consequences resulting from their use.</value>
+  </data>
 </root>

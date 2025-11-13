@@ -9,7 +9,7 @@ using System.Text;
 
 namespace beinx.db.Services;
 
-public class InvoiceService(IConfigService configService, IInvoiceRepository invoiceRepository, IPdfJsInterop pdfJsInterop) : IInvoiceService
+public partial class InvoiceService(IConfigService configService, IInvoiceRepository invoiceRepository, IPdfJsInterop pdfJsInterop) : IInvoiceService
 {
     public async Task<ExportResult> ExportInvoice(int invoiceId)
     {

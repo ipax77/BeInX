@@ -649,4 +649,7 @@
   <data name="Items per page" xml:space="preserve">
     <value>Elementos por página</value>
   </data>
+  <data name="Disclaimer" xml:space="preserve">
+    <value>**Aviso legal:** Crear y usar facturas con esta aplicación es responsabilidad del usuario. No nos hacemos responsables de las pérdidas económicas ni de las consecuencias legales derivadas de su uso.</value>
+  </data>
 </root>

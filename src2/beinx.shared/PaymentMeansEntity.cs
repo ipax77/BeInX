@@ -36,7 +36,7 @@ public class InvoiceDtoInfo
 public class InvoiceEntity
 {
     public int? Id { get; set; }
-    public InvoiceDtoInfo Info{ get; set; } = null!;
+    public InvoiceDtoInfo Info { get; set; } = null!;
     public int Year { get; set; }
     public bool IsPaid { get; set; }
     public bool IsImported { get; set; }
@@ -65,4 +65,5 @@ public class InvoicesRequest
     public int? PageSize { get; set; }
     public string SortBy { get; set; } = string.Empty;
     public bool SortAsc { get; set; }
-    }
+}
+
