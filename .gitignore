@@ -495,3 +495,6 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+src2/BlazorInvoice.Pdf/Typescript/testinvoice.pdf
+src2/BlazorInvoice.Pdf/Typescript/testinvoiceA3.pdf
+src2/BlazorInvoice.Pdf/Typescript/testinvoice.pdf
