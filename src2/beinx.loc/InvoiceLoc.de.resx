@@ -253,6 +253,9 @@
   <data name="Amount (tax exclusive)" xml:space="preserve">
     <value>Betrag (ohne Steuern)</value>
   </data>
+  <data name="Amount (tax inclusive)" xml:space="preserve">
+    <value>Betrag (inkl. Steuern)</value>
+  </data>
   <data name="Total" xml:space="preserve">
     <value>Gesamt</value>
   </data>
@@ -515,7 +518,7 @@
     <value>Sprache</value>
   </data>
   <data name="ChartTitle" xml:space="preserve">
-    <value>Bezahlt: Betrag ohne Umsatzsteuer</value>
+    <value>Bezahlte Rechnungen (inkl. Steuern)</value>
   </data>
   <data name="Create Sample Invoice" xml:space="preserve">
     <value>Beispielrechnung erstellen</value>
@@ -651,5 +654,8 @@
   </data>
   <data name="Disclaimer" xml:space="preserve">
     <value>**Haftungsausschluss:** Die Erstellung und Verwendung von Rechnungen mit dieser App erfolgt auf eigenes Risiko. Wir übernehmen keine Verantwortung für finanzielle Verluste oder rechtliche Konsequenzen, die sich aus deren Verwendung ergeben.</value>
+  </data>
+  <data name="Refresh" xml:space="preserve">
+    <value>Aktualisieren</value>
   </data>
 </root>

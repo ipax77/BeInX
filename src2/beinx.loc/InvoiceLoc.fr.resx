@@ -253,6 +253,9 @@
   <data name="Amount (tax exclusive)" xml:space="preserve">
     <value>Montant (hors taxes)</value>
   </data>
+  <data name="Amount (tax inclusive)" xml:space="preserve">
+    <value>Montant (TTC)</value>
+  </data>
   <data name="Total" xml:space="preserve">
     <value>Total</value>
   </data>
@@ -515,7 +518,7 @@
     <value>Langue</value>
   </data>
   <data name="ChartTitle" xml:space="preserve">
-    <value>Montant hors taxes des factures payées</value>
+    <value>Factures payées (TTC)</value>
   </data>
   <data name="Create Sample Invoice" xml:space="preserve">
     <value>Créer une facture d'exemple</value>
@@ -651,5 +654,8 @@
   </data>
   <data name="Disclaimer" xml:space="preserve">
     <value>**Avertissement :** La création et l'utilisation de factures avec cette application se font à vos propres</value>
+  </data>
+  <data name="Refresh" xml:space="preserve">
+    <value>Rafraîchir</value>
   </data>
 </root>

@@ -1,12 +1,15 @@
-@using Microsoft.Extensions.Localization
+﻿@using Microsoft.Extensions.Localization
 @using Microsoft.Extensions.Logging
+@using Microsoft.JSInterop
 @using beinx.loc
 @using beinx.shared
 @using beinx.shared.Interfaces
 @inject IIndexedDbInterop IndexedDbInterop
 @inject IInvoiceService InvoiceService
+@inject IInvoiceRepository InvoiceRepository
 @inject IStringLocalizer<InvoiceLoc> Loc
 @inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
 @inject ILogger<Dashboard> Logger
 
 <div class="container-fluid mt-3">
@@ -19,6 +22,17 @@
 					Use of this application is subject to our <a href="https://github.com/ipax77/BeInX/blob/main/DISCLAIMER.md" target="_blank">Full Disclaimer</a> (external link).
 				</p>
 			</div>
+			<div class="d-flex align-items-end gap-3 my-3">
+				<div>
+					<label for="yearInput" class="form-label">@Loc["Stats For Year"]</label>
+					<input id="yearInput" type="number" class="form-control" step="1" @bind="year"
+						   @bind:after="LoadStats" />
+				</div>
+				<div class="mb-1">
+					<button type="button" class="btn btn-sm btn-outline-primary" @onclick="LoadStats">@Loc["Refresh"]</button>
+				</div>
+			</div>
+
 		</div>
 		<div class="col-7">
 			@if (statsResponse != null)
@@ -55,6 +69,103 @@
 						</div>
 					</div>
 				</div>
+				<h5 class="mt-2">@Loc["Unpaid Invoices"]</h5>
+				<div class="table-responsive border rounded p-2 mt-2" style="max-height: 300px;">
+					<table class="table table-sm table-striped">
+						<thead>
+							<tr>
+								<th>@Loc["Invoice ID"]</th>
+								<th>@Loc["Issue Date"]</th>
+								<th>@Loc["Seller"]</th>
+								<th>@Loc["Buyer"]</th>
+								<th>@Loc["Amount"]</th>
+								<th>@Loc["Paid?"]</th>
+								<th></th>
+							</tr>
+						</thead>
+						<tbody>
+							@foreach (var inv in statsResponse.UnpaidInvoices)
+							{
+								<tr>
+									<td>@inv.InvoiceId</td>
+									<td>@inv.IssueDate.ToShortDateString()</td>
+									<td><span class="text-truncate d-inline-block" style="max-width: 120px">@inv.SellerName</span></td>
+									<td><span class="text-truncate d-inline-block" style="max-width: 120px">@inv.BuyerName</span></td>
+									<td>@inv.PayableAmount.ToString("N2")</td>
+									<td>@(inv.IsPaid ? "✔️" : "❌")</td>
+									<td>
+										<button class="btn btn-sm btn-outline-warning me-1"
+												@onclick="() => EditItem(inv.Id)">
+											@Loc["Edit"]
+										</button>
+										@if (inv.IsPaid)
+										{
+											<button class="btn btn-sm btn-outline-info me-1"
+													@onclick="() => SetPaid(inv.Id, false)">
+												@Loc["Set Unpaid"]
+											</button>
+										}
+										else
+										{
+											<button class="btn btn-sm btn-outline-light me-1"
+													@onclick="() => SetPaid(inv.Id, true)">
+												@Loc["Set Paid"]
+											</button>
+										}
+										<button class="btn btn-sm btn-outline-secondary"
+												@onclick="() => Copy(inv.Id)">
+											@Loc["Copy"]
+										</button>
+										<button class="btn btn-sm btn-outline-danger"
+												@onclick="() => DeleteItemAsync(inv.Id)">
+											@Loc["Delete"]
+										</button>
+									</td>
+								</tr>
+							}
+						</tbody>
+					</table>
+				</div>
+			}
+		</div>
+	</div>
+	<div class="row mt-2">
+		<div class="col-4">
+			<div class="table-responsive">
+				<table class="table table-striped">
+					<thead class="table-light">
+						<tr>
+							<th>@Loc["Time Period"]</th>
+							<th>@Loc["Amount (tax inclusive)"]</th>
+						</tr>
+					</thead>
+					@if (statsResponse != null)
+					{
+						<tbody>
+							@foreach (var stat in statsResponse.Steps)
+							{
+								<tr>
+									<td>@stat.Start.ToShortDateString() - @stat.End.ToShortDateString()</td>
+									<td class="text-end">@stat.TotalAmountWithVat.ToString("N2")</td>
+								</tr>
+							}
+						</tbody>
+						<tfoot>
+							<tr class="fw-bold">
+								<td>@Loc["Total"]</td>
+								<td class="text-end">
+									@statsResponse.Steps.Sum(s => s.TotalAmountWithVat).ToString("N2")
+								</td>
+							</tr>
+						</tfoot>
+					}
+				</table>
+			</div>
+		</div>
+		<div class="col-7">
+			@if (statsResponse != null)
+			{
+				<StatsChartComponent @ref="statsChartComponent" StatsResponse="statsResponse" />
 			}
 		</div>
 	</div>
@@ -64,6 +175,7 @@
 	StatsResponse? statsResponse = null;
 	List<Draft<object>> drafts = [];
 	int year = DateTime.Now.Year;
+	StatsChartComponent? statsChartComponent;
 
 	protected override async Task OnInitializedAsync()
 	{
@@ -72,13 +184,14 @@
 		{
 			NavigateToDraft(drafts[0]);
 		}
-		await LoadStats(year);
+		await LoadStats();
 	}
 
-	private async Task LoadStats(int year)
+	private async Task LoadStats()
 	{
 		statsResponse = await InvoiceService.GetStats(year);
 		await InvokeAsync(StateHasChanged);
+		statsChartComponent?.Update(statsResponse);
 	}
 
 	private void NavigateToDraft(Draft<object> draft)
@@ -101,5 +214,71 @@
 			default:
 				break;
 		}
+	}
+
+	private void EditItem(int id)
+	{
+		NavigationManager.NavigateTo($"/invoice/{id}");
+	}
+
+	private async Task SetPaid(int id, bool isPaid)
+	{
+		var item = statsResponse?.UnpaidInvoices.FirstOrDefault(f => f.Id == id);
+		if (item != null)
+		{
+			item.IsPaid = isPaid;
+			await InvoiceRepository.SetPaidAsync(id, isPaid);
+
+			// Refresh to maintain filter consistency
+			await LoadStats();
+		}
+	}
+
+	private async Task DeleteItemAsync(int id)
+	{
+		var item = statsResponse?.UnpaidInvoices.FirstOrDefault(f => f.Id == id);
+		if (item is null)
+		{
+			return;
+		}
+
+		bool result = await JSRuntime.InvokeAsync<bool>("confirm", Loc["DeleteInvoice"].ToString());
+		if (!result)
+		{
+			return;
+		}
+
+		await InvoiceRepository.DeleteAsync(id);
+
+		// Reload data after deletion
+		await LoadStats();
+	}
+
+	private async Task Copy(int id)
+	{
+		var item = statsResponse?.UnpaidInvoices.FirstOrDefault(f => f.Id == id);
+		if (item is null)
+		{
+			return;
+		}
+
+		var entity = await InvoiceRepository.GetByIdAsync(id);
+		if (entity is null)
+		{
+			return;
+		}
+
+		var invoiceDto = entity.Info.InvoiceDto;
+		invoiceDto.Id = invoiceDto.Id + "_copy";
+		invoiceDto.IssueDate = DateTime.UtcNow;
+		invoiceDto.DueDate = DateTime.UtcNow.AddDays(14);
+		invoiceDto.InvoiceLines.Clear();
+		invoiceDto.AdditionalDocumentReferences.Clear();
+		invoiceDto.PayableAmount = 0;
+
+		await InvoiceRepository.CreateAsync(entity.Info);
+
+		// Reload data after copying
+		await LoadStats();
 	}
 }

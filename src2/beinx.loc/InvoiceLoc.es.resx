@@ -253,6 +253,9 @@
   <data name="Amount (tax exclusive)" xml:space="preserve">
     <value>Importe (sin impuestos)</value>
   </data>
+  <data name="Amount (tax inclusive)" xml:space="preserve">
+    <value>Importe (con impuestos)</value>
+  </data>
   <data name="Total" xml:space="preserve">
     <value>Total</value>
   </data>
@@ -515,7 +518,7 @@
     <value>Idioma</value>
   </data>
   <data name="ChartTitle" xml:space="preserve">
-    <value>Importe sin impuestos de facturas pagadas</value>
+    <value>Facturas pagadas (con impuestos)</value>
   </data>
   <data name="Create Sample Invoice" xml:space="preserve">
     <value>Crear factura de ejemplo</value>
@@ -651,5 +654,8 @@
   </data>
   <data name="Disclaimer" xml:space="preserve">
     <value>**Aviso legal:** Crear y usar facturas con esta aplicación es responsabilidad del usuario. No nos hacemos responsables de las pérdidas económicas ni de las consecuencias legales derivadas de su uso.</value>
+  </data>
+  <data name="Refresh" xml:space="preserve">
+    <value>Actualizar</value>
   </data>
 </root>

@@ -253,6 +253,9 @@
   <data name="Amount (tax exclusive)" xml:space="preserve">
     <value>Amount (tax exclusive)</value>
   </data>
+  <data name="Amount (tax inclusive)" xml:space="preserve">
+    <value>Amount (tax inclusive)</value>
+  </data>
   <data name="Total" xml:space="preserve">
     <value>Total</value>
   </data>
@@ -515,7 +518,7 @@
     <value>Language</value>
   </data>
   <data name="ChartTitle" xml:space="preserve">
-    <value>Paid Invoices Tax Exclusive Amount</value>
+    <value>Paid Invoices (tax inclusive)</value>
   </data>
   <data name="Create Sample Invoice" xml:space="preserve">
     <value>Create Sample Invoice</value>
@@ -651,5 +654,8 @@
   </data>
   <data name="Disclaimer" xml:space="preserve">
     <value>**Disclaimer:** Creating and using invoices with this app is at your own risk. We do not take responsibility for any money losses or legal consequences resulting from their use.</value>
+  </data>
+  <data name="Refresh" xml:space="preserve">
+    <value>Refresh</value>
   </data>
 </root>

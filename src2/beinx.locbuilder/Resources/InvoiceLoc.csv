@@ -64,6 +64,7 @@ Stats For Year;Stats For Year;Statistiken für das Jahr;Estadísticas del año;S
 Time Period;Time Period;Zeitraum;Período de tiempo;Période de temps
 Amount;Amount;Betrag;Importe;Montant
 Amount (tax exclusive);Amount (tax exclusive);Betrag (ohne Steuern);Importe (sin impuestos);Montant (hors taxes)
+Amount (tax inclusive);Amount (tax inclusive);Betrag (inkl. Steuern);Importe (con impuestos);Montant (TTC)
 Total;Total;Gesamt;Total;Total
 Search;Search;Suchen;Buscar;Rechercher
 Issue Date;Issue Date;Ausstellungsdatum;Fecha de emisión;Date d’émission
@@ -151,7 +152,7 @@ Continue;Continue;Weiter;Continuar;Continuer
 Discard;Discard;Verwerfen;Descartar;Jeter
 DiscardDesc;Click {0} to resume editing or {1} to start a new invoice.;Klicken Sie auf {0}, um die Bearbeitung fortzusetzen, oder auf {1}, um eine neue Rechnung zu beginnen.;Haga clic en {0} para reanudar la edición o en {1} para comenzar una nueva factura.;Cliquez sur {0} pour reprendre la modification ou sur {1} pour commencer une nouvelle facture.
 Language;Language;Sprache;Idioma;Langue
-ChartTitle;Paid Invoices Tax Exclusive Amount;Bezahlt: Betrag ohne Umsatzsteuer;Importe sin impuestos de facturas pagadas;Montant hors taxes des factures payées
+ChartTitle;Paid Invoices (tax inclusive);Bezahlte Rechnungen (inkl. Steuern);Facturas pagadas (con impuestos);Factures payées (TTC) 
 Create Sample Invoice;Create Sample Invoice;Beispielrechnung erstellen;Crear factura de ejemplo;Créer une facture d'exemple
 KositWarn;Only enter trusted Servers or setup your own.;Geben Sie nur vertrauenswürdige Server ein oder richten Sie Ihren eigenen ein.;Ingrese solo servidores confiables o configure el suyo propio.;N'entrez que des serveurs de confiance ou configurez le vôtre.
 External Link;External Link;Externer Link;Enlace externo;Lien externe
@@ -197,3 +198,4 @@ Next;Next;Nächste;Siguiente;Suivante
 Last;Last;Letzte;Última;Dernière
 Items per page;Items per page;Elemente pro Seite;Elementos por página;Articles par page
 Disclaimer;**Disclaimer:** Creating and using invoices with this app is at your own risk. We do not take responsibility for any money losses or legal consequences resulting from their use.;**Haftungsausschluss:** Die Erstellung und Verwendung von Rechnungen mit dieser App erfolgt auf eigenes Risiko. Wir übernehmen keine Verantwortung für finanzielle Verluste oder rechtliche Konsequenzen, die sich aus deren Verwendung ergeben.;**Aviso legal:** Crear y usar facturas con esta aplicación es responsabilidad del usuario. No nos hacemos responsables de las pérdidas económicas ni de las consecuencias legales derivadas de su uso.;**Avertissement :** La création et l'utilisation de factures avec cette application se font à vos propres
+Refresh;Refresh;Aktualisieren;Actualizar;Rafraîchir
