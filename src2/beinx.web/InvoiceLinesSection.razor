@@ -39,6 +39,7 @@
 		<table class="table table-sm">
 			<thead>
 				<tr>
+					<th></th>
 					<th>@Loc["Name"]</th>
 					<th>@Loc["Description"]</th>
 					<th>@Loc["Quantity"]</th>
@@ -53,7 +54,19 @@
 					@foreach (var (line, index) in Invoice.InvoiceLines.Select((l, i) => (l, i)))
 					{
 						<tr>
-							<td>@line.Name</td>
+							<td>
+								<div class="btn-group">
+									<button type="button" class="btn btn-sm btn-outline-light"
+											@onclick="() => MoveLine((index, true))">
+										<i class="bi bi-arrow-up"></i>
+									</button>
+									<button type="button" class="btn btn-sm btn-outline-light"
+											@onclick="() => MoveLine((index, false))">
+										<i class="bi bi-arrow-down"></i>
+									</button>
+								</div>
+							</td>
+							<td class="text-truncate" style="max-width:200px">@line.Name</td>
 							<td class="text-truncate" style="max-width:200px">@line.Description</td>
 							<td>@line.Quantity</td>
 							<td>@line.UnitPrice</td>
@@ -125,7 +138,6 @@
 
 		var newLine = new InvoiceLineAnnotationDto
 		{
-			Id = Guid.NewGuid().ToString(),
 			Quantity = 1,
 			UnitPrice = 0,
 			Description = "",
@@ -133,6 +145,7 @@
 		};
 
 		Invoice.InvoiceLines.Add(newLine);
+		Invoice.SetLineIds();
 		lineEditOrCreateText = Loc["Create New Line"];
 		editingLineIndex = Invoice.InvoiceLines.Count - 1;
 	}
@@ -151,6 +164,7 @@
 			if (string.IsNullOrWhiteSpace(line.Name) && line.Quantity == 1 && line.UnitPrice == 0)
 			{
 				Invoice.InvoiceLines.RemoveAt(editingLineIndex);
+				Invoice.SetLineIds();
 			}
 		}
 		editingLineIndex = -1;
@@ -161,6 +175,43 @@
 		if (Invoice?.InvoiceLines != null && index >= 0 && index < Invoice.InvoiceLines.Count)
 		{
 			Invoice.InvoiceLines.RemoveAt(index);
+			Invoice.SetLineIds();
+		}
+	}
+
+	private void MoveLine((int, bool) e)
+	{
+		if (e.Item2)
+		{
+			MoveLineUp(e.Item1);
+		}
+		else
+		{
+			MoveLineDown(e.Item1);
+		}
+	}
+
+	private void MoveLineUp(int index)
+	{
+		if (index > 0)
+		{
+			var line = Invoice.InvoiceLines[index];
+			Invoice.InvoiceLines.RemoveAt(index);
+			Invoice.InvoiceLines.Insert(index - 1, line);
+			Invoice.SetLineIds();
+			OnInvoiceChanged.InvokeAsync();
+		}
+	}
+
+	private void MoveLineDown(int index)
+	{
+		if (index < Invoice.InvoiceLines.Count - 1)
+		{
+			var line = Invoice.InvoiceLines[index];
+			Invoice.InvoiceLines.RemoveAt(index);
+			Invoice.InvoiceLines.Insert(index + 1, line);
+			Invoice.SetLineIds();
+			OnInvoiceChanged.InvokeAsync();
 		}
 	}
 

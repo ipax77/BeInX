@@ -92,4 +92,12 @@ public static class BlazorInvoiceDtoExtensions
         invoice.PayableAmount = (double)payableAmount;
 
     }
+
+    public static void SetLineIds(this BlazorInvoiceDto invoice)
+    {
+        for (int i = 0; i < invoice.InvoiceLines.Count; i++)
+        {
+            invoice.InvoiceLines[i].Id = (i + 1).ToString();
+        }
+    }
 }
