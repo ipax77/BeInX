@@ -8,6 +8,7 @@
 @using beinx.web.Forms
 @using beinx.web.Modals
 @using pax.BBToast
+@using pax.XRechnung.NET
 @using pax.XRechnung.NET.AnnotatedDtos
 @inherits DraftAwareComponentBase<InvoiceDtoInfo, InvoiceEntity>
 @inject IInvoiceRepository InvoiceRepository
@@ -114,6 +115,39 @@
 							</div>
 						}
 						<div class="mb-2">
+							<button class="btn btn-outline-light" type="button" data-bs-toggle="collapse" data-bs-target="#validation"
+									aria-expanded="false" aria-controls="validation" @onclick="e => ShowValidation = !ShowValidation">
+								@if (ShowValidation)
+								{
+									<i class="bi bi-chevron-double-up"></i>
+									<span>Hide @Loc["Validation"]</span>
+								}
+								else
+								{
+									<i class="bi bi-chevron-double-down"></i>
+									<span>Show @Loc["Validation"]</span>
+								}
+							</button>
+						</div>
+						<div class="collapse" id="validation">
+							<div class="btn-group mt-2">
+								<button type="button" class="btn btn-outline-primary" @onclick="ValidateInvoiceSchema">
+									Validate
+									XML
+								</button>
+@* 								<div class="form-check form-switch ms-2 mt-1">
+									<label for="xmlvalidation" class="form-check-label">Show Warnings</label>
+									<input id="xmlvalidation" type="checkbox" class="form-check-input" role="switch" @bind="appConfig.ShowValidationWarnings" @bind:after="() => ConfigService.UpdateConfig(appConfig)" />
+								</div> *@
+							</div>
+							<div class="mt-2">
+								@if (invoiceValidationResult is not null && ShowValidation)
+								{
+									<ValidationResultComponent Result="invoiceValidationResult" ShowWarnings="true" />
+								}
+							</div>
+						</div>
+						<div class="mb-2">
 							<button class="btn btn-outline-light" type="button" data-bs-toggle="collapse" data-bs-target="#xmlText"
 									aria-expanded="false" aria-controls="xmlText" @onclick="e => ShowXmlComponent = !ShowXmlComponent">
 								@if (ShowXmlComponent)
@@ -194,6 +228,9 @@
 	private bool ShowPdfComponent = true;
 	private bool ShowJsonComponent = false;
 	private bool ShowXmlComponent = false;
+	private bool ShowValidation = false;
+
+	InvoiceValidationResult? invoiceValidationResult = null;
 
 	protected override async Task OnInitializedAsync()
 	{
@@ -311,6 +348,17 @@
 		var stream = new MemoryStream(blob);
 		using var streamRef = new DotNetStreamReference(stream);
 		await JSRuntime.InvokeVoidAsync("downloadFileFromStream", fileName, streamRef, mimeType);
+	}
+
+	private void ValidateInvoiceSchema()
+	{
+		if (EditContext is not null)
+		{
+			EditContext.Validate();
+		}
+		var mapper = new BlazorInvoiceMapper();
+		var xmlInvoice = mapper.ToXml(CurrentDraft.Data.InvoiceDto);
+		invoiceValidationResult = XmlInvoiceValidator.Validate(xmlInvoice);
 	}
 
 	protected override async Task SaveDraftAsync()
