@@ -130,4 +130,15 @@ export interface InvoiceListItem {
   buyerName: string;
   isPaid: boolean;
   year: number;
+  payableAmount: number;
+}
+
+export interface InvoicesRequest {
+    year: number | null;
+    isPaid: boolean | null;
+    search: string | null;
+    page: number;
+    pageSize: number;
+    sortBy: 'invoiceId' | 'issueDate' | 'sellerName' | 'buyerName' | 'isPaid' | 'year';
+    sortAsc: boolean;
 }

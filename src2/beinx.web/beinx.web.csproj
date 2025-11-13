@@ -17,6 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\pax.BlazorChartJs\src\pax.BlazorChartJs\pax.BlazorChartJs.csproj" />
     <ProjectReference Include="..\beinx.shared\beinx.shared.csproj" />
     <ProjectReference Include="..\beinx.loc\beinx.loc.csproj" />
     <ProjectReference Include="..\BlazorInvoice.Pdf\BlazorInvoice.Pdf.csproj" />

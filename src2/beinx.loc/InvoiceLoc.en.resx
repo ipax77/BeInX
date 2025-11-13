@@ -199,6 +199,9 @@
   <data name="New Invoice" xml:space="preserve">
     <value>New Invoice</value>
   </data>
+  <data name="Add New Invoice" xml:space="preserve">
+    <value>Add New Invoice</value>
+  </data>
   <data name="Parties" xml:space="preserve">
     <value>Parties</value>
   </data>
@@ -606,5 +609,44 @@
   </data>
   <data name="PngUpload" xml:space="preserve">
     <value>Upload a single PNG file (maximum dimensions: 250x250).</value>
+  </data>
+  <data name="Year" xml:space="preserve">
+    <value>Year</value>
+  </data>
+  <data name="Payment Status" xml:space="preserve">
+    <value>Payment Status</value>
+  </data>
+  <data name="All" xml:space="preserve">
+    <value>All</value>
+  </data>
+  <data name="SeachInvoice" xml:space="preserve">
+    <value>Search id, seller or buyer...</value>
+  </data>
+  <data name="Apply Filters" xml:space="preserve">
+    <value>Apply Filters</value>
+  </data>
+  <data name="Total Results" xml:space="preserve">
+    <value>Total Results</value>
+  </data>
+  <data name="Page" xml:space="preserve">
+    <value>Page</value>
+  </data>
+  <data name="No invoices found" xml:space="preserve">
+    <value>No invoices found</value>
+  </data>
+  <data name="First" xml:space="preserve">
+    <value>First</value>
+  </data>
+  <data name="Previous" xml:space="preserve">
+    <value>Previous</value>
+  </data>
+  <data name="Next" xml:space="preserve">
+    <value>Next</value>
+  </data>
+  <data name="Last" xml:space="preserve">
+    <value>Last</value>
+  </data>
+  <data name="Items per page" xml:space="preserve">
+    <value>Items per page</value>
   </data>
 </root>

@@ -46,6 +46,7 @@ Dashboard;Dashboard;Dashboard;Panel de control;Tableau de bord
 Invoice;Invoice;Rechnung;Factura;Facture
 Invoices;Invoices;Rechnungen;Facturas;Factures
 New Invoice;New Invoice;Neue Rechnung;Nueva factura;Nouvelle facture
+Add New Invoice;Add New Invoice;Neue Rechnung hinzufügen;Agregar nueva factura;Ajouter une nouvelle facture
 Parties;Parties;Parteien;Partes;Parties
 Seller;Seller;Verkäufer;Vendedor;Vendeur
 Sellers;Sellers;Verkäufer;Vendedores;Vendeurs
@@ -182,4 +183,16 @@ BackupInfo;Backups include all your saved settings and data. Restoring replaces 
 BackupWarning;This will replace all your current data with a backup file. Continue?;Dies ersetzt alle Ihre aktuellen Daten durch eine Sicherungsdatei. Fortfahren?;Esto reemplazará todos sus datos actuales con un archivo de respaldo. ¿Continuar?;Cela remplacera toutes vos données actuelles par un fichier de sauvegarde. Continuer ?
 OldBackup;Your backup is older than 7 days. Click to back up now.;Ihre Sicherung ist älter als 7 Tage. Klicken Sie hier, um jetzt eine Sicherung zu erstellen.;Su copia de seguridad tiene más de 7 días. Haga clic para hacer una copia de seguridad ahora.;Votre sauvegarde a plus de 7 jours. Cliquez pour sauvegarder maintenant.
 PngUpload;Upload a single PNG file (maximum dimensions: 250x250).;Laden Sie eine einzelne PNG-Datei hoch (maximale Abmessungen: 250x250).;Cargue un solo archivo PNG (dimensiones máximas: 250x250).;Téléchargez un seul fichier PNG (dimensions maximales : 250x250
-DeleteInvoice;Are you sure you want to delete the invoice?;Möchten Sie die Rechnung wirklich löschen?;¿Está seguro de que desea eliminar la factura?;Êtes-vous sûr de vouloir supprimer la facture ?
+Year;Year;Jahr;Año;Année
+Payment Status;Payment Status;Zahlungsstatus;Estado de pago;Statut de paiement
+All;All;Alle;Todos;Tous
+SeachInvoice;Search id, seller or buyer...;Suche nach ID, Verkäufer oder Käufer...;Buscar id, vendedor o comprador...;Rechercher par id, vendeur ou acheteur...
+Apply Filters;Apply Filters;Filter anwenden;Aplicar filtros;Appliquer les filtres
+Total Results;Total Results;Gesamtergebnisse;Resultados totales;Résultats totaux
+Page;Page;Seite;Página;Page
+No invoices found;No invoices found;Keine Rechnungen gefunden;No se encontraron facturas;Aucune facture trouvée
+First;First;Erste;Primera;Première
+Previous;Previous;Vorherige;Anterior;Précédente
+Next;Next;Nächste;Siguiente;Suivante
+Last;Last;Letzte;Última;Dernière
+Items per page;Items per page;Elemente pro Seite;Elementos por página;Articles par page

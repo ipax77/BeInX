@@ -12,6 +12,8 @@ public interface IInvoiceRepository
     Task FinalizeAsync(int id, FinalizeResult finalizeResult);
     Task<List<InvoiceListItem>> GetListAsync(int limit = 50, int offset = 0);
     Task<int> GetCountAsync();
+    Task<List<InvoiceListItem>> GetFilteredListAsync(InvoicesRequest request);
+    Task<int> GetFilteredListCountAsync(InvoicesRequest request);
     Task<int> GetCountByYearAsync(int year);
     Task<int> GetCountByPaidStatusAsync(bool isPaid);
     Task ClearAsync();

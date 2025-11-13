@@ -36,6 +36,12 @@ public class InvoiceRepository(IIndexedDbInterop _interop)
     public Task<int> GetCountAsync()
         => _interop.CallAsync<int>("invoiceRepository.getInvoiceCount");
 
+    public Task<List<InvoiceListItem>> GetFilteredListAsync(InvoicesRequest request)
+        => _interop.CallAsync<List<InvoiceListItem>>("invoiceRepository.getFilteredInvoiceList", request);
+
+    public Task<int> GetFilteredListCountAsync(InvoicesRequest request)
+        => _interop.CallAsync<int>("invoiceRepository.getFilteredInvoiceCount", request);
+
     public Task<int> GetCountByYearAsync(int year)
         => _interop.CallAsync<int>("invoiceRepository.getInvoiceCountByYear", year);
 

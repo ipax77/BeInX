@@ -19,7 +19,7 @@
                 {
 					<CascadingValue Value="EditContext" Name="partyEditContext">
 						<SellerForm Party="@CurrentDraft.Data"
-									Logo="@current.Logo"
+									Logo="@current?.Logo"
 									OnValidSubmit="@SaveItemAsync"
 									OnCodeListRequested="OnCodeListRequested"
 									OnLogoChanged="LogoChanged"

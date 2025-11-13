@@ -199,6 +199,9 @@
   <data name="New Invoice" xml:space="preserve">
     <value>Neue Rechnung</value>
   </data>
+  <data name="Add New Invoice" xml:space="preserve">
+    <value>Neue Rechnung hinzufügen</value>
+  </data>
   <data name="Parties" xml:space="preserve">
     <value>Parteien</value>
   </data>
@@ -606,5 +609,44 @@
   </data>
   <data name="PngUpload" xml:space="preserve">
     <value>Laden Sie eine einzelne PNG-Datei hoch (maximale Abmessungen: 250x250).</value>
+  </data>
+  <data name="Year" xml:space="preserve">
+    <value>Jahr</value>
+  </data>
+  <data name="Payment Status" xml:space="preserve">
+    <value>Zahlungsstatus</value>
+  </data>
+  <data name="All" xml:space="preserve">
+    <value>Alle</value>
+  </data>
+  <data name="SeachInvoice" xml:space="preserve">
+    <value>Suche nach ID, Verkäufer oder Käufer...</value>
+  </data>
+  <data name="Apply Filters" xml:space="preserve">
+    <value>Filter anwenden</value>
+  </data>
+  <data name="Total Results" xml:space="preserve">
+    <value>Gesamtergebnisse</value>
+  </data>
+  <data name="Page" xml:space="preserve">
+    <value>Seite</value>
+  </data>
+  <data name="No invoices found" xml:space="preserve">
+    <value>Keine Rechnungen gefunden</value>
+  </data>
+  <data name="First" xml:space="preserve">
+    <value>Erste</value>
+  </data>
+  <data name="Previous" xml:space="preserve">
+    <value>Vorherige</value>
+  </data>
+  <data name="Next" xml:space="preserve">
+    <value>Nächste</value>
+  </data>
+  <data name="Last" xml:space="preserve">
+    <value>Letzte</value>
+  </data>
+  <data name="Items per page" xml:space="preserve">
+    <value>Elemente pro Seite</value>
   </data>
 </root>

@@ -1,6 +1,6 @@
 import { openDB, STORES } from "./db-core";
 import { DraftRepository } from "./draft-repository";
-import { FinalizeResult, IDraft, InvoiceDtoInfo, InvoiceEntity, InvoiceListItem, IPaymentMeansBaseDto, PaymentMeansEntity } from "./dtos";
+import { FinalizeResult, IDraft, InvoiceDtoInfo, InvoiceEntity, InvoiceListItem, InvoicesRequest, IPaymentMeansBaseDto, PaymentMeansEntity } from "./dtos";
 
 export class InvoiceRepository {
     private drafts = new DraftRepository();
@@ -221,6 +221,7 @@ export class InvoiceRepository {
                     buyerName: dto.buyerParty?.name || "",
                     isPaid: value.isPaid,
                     year: value.year,
+                    payableAmount: dto.payableAmount,
                 });
 
                 if (result.length >= limit) {
@@ -233,6 +234,132 @@ export class InvoiceRepository {
 
             cursorReq.onerror = () => reject(cursorReq.error);
         });
+    }
+
+    async getFilteredInvoiceList(request: InvoicesRequest): Promise<InvoiceListItem[]> {
+        const db = await openDB();
+        const transaction = db.transaction(STORES.invoices, "readonly");
+        const store = transaction.objectStore(STORES.invoices);
+
+        return new Promise((resolve, reject) => {
+            const allItems: InvoiceListItem[] = [];
+            const cursorReq = store.openCursor();
+
+            cursorReq.onsuccess = () => {
+                const cursor = cursorReq.result;
+                if (!cursor) {
+                    // Apply sorting after collecting all items
+                    const sorted = allItems.sort((a, b) => {
+                        const key = request.sortBy;
+                        const asc = request.sortAsc ? 1 : -1;
+                        const aVal = a[key];
+                        const bVal = b[key];
+
+                        if (aVal == null && bVal == null) return 0;
+                        if (aVal == null) return -1 * asc;
+                        if (bVal == null) return 1 * asc;
+
+                        // String comparison
+                        if (typeof aVal === "string" && typeof bVal === "string") {
+                            return aVal.localeCompare(bVal) * asc;
+                        }
+
+                        // Boolean or number comparison
+                        if (aVal > bVal) return 1 * asc;
+                        if (aVal < bVal) return -1 * asc;
+                        return 0;
+                    });
+
+                    // Apply pagination
+                    const page = request.page ?? 0;
+                    const pageSize = request.pageSize ?? Number.MAX_SAFE_INTEGER;
+                    const startIndex = page * pageSize;
+                    const paginated = sorted.slice(startIndex, startIndex + pageSize);
+
+                    resolve(paginated);
+                    return;
+                }
+
+                const value = cursor.value as InvoiceEntity;
+                if (this.matchesFilters(value, request)) {
+                    const dto = value.info.invoiceDto;
+                    allItems.push({
+                        id: value.id,
+                        invoiceId: dto.id,
+                        issueDate: dto.issueDate,
+                        sellerName: dto.sellerParty?.name || "",
+                        buyerName: dto.buyerParty?.name || "",
+                        isPaid: value.isPaid,
+                        year: value.year,
+                        payableAmount: dto.payableAmount,
+                    });
+                }
+
+                cursor.continue();
+            };
+
+            cursorReq.onerror = () => reject(cursorReq.error);
+        });
+    }
+
+    async getFilteredInvoiceCount(request: InvoicesRequest): Promise<number> {
+        const json = JSON.stringify(request, null, 2);
+        console.log(json);
+
+        const db = await openDB();
+        const transaction = db.transaction(STORES.invoices, "readonly");
+        const store = transaction.objectStore(STORES.invoices);
+
+        return new Promise((resolve, reject) => {
+            let count = 0;
+            const cursorReq = store.openCursor();
+
+            cursorReq.onsuccess = () => {
+                const cursor = cursorReq.result;
+                if (!cursor) {
+                    resolve(count);
+                    return;
+                }
+
+                const value = cursor.value as InvoiceEntity;
+
+                if (this.matchesFilters(value, request)) {
+                    count++;
+                }
+
+                cursor.continue();
+            };
+
+            cursorReq.onerror = () => reject(cursorReq.error);
+        });
+    }
+
+    private matchesFilters(value: InvoiceEntity, request: InvoicesRequest): boolean {
+        const dto = value.info.invoiceDto;
+
+        // Filter by year
+        if (request.year !== null && value.year !== request.year) {
+            return false;
+        }
+
+        // Filter by isPaid
+        if (request.isPaid !== null && value.isPaid !== request.isPaid) {
+            return false;
+        }
+
+        // Filter by search
+        if (request.search) {
+            const searchLower = request.search.toLowerCase();
+            const sellerName = (dto.sellerParty?.name || "").toLowerCase();
+            const buyerName = (dto.buyerParty?.name || "").toLowerCase();
+            const invoiceId = dto.id.toLowerCase();
+            
+            if (!invoiceId.includes(searchLower) && !sellerName.includes(searchLower) && !buyerName.includes(searchLower)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     // ---- Draft helpers ----

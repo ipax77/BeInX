@@ -53,4 +53,16 @@ public class InvoiceListItem
     public string BuyerName { get; set; } = string.Empty;
     public bool IsPaid { get; set; }
     public int Year { get; set; }
+    public double PayableAmount { get; set; }
 }
+
+public class InvoicesRequest
+{
+    public int? Year { get; set; }
+    public bool? IsPaid { get; set; }
+    public string? Search { get; set; }
+    public int? Page { get; set; }
+    public int? PageSize { get; set; }
+    public string SortBy { get; set; } = string.Empty;
+    public bool SortAsc { get; set; }
+    }
