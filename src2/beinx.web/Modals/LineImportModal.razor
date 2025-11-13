@@ -1,0 +1,49 @@
+﻿@using Microsoft.Extensions.Localization
+@using Microsoft.JSInterop
+@using beinx.loc
+@using beinx.shared
+@using pax.XRechnung.NET.AnnotatedDtos
+@inject IJSRuntime JSRuntime
+@inject IStringLocalizer<InvoiceLoc> Loc
+
+<div class="modal fade" id="@_modalId" tabindex="-1" aria-labelledby="lineImportModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="lineImportModalLabel">@Loc["Invoice"] @Loc["Line Import"]</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@Loc["Close"]"></button>
+            </div>
+            <div class="modal-body">
+                <InvoiceLineImportComponent OnLinesAdded="Hide" />
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@Loc["Close"]</button>
+            </div>
+        </div>
+    </div>
+</div>
+@code {
+    private readonly string _modalId = "lineImportModal";
+
+    [Parameter, EditorRequired]
+    public BlazorInvoiceDto? Invoice { get; set; } = null!;
+
+    [Parameter]
+    public EventCallback OnLinesAdded { get; set; }
+
+    public void Show(BlazorInvoiceDto invoice)
+    {
+        Invoice = invoice;
+        JSRuntime.InvokeVoidAsync("openModalById", _modalId);
+    }
+
+    public void Hide(List<InvoiceLineAnnotationDto> lines)
+    {
+        if (Invoice != null)
+        {
+            Invoice.InvoiceLines.AddRange(lines);
+        }
+        JSRuntime.InvokeVoidAsync("closeModalById", _modalId);
+        OnLinesAdded.InvokeAsync();
+    }
+}

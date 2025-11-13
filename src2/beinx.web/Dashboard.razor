@@ -19,7 +19,7 @@
 				<h3>Blazor eInvoice XRechung App</h3>
 				<p class="text-muted">Manage and view your eInvoices effortlessly</p>
 				<p class="small text-warning mt-3">
-					Use of this application is subject to our <a href="https://github.com/ipax77/BeInX/blob/main/DISCLAIMER.md" target="_blank">Full Disclaimer</a> (external link).
+					Use of this application is subject to our <a href="https://github.com/ipax77/BeInX/blob/main/DISCLAIMER.md" target="_blank">Full Disclaimer</a> <span class="text-white-50">(external link)</span>
 				</p>
 			</div>
 			<div class="d-flex align-items-end gap-3 my-3">
@@ -87,7 +87,7 @@
 							@foreach (var inv in statsResponse.UnpaidInvoices)
 							{
 								<tr>
-									<td>@inv.InvoiceId</td>
+									<td><span class="text-truncate d-inline-block" style="max-width: 120px">@inv.InvoiceId</span></td>
 									<td>@inv.IssueDate.ToShortDateString()</td>
 									<td><span class="text-truncate d-inline-block" style="max-width: 120px">@inv.SellerName</span></td>
 									<td><span class="text-truncate d-inline-block" style="max-width: 120px">@inv.BuyerName</span></td>

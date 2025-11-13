@@ -73,7 +73,7 @@
 						<div>
 							<InvoiceLinesSection Invoice="@CurrentDraft.Data.InvoiceDto"
 												 OnCodeListRequested="HandleCodeListRequest"
-												 OnInvoiceChanged="@(e => UpdateAsync(SelectedInvoiceId ?? 0, CurrentDraft.Data))" />
+												 OnInvoiceChanged="@(e => SaveDraftAsync())" />
 						</div>
 					</CascadingValue>
 				}
@@ -379,10 +379,8 @@
 
 	protected override async Task AfterUpdatedAsync(int id, InvoiceDtoInfo dto)
 	{
-		var existing = Items.FirstOrDefault(i => i.Id == id);
-		if (existing != null)
-			existing.Info = dto;
 		await InvokeAsync(StateHasChanged);
+		UpdateVisuals();
 	}
 
 	private void UpdateVisuals()
