@@ -753,6 +753,11 @@ export async function createInvoicePdfA3(invoice: InvoiceDto, locale: string, he
   return generateObjectUrl(pdf);
 }
 
+export async function getPdfXmlText(pdfBytes: Uint8Array): Promise<string | null> {
+  const pdfA3Converter = new PdfA3Converter();
+  return await pdfA3Converter.getXmlString(pdfBytes);
+}
+
 const sampleSeller = (): PartyDto => {
   const seller: PartyDto = {
     email: "test@email.com",

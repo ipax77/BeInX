@@ -1,6 +1,8 @@
-@using System.Xml.Serialization
+﻿@using System.Xml.Serialization
 @using System.Text
+@using Microsoft.AspNetCore.Components.Forms
 @using Microsoft.Extensions.Localization
+@using System.Text.Json
 @using beinx.loc
 @using beinx.shared
 @using beinx.shared.Interfaces
@@ -8,10 +10,9 @@
 @using pax.XRechnung.NET
 @using pax.XRechnung.NET.XmlModels
 @inject IInvoiceService InvoiceService
-@inject NavigationManager NavigationManager
 @inject IToastService ToastService
 @inject IStringLocalizer<InvoiceLoc> Loc
-@inject IConfigService ConfigService
+@inject IPdfJsInterop PdfJsInterop
 
 <div class="container-fluid mt-3">
     <div class="alert alert-dark d-flex align-items-center" style="max-width: 600px;">
@@ -19,69 +20,165 @@
             @Loc["ImpDesc"]
         </div>
         <div class="ms-3">
-            <button type="button" class="btn btn-outline-light" @onclick="SelectFile">@Loc["Select File"]</button>
+            <InputFile @ref="inputFile" class="form-control" OnChange="LoadFile" accept=".json,.xml,.pdf" />
         </div>
     </div>
+
     <div>
         <textarea class="form-control" rows="12" @bind="xmlText" @bind:after="Validate"></textarea>
     </div>
+
     @if (!string.IsNullOrEmpty(message))
     {
         <div class="alert alert-info mt-3">@message</div>
     }
+
     @if (xmlInvoice != null)
     {
         <div class="btn-group mt-2 mb-3">
-            <button type="button" class="btn btn-outline-warning" @onclick="e => Import()">@Loc["Import"]</button>
+            <button type="button" class="btn btn-outline-warning" @onclick="Import">@Loc["Import"]</button>
         </div>
     }
 
-    <div class="mb-5">
-        @if (schemaResult != null)
-        {
+    @if (schemaResult != null)
+    {
+        <div class="mb-5">
             <h3>Schema Validation Result</h3>
             <ValidationResultComponent Result="schemaResult" />
-        }
-    </div>
+        </div>
+    }
 </div>
 
 @code {
     private string xmlText = string.Empty;
     private string message = string.Empty;
+    private InvoiceValidationResult? schemaResult;
+    private XmlInvoice? xmlInvoice;
+    private BlazorInvoiceDto? InvoiceDto;
+    private InputFile? inputFile;
 
-    InvoiceValidationResult? schemaResult;
-    XmlInvoice? xmlInvoice;
-    BlazorInvoiceDto? InvoiceDto;
+    private async Task LoadFile(InputFileChangeEventArgs e)
+    {
+        try
+        {
+            var file = e.File;
+            if (file is null)
+            {
+                ToastService.ShowError(Loc["No file selected."]);
+                return;
+            }
+
+            // Determine file type
+            var fileName = file.Name.ToLowerInvariant();
+            using var stream = new MemoryStream();
+            await file.OpenReadStream(maxAllowedSize: 5 * 1024 * 1024).CopyToAsync(stream);
+            stream.Position = 0;
+
+            if (fileName.EndsWith(".json"))
+            {
+                // 🟢 JSON import
+                stream.Position = 0;
+                InvoiceDto = await JsonSerializer.DeserializeAsync<BlazorInvoiceDto>(stream);
+                if (InvoiceDto is null)
+                {
+                    ToastService.ShowError(Loc["Failed parsing json file"]);
+                    message = Loc["Failed parsing json file"];
+                    return;
+                }
+
+                // Convert to XML (for preview + validation)
+                var mapper = new BlazorInvoiceMapper();
+                xmlInvoice = mapper.ToXml(InvoiceDto);
+                if (xmlInvoice is null)
+                {
+                    ToastService.ShowError(Loc["Failed mapping json to xml"]);
+                    message = Loc["Failed mapping json to xml"];
+                    return;
+                }
+
+                xmlText = XmlInvoiceWriter.Serialize(xmlInvoice);
+                await Validate();
+            }
+            else if (fileName.EndsWith(".xml"))
+            {
+                // 🟢 Plain XML import
+                xmlText = Encoding.UTF8.GetString(stream.ToArray());
+                await Validate();
+            }
+            else if (fileName.EndsWith(".pdf"))
+            {
+                // 🟢 Extract embedded XML from PDF
+                var pdfBytes = stream.ToArray();
+                var extractedXml = await PdfJsInterop.GetXmlString(pdfBytes);
+
+                if (string.IsNullOrWhiteSpace(extractedXml))
+                {
+                    ToastService.ShowError(Loc["Failed getting xml data from pdf"]);
+                    message = Loc["Failed getting xml data from pdf"];
+                    return;
+                }
+
+                xmlText = extractedXml;
+                await Validate();
+            }
+            else
+            {
+                ToastService.ShowError("Unsupported file type. Please choose .xml or .pdf.");
+            }
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError("Failed to load file: " + ex.Message);
+        }
+    }
 
     private async Task Validate()
     {
         try
         {
             message = string.Empty;
-            var serializer = new XmlSerializer(typeof(XmlInvoice));
-            using var stream = new MemoryStream(Encoding.UTF8.GetBytes(xmlText));
-            xmlInvoice = (XmlInvoice?)serializer.Deserialize(stream);
-            if (xmlInvoice is null)
-            {
-                message = Loc["Failed to parse XML."];
-                return;
-            }
+            xmlInvoice = null;
+            InvoiceDto = null;
 
+            InvoiceDto = InvoiceService.GetDtoFromZugferdXmlString(xmlText);
+            // var serializer = new XmlSerializer(typeof(XmlInvoice));
+            // using var stream = new MemoryStream(Encoding.UTF8.GetBytes(xmlText));
+            // xmlInvoice = (XmlInvoice?)serializer.Deserialize(stream);
+
+            // if (xmlInvoice is null)
+            // {
+            //     message = Loc["Failed to parse XML."];
+            //     ToastService.ShowError(message);
+            //     return;
+            // }
+
+            // schemaResult = XmlInvoiceValidator.Validate(xmlInvoice);
+            // if (!schemaResult.IsValid)
+            // {
+            //     message = $"XML {Loc["ValFailed"]}";
+            //     ToastService.ShowError(message);
+            //     return;
+            // }
+            // var mapper = new BlazorInvoiceMapper();
+            // InvoiceDto = mapper.FromXml(xmlInvoice);
+
+            var mapper = new BlazorInvoiceMapper();
+            xmlInvoice = mapper.ToXml(InvoiceDto);
             schemaResult = XmlInvoiceValidator.Validate(xmlInvoice);
             if (!schemaResult.IsValid)
             {
                 message = $"XML {Loc["ValFailed"]}";
-                ToastService.ShowError($"XML {Loc["ValFailed"]}");
-                await InvokeAsync(StateHasChanged);
+                ToastService.ShowError(message);
                 return;
             }
-            var mapper = new BlazorInvoiceMapper();
-            InvoiceDto = mapper.FromXml(xmlInvoice);
+            message = Loc["XML parsed and validated successfully."];
         }
         catch (Exception ex)
         {
             message = $"Unexpected error: {ex.Message}";
+            ToastService.ShowError(message);
         }
+
         await InvokeAsync(StateHasChanged);
     }
 
@@ -89,8 +186,10 @@
     {
         if (InvoiceDto == null)
         {
+            ToastService.ShowError("No invoice to import.");
             return;
         }
+
         var result = await InvoiceService.ImportInvoice(InvoiceDto);
         if (!string.IsNullOrEmpty(result.Error))
         {
@@ -99,23 +198,6 @@
         else
         {
             ToastService.ShowSuccess(Loc["Invoice saved successfully."]);
-        }
-    }
-
-    private async Task SelectFile()
-    {
-        try
-        {
-            // var file = await PathService.PickFile();
-            // if (!string.IsNullOrEmpty(file) && File.Exists(file))
-            // {
-            //     xmlText = File.ReadAllText(file);
-            //     await Validate();
-            // }
-        }
-        catch (Exception ex)
-        {
-            ToastService.ShowError("Failed picking file: " + ex.Message);
         }
     }
 }

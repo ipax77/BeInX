@@ -102,4 +102,9 @@ public partial class InvoiceService
 
         return await paymentsRepository.CreateAsync(payment);
     }
+
+    public BlazorInvoiceDto? GetDtoFromZugferdXmlString(string xml)
+    {
+        return ZugferdMapper.MapFromZugferd(xml);
+    }
 }

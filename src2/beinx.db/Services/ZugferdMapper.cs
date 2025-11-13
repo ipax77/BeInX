@@ -141,4 +141,82 @@ public static class ZugferdMapper
         }
         throw new ArgumentException($"Invalid code '{code}' for enum type '{typeof(T).Name}'");
     }
+
+    public static BlazorInvoiceDto MapFromZugferd(string xmlText)
+    {
+        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(xmlText));
+        var desc = InvoiceDescriptor.Load(stream);
+
+        var dto = new BlazorInvoiceDto
+        {
+            Id = desc.InvoiceNo,
+            IssueDate = desc.InvoiceDate ?? DateTime.Now,
+            DocumentCurrencyCode = desc.Currency.ToString(),
+            InvoiceTypeCode = GetEnumAttributeValue(desc.Type),
+            Note = desc.Notes.FirstOrDefault()?.Content,
+            BuyerParty = new BuyerAnnotationDto
+            {
+                Name = desc.Buyer?.Name ?? string.Empty,
+                StreetName = desc.Buyer?.Street,
+                PostCode = desc.Buyer?.Postcode ?? string.Empty,
+                City = desc.Buyer?.City ?? string.Empty,
+                CountryCode = desc.Buyer?.Country.ToString() ?? string.Empty,
+                Email = desc.BuyerElectronicAddress?.Address ?? string.Empty,
+                Telefone = desc.BuyerContact?.PhoneNo ?? string.Empty,
+                TaxId = desc.BuyerTaxRegistration?.FirstOrDefault()?.No ?? string.Empty
+            },
+            SellerParty = new SellerAnnotationDto
+            {
+                Name = desc.Seller?.Name ?? string.Empty,
+                StreetName = desc.Seller?.Street ?? string.Empty,
+                PostCode = desc.Seller?.Postcode ?? string.Empty,
+                City = desc.Seller?.City ?? string.Empty,
+                CountryCode = desc.Seller?.Country.ToString() ?? string.Empty,
+                Email = desc.SellerElectronicAddress?.Address ?? string.Empty,
+                Telefone = desc.SellerContact?.PhoneNo ?? string.Empty,
+                TaxId = desc.SellerTaxRegistration?.FirstOrDefault()?.No ?? string.Empty,
+                CompanyId = desc.SellerTaxRegistration?.FirstOrDefault(r => r.SchemeID == TaxRegistrationSchemeID.FC)?.No
+            },
+            GlobalTax = (double)(desc.TradeLineItems.FirstOrDefault()?.TaxPercent ?? 0),
+            GlobalTaxScheme = desc.TradeLineItems.FirstOrDefault()?.TaxType.ToString() ?? string.Empty,
+            GlobalTaxCategory = desc.TradeLineItems.FirstOrDefault()?.TaxCategoryCode.ToString() ?? string.Empty,
+            PaymentMeans = new PaymentAnnotationDto
+            {
+                Iban = desc.CreditorBankAccounts.FirstOrDefault()?.IBAN ?? string.Empty,
+                Bic = desc.CreditorBankAccounts.FirstOrDefault()?.BIC ?? string.Empty,
+                Name = desc.CreditorBankAccounts.FirstOrDefault()?.BankName ?? string.Empty,
+                PaymentMeansTypeCode = desc.PaymentMeans.TypeCode == null ? "30" : GetEnumAttributeValue(desc.PaymentMeans.TypeCode.Value)
+            },
+            PaymentTermsNote = desc.PaymentTerms.FirstOrDefault()?.Description ?? string.Empty,
+            DueDate = desc.PaymentTerms.FirstOrDefault()?.DueDate,
+            InvoiceLines = desc.TradeLineItems.Select((line, index) => new InvoiceLineAnnotationDto
+            {
+                Id = (index + 1).ToString(),
+                Name = line.Name,
+                Description = line.Description,
+                Quantity = (double)line.BilledQuantity,
+                QuantityCode = line.UnitCode.ToString() ?? string.Empty,
+                UnitPrice = line.NetUnitPrice == null ? 0 : (double)line.NetUnitPrice,
+                StartDate = line.BillingPeriodStart,
+                EndDate = line.BillingPeriodEnd
+            }).ToList()
+        };
+
+        return dto;
+    }
+
+    private static string GetEnumAttributeValue<T>(T enumValue) where T : Enum
+    {
+        if (enumValue == null)
+        {
+            return string.Empty;
+        }
+        var member = typeof(T).GetMember(enumValue.ToString()).FirstOrDefault();
+        if (member == null)
+        {
+            return enumValue.ToString();
+        }
+        var attr = (EnumStringValueAttribute?)Attribute.GetCustomAttribute(member, typeof(EnumStringValueAttribute));
+        return attr?.Value ?? enumValue.ToString();
+    }
 }

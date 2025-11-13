@@ -39,6 +39,12 @@ namespace BlazorInvoice.Pdf
             return await module.InvokeAsync<byte[]>("createInvoicePdfA3Bytes", invoice, GetCultureName(cultureName), hexId, xmlText);
         }
 
+        public async ValueTask<string?> GetXmlString(byte[] pdfBytes)
+        {
+            var module = await moduleTask.Value;
+            return await module.InvokeAsync<string?>("getPdfXmlText", pdfBytes);
+        }
+
         private static string GetCultureName(string cultureName)
         {
             var baseCulture = cultureName.Split('-')[0];
