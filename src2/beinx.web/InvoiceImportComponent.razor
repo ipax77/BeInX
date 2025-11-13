@@ -1,0 +1,121 @@
+@using System.Xml.Serialization
+@using System.Text
+@using Microsoft.Extensions.Localization
+@using beinx.loc
+@using beinx.shared
+@using beinx.shared.Interfaces
+@using pax.BBToast
+@using pax.XRechnung.NET
+@using pax.XRechnung.NET.XmlModels
+@inject IInvoiceService InvoiceService
+@inject NavigationManager NavigationManager
+@inject IToastService ToastService
+@inject IStringLocalizer<InvoiceLoc> Loc
+@inject IConfigService ConfigService
+
+<div class="container-fluid mt-3">
+    <div class="alert alert-dark d-flex align-items-center" style="max-width: 600px;">
+        <div class="fw-bold">
+            @Loc["ImpDesc"]
+        </div>
+        <div class="ms-3">
+            <button type="button" class="btn btn-outline-light" @onclick="SelectFile">@Loc["Select File"]</button>
+        </div>
+    </div>
+    <div>
+        <textarea class="form-control" rows="12" @bind="xmlText" @bind:after="Validate"></textarea>
+    </div>
+    @if (!string.IsNullOrEmpty(message))
+    {
+        <div class="alert alert-info mt-3">@message</div>
+    }
+    @if (xmlInvoice != null)
+    {
+        <div class="btn-group mt-2 mb-3">
+            <button type="button" class="btn btn-outline-warning" @onclick="e => Import()">@Loc["Import"]</button>
+        </div>
+    }
+
+    <div class="mb-5">
+        @if (schemaResult != null)
+        {
+            <h3>Schema Validation Result</h3>
+            <ValidationResultComponent Result="schemaResult" />
+        }
+    </div>
+</div>
+
+@code {
+    private string xmlText = string.Empty;
+    private string message = string.Empty;
+
+    InvoiceValidationResult? schemaResult;
+    XmlInvoice? xmlInvoice;
+    BlazorInvoiceDto? InvoiceDto;
+
+    private async Task Validate()
+    {
+        try
+        {
+            message = string.Empty;
+            var serializer = new XmlSerializer(typeof(XmlInvoice));
+            using var stream = new MemoryStream(Encoding.UTF8.GetBytes(xmlText));
+            xmlInvoice = (XmlInvoice?)serializer.Deserialize(stream);
+            if (xmlInvoice is null)
+            {
+                message = Loc["Failed to parse XML."];
+                return;
+            }
+
+            schemaResult = XmlInvoiceValidator.Validate(xmlInvoice);
+            if (!schemaResult.IsValid)
+            {
+                message = $"XML {Loc["ValFailed"]}";
+                ToastService.ShowError($"XML {Loc["ValFailed"]}");
+                await InvokeAsync(StateHasChanged);
+                return;
+            }
+            var mapper = new BlazorInvoiceMapper();
+            InvoiceDto = mapper.FromXml(xmlInvoice);
+        }
+        catch (Exception ex)
+        {
+            message = $"Unexpected error: {ex.Message}";
+        }
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task Import()
+    {
+        if (InvoiceDto == null)
+        {
+            return;
+        }
+        var result = await InvoiceService.ImportInvoice(InvoiceDto);
+        if (!string.IsNullOrEmpty(result.Error))
+        {
+            ToastService.ShowError(result.Error);
+        }
+        else
+        {
+            ToastService.ShowSuccess(Loc["Invoice saved successfully."]);
+        }
+    }
+
+    private async Task SelectFile()
+    {
+        try
+        {
+            // var file = await PathService.PickFile();
+            // if (!string.IsNullOrEmpty(file) && File.Exists(file))
+            // {
+            //     xmlText = File.ReadAllText(file);
+            //     await Validate();
+            // }
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError("Failed picking file: " + ex.Message);
+        }
+    }
+}

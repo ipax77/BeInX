@@ -10,4 +10,5 @@ public interface IInvoiceService
     Task<ExportResult> ExportInvoice(int invoiceId);
     Task<FinalizeResult> FinalizeInvoice(int invoiceId, XmlInvoice xmlInvoice);
     Task<StatsResponse> GetStats(int year);
+    Task<ImportResult> ImportInvoice(BlazorInvoiceDto invoiceDto);
 }

@@ -43,6 +43,39 @@ describe('PdfGenerator', () => {
 
         fs.writeFileSync('testinvoiceA3.pdf', pdf);
     });
+
+    it('should embed and extract the same XML invoice', async () => {
+        // 1️⃣ Create base PDF
+        const pdfDoc = await PDFDocument.create();
+        pdfDoc.registerFontkit(fontkit as any);
+
+        const regularFontBytes = fs.readFileSync(path.join(__dirname, '../../wwwroot/fonts/Inter-Light.ttf'));
+        const boldFontBytes = fs.readFileSync(path.join(__dirname, '../../wwwroot/fonts/Inter-Bold.ttf'));
+        const italicFontBytes = fs.readFileSync(path.join(__dirname, '../../wwwroot/fonts/Inter-MediumItalic.ttf'));
+        const defaultFont = await pdfDoc.embedFont(regularFontBytes, { subset: true });
+        const boldFont = await pdfDoc.embedFont(boldFontBytes, { subset: true });
+        const italicFont = await pdfDoc.embedFont(italicFontBytes, { subset: true });
+
+        const culture = 'de';
+        const pdfGenerator = new PdfGenerator(pdfDoc, defaultFont, boldFont, italicFont, culture);
+
+        const invoice = sampleInvoice();
+        await pdfGenerator.generateInvoice(invoice);
+
+        // 2️⃣ Embed XML via PdfA3Converter
+        const xmlInvoice = fs.readFileSync('./__tests__/data/sample.xml', 'utf8');
+        const pdfA3Converter = new MockPdfA3Converter();
+        const documentId = randomBytes(16).toString('hex');
+        const pdfBytes = await pdfA3Converter.createA3Pdf(pdfDoc, invoice, culture, documentId, xmlInvoice);
+
+        fs.writeFileSync('testinvoiceA3.pdf', pdfBytes);
+
+        // 3️⃣ Extract XML from the generated PDF
+        const extractedXml = await pdfA3Converter.getXmlString(pdfBytes);
+
+        // 4️⃣ Assert that the embedded and extracted XML match
+        expect(extractedXml?.trim()).toBe(xmlInvoice.trim());
+    });
   });
 
   class MockPdfA3Converter extends PdfA3Converter {
