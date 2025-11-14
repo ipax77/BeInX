@@ -22,7 +22,6 @@
     <ProjectReference Include="..\beinx.db\beinx.db.csproj" />
     <ProjectReference Include="..\beinx.web\beinx.web.csproj" />
     <ProjectReference Include="..\beinx.shared\beinx.shared.csproj" />
-    <ProjectReference Include="..\BlazorInvoice.Pdf\BlazorInvoice.Pdf.csproj" />
   </ItemGroup>
 
 </Project>
