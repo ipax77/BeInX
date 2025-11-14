@@ -18,19 +18,21 @@ To get an overview of the project, read the [README](README.md). Here are some r
 ## Getting started
 
 ### Prerequisits
-* .NET SDK (version 9.0 or higher)
+* .NET SDK (version 10.0 or higher)
 
 ### Project Structure
-* src with BlazorInvoice.Web as startup project
+* src with beinx.pwa as startup project
 * src/BlazorInvoice.Pdf/Typescript (Handles PDF generation via TypeScript/Webpack)
-* maui (Desktop App with dependencies in src)
 
-### Web Project Setup
-1. Navigate to the src/BlazorInvoice.Web directory.
-2. Update the database configuration:
-3. Modify the DbFile option in appsettings.Development.json to an existing path, the file will be generated during startup (SQLite Db).
-4. Run the project using your preferred IDE or the command line:
-	`dotnet run`
+### IndexedDb
+#### Prerequisits
+	* Node.js ( recommended: latest LTS)
+	* npm
+#### Setup
+1. Navigate to the beinx.db/Client folder.
+2. Install dependencies: `npm install`
+3. Run tests: `npm test`
+4. Build the db scripts: `npx webpack`
 
 ### PDF Generation Setup
 #### Prerequisits
@@ -44,9 +46,9 @@ To get an overview of the project, read the [README](README.md). Here are some r
 
 ### Localization
 Localization strings are maintained in a centralized CSV file:
-* Location: `src/BlazorInvoice.Localization/Resources/InvoiceLoc.csv`
+* Location: `src/beinx.locbuilder/Resources/InvoiceLoc.csv`
 * Format: `key;en;de;es;fr`
-* Run the `BlazorInvoice.Localization` project to regenerate the `.resx` files based on the updated CSV. 
+* Run the `beinx.locbuilder` project to regenerate the `.resx` files based on the updated CSV. 
 
 ## Pull requests (PR)
 

@@ -1,0 +1,125 @@
+﻿@using Microsoft.JSInterop
+@using beinx.shared
+@using beinx.shared.Interfaces
+@using beinx.web.Bases
+@using beinx.web.Forms
+@using pax.XRechnung.NET.AnnotatedDtos
+@inherits DraftAwareComponentBase<PaymentAnnotationDto, PaymentMeansEntity>
+@inject IPaymentsRepository PaymentsRepository
+
+<div class="modal" id="@modalId" aria-hidden="true" aria-labelledby="@modalId" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-fullscreen">
+        <div class="modal-content">
+            <div class="modal-body">
+                @if (IsLoading)
+                {
+                    <p><em>Loading...</em></p>
+                }
+                else if (IsEditing)
+                {
+                    <CascadingValue Value="EditContext" Name="paymentEditContext">
+                        <PaymentForm Payment="@CurrentDraft.Data"
+                                     OnValidSubmit="@SaveItemAsync"
+									 OnCodeListRequested="OnCodeListRequested"
+                                     OnCancel="Close" />
+                    </CascadingValue>
+                }
+                else
+                {
+					<button class="btn btn-primary mb-3" @onclick="NewItem">@Loc["Add New Payment Means"]</button>
+
+                    <select class="form-select" @bind="SelectedPaymentId" @bind:after="PaymentSelected">
+                        <option value="">-- @Loc["PaymentSelect"] --</option>
+                        @foreach (var payment in Items)
+                        {
+                            <option value="@payment.Id">@payment.Payment.Name</option>
+                        }
+                    </select>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+	private string modalId = "paymentsSelectModal";
+
+
+	[Parameter, EditorRequired]
+	public int? SelectedPaymentId { get; set; }
+
+	[Parameter]
+	public EventCallback<CodeListRequest> OnCodeListRequested { get; set; }
+
+	[Parameter]
+	public EventCallback<PaymentMeansEntity> OnPaymentSelected { get; set; }
+
+	[Parameter]
+	public EventCallback OnClose { get; set; }
+
+	public void Show(int? selectedPaymentId)
+	{
+		SelectedPaymentId = selectedPaymentId;
+		if (SelectedPaymentId.HasValue)
+		{
+			var payment = Items.FirstOrDefault(p => p.Id == SelectedPaymentId.Value);
+			if (payment != null)
+			{
+				EditItem(SelectedPaymentId.Value, payment.Payment);
+			}
+		}
+		InvokeAsync(StateHasChanged);
+		JSRuntime.InvokeVoidAsync("openModalById", modalId);
+	}
+
+	public void Close()
+	{
+		IsEditing = false;
+		JSRuntime.InvokeVoidAsync("closeModalById", modalId);
+		OnClose.InvokeAsync();
+	}
+
+	protected override Task<List<PaymentMeansEntity>> GetAllAsync()
+	=> PaymentsRepository.GetAllAsync();
+
+	protected override Task<int> CreateAsync(PaymentAnnotationDto dto)
+		=> PaymentsRepository.CreateAsync(dto);
+
+	protected override Task UpdateAsync(int id, PaymentAnnotationDto dto)
+		=> PaymentsRepository.UpdateAsync(new PaymentMeansEntity { Id = id, Payment = dto });
+
+	protected override Task DeleteAsync(int id)
+		=> PaymentsRepository.DeleteAsync(id);
+
+	protected override PaymentAnnotationDto CreateNewDto()
+		=> new();
+
+	protected override async Task AfterCreatedAsync(int id, PaymentAnnotationDto dto)
+	{
+		Items.Add(new PaymentMeansEntity { Id = id, Payment = dto });
+		await InvokeAsync(StateHasChanged);
+		var existing = Items.FirstOrDefault(p => p.Id == id);
+		await OnPaymentSelected.InvokeAsync(existing);
+		Close();
+	}
+
+	protected override int GetEntityId(PaymentMeansEntity entity) => entity.Id ?? 0;
+
+	protected override async Task AfterUpdatedAsync(int id, PaymentAnnotationDto dto)
+	{
+		var existing = Items.FirstOrDefault(p => p.Id == id);
+		if (existing != null) existing.Payment = dto;
+		await InvokeAsync(StateHasChanged);
+		await OnPaymentSelected.InvokeAsync(existing);
+		Close();
+	}
+
+	private void PaymentSelected()
+	{
+		var existing = Items.FirstOrDefault(p => p.Id == SelectedPaymentId);
+		OnPaymentSelected.InvokeAsync(existing);
+		Close();
+	}
+}
+
+

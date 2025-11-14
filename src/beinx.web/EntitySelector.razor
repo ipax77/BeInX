@@ -1,0 +1,74 @@
+@* EntitySelector.razor - Reusable component for selecting/editing entities *@
+
+<div class="d-flex align-items-center gap-2 mb-3">
+    <div class="entity-badge-container">
+        @if (string.IsNullOrWhiteSpace(DisplayName))
+        {
+            <span class="badge bg-secondary text-white-50 text-truncate" style="width: 250px;">
+                <i class="bi bi-dash-circle me-1"></i>@PlaceholderText
+            </span>
+        }
+        else
+        {
+            <span class="badge bg-dark text-truncate" style="width: 250px;" title="@DisplayName">
+                <i class="@IconClass me-1"></i>@DisplayName
+            </span>
+        }
+    </div>
+
+    @if (EntityId == 0)
+    {
+        <button type="button"
+                class="btn btn-sm btn-outline-primary"
+                @onclick="() => OnSelectOrCreate.InvokeAsync()">
+            <i class="bi bi-plus-circle me-1"></i>@SelectOrCreateLabel
+        </button>
+    }
+    else
+    {
+        <div class="btn-group btn-group-sm">
+            <button type="button"
+                    class="btn btn-outline-light"
+                    @onclick="() => OnEdit.InvokeAsync(EntityId)">
+                <i class="bi bi-pencil me-1"></i>@EditLabel
+            </button>
+            <button type="button"
+                    class="btn btn-outline-danger"
+                    @onclick="() => OnDelete.InvokeAsync()">
+                <i class="bi bi-trash me-1"></i>@DeleteLabel
+            </button>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public string DisplayName { get; set; } = string.Empty;
+
+    [Parameter, EditorRequired]
+    public int EntityId { get; set; }
+
+    [Parameter, EditorRequired]
+    public string SelectOrCreateLabel { get; set; } = string.Empty;
+
+    [Parameter, EditorRequired]
+    public string EditLabel { get; set; } = string.Empty;
+
+    [Parameter, EditorRequired]
+    public string DeleteLabel { get; set; } = string.Empty;
+
+    [Parameter]
+    public string PlaceholderText { get; set; } = "Not selected";
+
+    [Parameter]
+    public string IconClass { get; set; } = "bi bi-person";
+
+    [Parameter, EditorRequired]
+    public EventCallback OnSelectOrCreate { get; set; }
+
+    [Parameter, EditorRequired]
+    public EventCallback<int> OnEdit { get; set; }
+
+    [Parameter, EditorRequired]
+    public EventCallback OnDelete { get; set; }
+}

@@ -1,0 +1,93 @@
+﻿@using System.Xml.Serialization
+@using System.Text
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.Extensions.Localization
+@using System.Text.Json
+@using beinx.loc
+@using beinx.shared
+@using beinx.shared.Interfaces
+@using pax.BBToast
+@using pax.XRechnung.NET
+@using pax.XRechnung.NET.XmlModels
+@inject IInvoiceService InvoiceService
+@inject IToastService ToastService
+@inject IStringLocalizer<InvoiceLoc> Loc
+@inject IPdfJsInterop PdfJsInterop
+
+<div class="container-fluid mt-3">
+    <div class="alert alert-dark d-flex align-items-start" style="max-width: 800px;">
+        <div class="fw-bold">
+            @Loc["ImpDesc"]
+        </div>
+        <div class="ms-3">
+            <InputFile @ref="inputFile" class="form-control" OnChange="LoadFile" accept=".json,.xml,.pdf" />
+        </div>
+        @if (isLoading)
+        {
+            <div class="spinner-border ms-2" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        }
+        else
+        {
+            <div class="ms-2">
+                <button type="button" class="btn btn-outline-secondary" @onclick="Reset">@Loc["Reset"]</button>
+            </div>
+        }
+    </div>
+    <div>
+        <textarea class="form-control" rows="12" @bind="xmlTextInput" @bind:after="ValidateText"></textarea>
+    </div>
+
+    @if (importResult != null && !string.IsNullOrEmpty(importResult.Message))
+    {
+        <div class="alert alert-info mt-3">@importResult.Message</div>
+    }
+
+    @if (importResult?.XmlInvoice != null)
+    {
+        <div class="btn-group mt-2 mb-3">
+            <button type="button" class="btn btn-outline-warning" @onclick="Import">@Loc["Import"]</button>
+        </div>
+
+        <h3 class="mt-2 mb-2">@Loc["Result"]</h3>
+        <!-- Tabs for results -->
+        <ul class="nav nav-tabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="json-tab" data-bs-toggle="tab" data-bs-target="#json-content" type="button" role="tab">
+                    JSON
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="xml-tab" data-bs-toggle="tab" data-bs-target="#xml-content" type="button" role="tab">
+                    XRechnung XML
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="zugferd-tab" data-bs-toggle="tab" data-bs-target="#zugferd-content" type="button" role="tab">
+                    ZUGFeRD XML
+                </button>
+            </li>
+        </ul>
+
+        <div class="tab-content border border-top-0 p-3 bgchart2">
+            <div class="tab-pane fade show active" id="json-content" role="tabpanel">
+                <pre class="bgchart p-3 border rounded" style="max-height: 500px; overflow-y: auto;"><code>@importResult.JsonText</code></pre>
+            </div>
+            <div class="tab-pane fade" id="xml-content" role="tabpanel">
+                <pre class="bgchart p-3 border rounded" style="max-height: 500px; overflow-y: auto;"><code>@importResult.XmlText</code></pre>
+            </div>
+            <div class="tab-pane fade" id="zugferd-content" role="tabpanel">
+                <pre class="bgchart p-3 border rounded" style="max-height: 500px; overflow-y: auto;"><code>@importResult.ZXmlText</code></pre>
+            </div>
+        </div>
+    }
+    @if (importResult?.SchemaResult != null)
+    {
+        <div class="mb-5 mt-3">
+            <ValidationResultComponent Result="importResult.SchemaResult" />
+        </div>
+    }
+</div>
+
+

@@ -1,0 +1,212 @@
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.Extensions.Localization
+@using beinx.loc
+@using pax.BBToast
+@using pax.XRechnung.NET.AnnotatedDtos
+@using pax.XRechnung.NET.BaseDtos
+@inject IStringLocalizer<InvoiceLoc> Loc
+@inject IToastService ToastService
+
+<div>
+	<EditForm EditContext="partyEditContext" FormName="InvoicePartyForm" OnValidSubmit="HandleValidSubmit">
+		<DataAnnotationsValidator />
+		<div class="mb-3">
+			<label for="bt27" class="form-label">Name</label>
+			<InputText class="form-control" id="bt27" aria-describedby="bt27desc" @bind-Value="Party.Name" />
+			<small id="bt27desc" class="@descClass">@Loc["BT-27"]</small>
+			<div>
+				<ValidationMessage For="@(() => Party.Name)" />
+			</div>
+		</div>
+		<div class="mb-3">
+			<label for="bt28" class="form-label">Registration Name</label>
+			<InputText class="form-control" id="bt28" aria-describedby="bt28desc" @bind-Value="Party.RegistrationName" />
+			<small id="bt28desc" class="@descClass">@Loc["BT-28"]</small>
+			<div>
+				<ValidationMessage For="@(() => Party.RegistrationName)" />
+			</div>
+		</div>
+		<div class="mb-3">
+			<label for="bt35" class="form-label">Street Name</label>
+			<InputText class="form-control" id="bt35" aria-describedby="bt35desc" @bind-Value="Party.StreetName" />
+			<small id="bt35desc" class="@descClass">@Loc["BT-35"]</small>
+			<div>
+				<ValidationMessage For="@(() => Party.StreetName)" />
+			</div>
+		</div>
+		<div class="mb-3">
+			<label for="bt38" class="form-label">Postal Zone</label>
+			<InputText class="form-control" id="bt38" aria-describedby="bt38desc" @bind-Value="Party.PostCode" />
+			<small id="bt38desc" class="@descClass">@Loc["BT-38"]</small>
+			<div>
+				<ValidationMessage For="@(() => Party.PostCode)" />
+			</div>
+		</div>
+		<div class="mb-3">
+			<label for="bt37" class="form-label">City Name</label>
+			<InputText class="form-control" id="bt37" aria-describedby="bt37desc" @bind-Value="Party.City" />
+			<small id="bt37desc" class="@descClass">@Loc["BT-37"]</small>
+			<div>
+				<ValidationMessage For="@(() => Party.City)" />
+			</div>
+		</div>
+		<div class="mb-3">
+			<label for="bt40" class="form-label">Country</label>
+			<div class="input-group">
+				<InputText class="form-control" id="bt40" aria-describedby="bt40desc" @bind-Value="Party.CountryCode" />
+				<button type="button" class="btn btn-sm btn-outline-light ms-1" @onclick="@(() => RequestCodeList(nameof(PartyBaseDto.CountryCode), "Country_Codes"))">Pick</button>
+			</div>
+			<small id="bt40desc" class="@descClass">@Loc["BT-40"] - ISO 3166</small>
+			<div>
+				<ValidationMessage For="@(() => Party.CountryCode)" />
+			</div>
+		</div>
+		<div class="mb-3">
+			<label for="bt42" class="form-label">Contact Telephone</label>
+			<InputText class="form-control" id="bt42" aria-describedby="bt42desc" @bind-Value="Party.Telefone" />
+			<small id="bt42desc" class="@descClass">@Loc["BT-42"]</small>
+			<div>
+				<ValidationMessage For="@(() => Party.Telefone)" />
+			</div>
+		</div>
+		<div class="mb-3">
+			<label for="bt43" class="form-label">Contact Email</label>
+			<InputText class="form-control" id="bt43" aria-describedby="bt43desc" @bind-Value="Party.Email" />
+			<small id="bt43desc" class="@descClass">@Loc["BT-43"]</small>
+			<div>
+				<ValidationMessage For="@(() => Party.Email)" />
+			</div>
+		</div>
+		<div class="mb-3">
+			<label for="btweb" class="form-label">Website</label>
+			<InputText class="form-control" id="btweb" aria-describedby="btwebdesc" @bind-Value="Party.Website" />
+			@* <small id="btwebdesc" class="@descClass">@Loc["BT-WEB"]</small> *@
+			<div>
+				<ValidationMessage For="@(() => Party.Website)" />
+			</div>
+		</div>
+		<div class="mb-3">
+			<label for="bt31" class="form-label">Umsatzsteuer-Identifikationsnummer</label>
+			<InputText class="form-control" id="bt31" aria-describedby="bt31desc" aria-placeholder="DE123456789" @bind-Value="Party.TaxId" />
+			<small id="bt31desc" class="@descClass">@Loc["BT-31"]</small>
+			<div>
+				<ValidationMessage For="@(() => Party.TaxId)" />
+			</div>
+		</div>
+		<div class="mb-3">
+			<label for="bt32" class="form-label">Steuernummer</label>
+			<InputText class="form-control" id="bt32" aria-describedby="bt32desc" aria-placeholder="000/0000/0000/0" @bind-Value="Party.CompanyId" />
+			<small id="bt32desc" class="@descClass">@Loc["BT-32"]</small>
+			<div>
+				<ValidationMessage For="@(() => Party.CompanyId)" />
+			</div>
+		</div>
+		<hr />
+		<p>Logo</p>
+		@if (Logo is not null)
+		{
+			<img src="data:@Logo.MimeCode;base64, @Logo.Content" alt="Logo" />
+			<div class="btn-group">
+				<button type="button" class="btn btn-danger" @onclick="DeleteLogo">@Loc["Delete"]</button>
+			</div>
+		}
+		else
+		{
+			<InputFile @ref="inputFile" class="form-control" OnChange="LoadFiles" multiple />
+			<p><small>@Loc["PngUpload"]</small></p>
+		}
+		<hr />
+		<div class="mt-3">
+			<button type="button" class="btn btn-danger" @onclick="e => OnCancel.InvokeAsync()">Cancel</button>
+			<button type="submit" class="btn btn-primary">Save</button>
+		</div>
+	</EditForm>
+</div>
+
+@code {
+	[Parameter, EditorRequired]
+	public SellerAnnotationDto Party { get; set; } = null!;
+
+	[Parameter, EditorRequired]
+	public DocumentReferenceAnnotationDto? Logo { get; set; }
+
+	[Parameter]
+	public EventCallback<SellerAnnotationDto> OnValidSubmit { get; set; }
+
+	[Parameter]
+	public EventCallback OnCancel { get; set; }
+
+	[Parameter]
+	public EventCallback<CodeListRequest> OnCodeListRequested { get; set; }
+
+	[Parameter]
+	public EventCallback<DocumentReferenceAnnotationDto?> OnLogoChanged { get; set; }
+
+	[Parameter]
+	public bool ShowDesc { get; set; } = true;
+
+	[CascadingParameter(Name = "partyEditContext")]
+	public EditContext partyEditContext { get; set; } = null!;
+
+	string descClass => ShowDesc ? "form-text text-muted" : "d-none";
+	InputFile? inputFile;
+
+	private async Task RequestCodeList(string propertyName, string codeListName)
+	{
+		var request = new CodeListRequest
+		{
+			Target = Party,
+			PropertyName = propertyName,
+			CodeList = codeListName,
+			EditContext = partyEditContext,
+		};
+
+		await OnCodeListRequested.InvokeAsync(request);
+	}
+
+	private async Task HandleValidSubmit()
+	{
+		await OnValidSubmit.InvokeAsync(Party);
+	}
+
+	private async Task LoadFiles(InputFileChangeEventArgs e)
+	{
+		int i = 0;
+		foreach (var file in e.GetMultipleFiles(1))
+		{
+			if (i >= 1)
+			{
+				break;
+			}
+			try
+			{
+				using var stream = new MemoryStream();
+				await file.OpenReadStream(1024 * 15).CopyToAsync(stream);
+				stream.Position = 0;
+				byte[] fileBytes = stream.ToArray();
+				var base64String = Convert.ToBase64String(fileBytes);
+				Logo = new()
+				{
+					Id = Guid.NewGuid().ToString(),
+					FileName = "logo.png",
+					MimeCode = "image/png",
+					DocumentDescription = "Seller Logo",
+					Content = base64String,
+				};
+				await OnLogoChanged.InvokeAsync(Logo);
+			}
+			catch (Exception ex)
+			{
+				ToastService.ShowError(ex.Message, "Upload failed");
+			}
+			i++;
+		}
+		await InvokeAsync(StateHasChanged);
+	}
+
+	private void DeleteLogo()
+	{
+		Logo = null;
+		OnLogoChanged.InvokeAsync(null);
+	}
+}

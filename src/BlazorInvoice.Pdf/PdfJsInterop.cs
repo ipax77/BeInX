@@ -1,5 +1,5 @@
-using BlazorInvoice.Shared;
-using BlazorInvoice.Shared.Interfaces;
+using beinx.shared;
+using beinx.shared.Interfaces;
 using Microsoft.JSInterop;
 
 namespace BlazorInvoice.Pdf
@@ -37,6 +37,12 @@ namespace BlazorInvoice.Pdf
         {
             var module = await moduleTask.Value;
             return await module.InvokeAsync<byte[]>("createInvoicePdfA3Bytes", invoice, GetCultureName(cultureName), hexId, xmlText);
+        }
+
+        public async ValueTask<string?> GetXmlString(byte[] pdfBytes)
+        {
+            var module = await moduleTask.Value;
+            return await module.InvokeAsync<string?>("getPdfXmlText", pdfBytes);
         }
 
         private static string GetCultureName(string cultureName)

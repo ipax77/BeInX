@@ -1,0 +1,366 @@
+﻿@using Microsoft.Extensions.Localization
+@using Microsoft.JSInterop
+@using beinx.loc
+@using beinx.shared
+@using beinx.shared.Interfaces
+@using beinx.web.Bases
+@using beinx.web.Forms
+@using pax.XRechnung.NET.AnnotatedDtos
+@inject IInvoiceRepository InvoiceRepository
+@inject IStringLocalizer<InvoiceLoc> Loc
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+
+<div class="container-fluid mt-2 mb-5">
+	<div class="d-flex">
+		<div>
+			<h3>
+				@Loc["Invoices"]
+			</h3>
+		</div>
+		@if (isLoading)
+		{
+			<div class="spinner-border ms-2" role="status">
+				<span class="visually-hidden">Loading...</span>
+			</div>
+
+		}
+	</div>
+
+	<button class="btn btn-primary mb-3" @onclick="NewItem">@Loc["Add New Invoice"]</button>
+
+	<div class="card mb-3">
+		<div class="card-body">
+			<div class="row g-3">
+				<div class="col-md-3">
+					<label class="form-label">@Loc["Year"]</label>
+					<input type="number" class="form-control" @bind="filterYear" @bind:event="oninput" />
+				</div>
+				<div class="col-md-3">
+					<label class="form-label">@Loc["Payment Status"]</label>
+					<select class="form-select" @bind="filterPaidStatus">
+						<option value="">@Loc["All"]</option>
+						<option value="paid">@Loc["Paid"]</option>
+						<option value="unpaid">@Loc["Unpaid"]</option>
+					</select>
+				</div>
+				<div class="col-md-4">
+					<label class="form-label">@Loc["Search"]</label>
+					<input type="text" class="form-control" placeholder="@Loc["SeachInvoice"]"
+						   @bind="filterSearch" @bind:event="oninput" />
+				</div>
+				<div class="col-md-2 d-flex align-items-end">
+					<button class="btn btn-primary w-100 me-2" @onclick="ApplyFilters">
+						@Loc["Apply Filters"]
+					</button>
+					<button class="btn btn-outline-secondary w-100" @onclick="ResetFilters">
+						@Loc["Reset"]
+					</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="mb-2">
+		<strong>@Loc["Total Results"]:</strong> @totalCount |
+		<strong>@Loc["Page"]:</strong> @currentPage / @totalPages
+	</div>
+
+	<div class="table-responsive">
+		<table class="table table-striped">
+			<thead>
+				<tr>
+					<th @onclick="@(() => SortByColumn("invoiceId"))" style="cursor:pointer">
+						@Loc["Invoice ID"] @(sortBy == "invoiceId" ? (sortAsc ? "▲" : "▼") : "")
+					</th>
+					<th @onclick="@(() => SortByColumn("issueDate"))" style="cursor:pointer">
+						@Loc["Issue Date"] @(sortBy == "issueDate" ? (sortAsc ? "▲" : "▼") : "")
+					</th>
+					<th @onclick="@(() => SortByColumn("sellerName"))" style="cursor:pointer">
+						@Loc["Seller"] @(sortBy == "sellerName" ? (sortAsc ? "▲" : "▼") : "")
+					</th>
+					<th @onclick="@(() => SortByColumn("buyerName"))" style="cursor:pointer">
+						@Loc["Buyer"] @(sortBy == "buyerName" ? (sortAsc ? "▲" : "▼") : "")
+					</th>
+					<th>@Loc["Amount"]</th>
+					<th @onclick="@(() => SortByColumn("isPaid"))" style="cursor:pointer">
+						@Loc["Paid?"] @(sortBy == "isPaid" ? (sortAsc ? "▲" : "▼") : "")
+					</th>
+					<th></th>
+				</tr>
+			</thead>
+			<tbody>
+				@if (Items.Count == 0)
+				{
+					<tr>
+						<td colspan="7" class="text-center">@Loc["No invoices found"]</td>
+					</tr>
+				}
+				else
+				{
+					@foreach (var inv in Items)
+					{
+						<tr>
+							<td>@inv.InvoiceId</td>
+							<td>@inv.IssueDate.ToShortDateString()</td>
+							<td>@inv.SellerName</td>
+							<td>@inv.BuyerName</td>
+							<td>@inv.PayableAmount.ToString("N2")</td>
+							<td>@(inv.IsPaid ? "✔️" : "❌")</td>
+							<td>
+								<button class="btn btn-sm btn-outline-warning me-1"
+										@onclick="() => EditItem(inv.Id)">
+									@Loc["Edit"]
+								</button>
+								@if (inv.IsPaid)
+								{
+									<button class="btn btn-sm btn-outline-info me-1"
+											@onclick="() => SetPaid(inv.Id, false)">
+										@Loc["Set Unpaid"]
+									</button>
+								}
+								else
+								{
+									<button class="btn btn-sm btn-outline-light me-1"
+											@onclick="() => SetPaid(inv.Id, true)">
+										@Loc["Set Paid"]
+									</button>
+								}
+								<button class="btn btn-sm btn-outline-secondary"
+										@onclick="() => Copy(inv.Id)">
+									@Loc["Copy"]
+								</button>
+								<button class="btn btn-sm btn-outline-danger"
+										@onclick="() => DeleteItemAsync(inv.Id)">
+									@Loc["Delete"]
+								</button>
+							</td>
+						</tr>
+					}
+				}
+			</tbody>
+		</table>
+	</div>
+	@if (totalPages > 1)
+	{
+		<nav aria-label="Page navigation">
+			<ul class="pagination justify-content-center">
+				<li class="page-item @(currentPage == 1 ? "disabled" : "")">
+					<button class="page-link" @onclick="() => GoToPage(1)" disabled="@(currentPage == 1)">
+						@Loc["First"]
+					</button>
+				</li>
+				<li class="page-item @(currentPage == 1 ? "disabled" : "")">
+					<button class="page-link" @onclick="() => GoToPage(currentPage - 1)" disabled="@(currentPage == 1)">
+						@Loc["Previous"]
+					</button>
+				</li>
+
+				@for (int i = Math.Max(1, currentPage - 2); i <= Math.Min(totalPages, currentPage + 2); i++)
+				{
+					var mypage = i; // Capture for closure
+									<li class="page-item @(mypage == currentPage ? "active" : "")">
+										<button class="page-link" @onclick="() => GoToPage(mypage)">@mypage</button>
+									</li>
+				}
+
+				<li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+					<button class="page-link" @onclick="() => GoToPage(currentPage + 1)" disabled="@(currentPage == totalPages)">
+						@Loc["Next"]
+					</button>
+				</li>
+				<li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+					<button class="page-link" @onclick="() => GoToPage(totalPages)" disabled="@(currentPage == totalPages)">
+						@Loc["Last"]
+					</button>
+				</li>
+			</ul>
+		</nav>
+	}
+
+	<div class="d-flex justify-content-center mt-2">
+		<label class="me-2 align-self-center">@Loc["Items per page"]:</label>
+		<select class="form-select w-auto" @bind="pageSize" @bind:after="OnPageSizeChanged">
+			<option value="10">10</option>
+			<option value="25">25</option>
+			<option value="50">50</option>
+			<option value="100">100</option>
+		</select>
+	</div>
+</div>
+
+@code {
+	private bool isLoading = true;
+	private List<InvoiceListItem> Items = new();
+	private int totalCount;
+	private int currentPage = 1;
+	private int pageSize = 50;
+	private int totalPages => totalCount > 0 ? (int)Math.Ceiling((double)totalCount / pageSize) : 1;
+
+	// Filter fields
+	private int? filterYear;
+	private string filterPaidStatus = "";
+	private string filterSearch = "";
+
+	private string sortBy = "invoiceId";
+	private bool sortAsc = true;
+
+	protected override async Task OnInitializedAsync()
+	{
+		await LoadDataAsync();
+	}
+
+	private async Task LoadDataAsync()
+	{
+		isLoading = true;
+		await InvokeAsync(StateHasChanged);
+
+		var request = new InvoicesRequest
+		{
+			Year = filterYear,
+			IsPaid = filterPaidStatus switch
+			{
+				"paid" => true,
+				"unpaid" => false,
+				_ => null
+			},
+			Search = string.IsNullOrWhiteSpace(filterSearch) ? null : filterSearch,
+			Page = currentPage - 1, // Convert to 0-based
+			PageSize = pageSize,
+			SortBy = sortBy switch
+			{
+				"invoiceId" => "invoiceId",
+				"issueDate" => "issueDate",
+				"sellerName" => "sellerName",
+				"buyerName" => "buyerName",
+				"isPaid" => "isPaid",
+				"year" => "year",
+				_ => "invoiceId"
+			},
+			SortAsc = sortAsc
+		};
+
+		totalCount = await InvoiceRepository.GetFilteredListCountAsync(request);
+		Items = await InvoiceRepository.GetFilteredListAsync(request);
+
+		isLoading = false;
+		await InvokeAsync(StateHasChanged);
+	}
+
+	private async Task ApplyFilters()
+	{
+		currentPage = 1; // Reset to first page when applying filters
+		await LoadDataAsync();
+	}
+
+	private async Task GoToPage(int page)
+	{
+		if (page < 1 || page > totalPages || page == currentPage)
+			return;
+
+		currentPage = page;
+		await LoadDataAsync();
+	}
+
+	private async Task OnPageSizeChanged()
+	{
+		currentPage = 1; // Reset to first page when changing page size
+		await LoadDataAsync();
+	}
+
+	private void NewItem()
+	{
+		NavigationManager.NavigateTo("/invoice");
+	}
+
+	private void EditItem(int id)
+	{
+		NavigationManager.NavigateTo($"/invoice/{id}");
+	}
+
+	private async Task SetPaid(int id, bool isPaid)
+	{
+		var item = Items.FirstOrDefault(f => f.Id == id);
+		if (item != null)
+		{
+			item.IsPaid = isPaid;
+			await InvoiceRepository.SetPaidAsync(id, isPaid);
+
+			// Refresh to maintain filter consistency
+			await LoadDataAsync();
+		}
+	}
+
+	private async Task DeleteItemAsync(int id)
+	{
+		var item = Items.FirstOrDefault(f => f.Id == id);
+		if (item is null)
+		{
+			return;
+		}
+
+		bool result = await JSRuntime.InvokeAsync<bool>("confirm", Loc["DeleteInvoice"].ToString());
+		if (!result)
+		{
+			return;
+		}
+
+		await InvoiceRepository.DeleteAsync(id);
+
+		// Reload data after deletion
+		await LoadDataAsync();
+	}
+
+	private async Task Copy(int id)
+	{
+		var item = Items.FirstOrDefault(f => f.Id == id);
+		if (item is null)
+		{
+			return;
+		}
+
+		var entity = await InvoiceRepository.GetByIdAsync(id);
+		if (entity is null)
+		{
+			return;
+		}
+
+		var invoiceDto = entity.Info.InvoiceDto;
+		invoiceDto.Id = invoiceDto.Id + "_copy";
+		invoiceDto.IssueDate = DateTime.UtcNow;
+		invoiceDto.DueDate = DateTime.UtcNow.AddDays(14);
+		invoiceDto.InvoiceLines.Clear();
+		invoiceDto.AdditionalDocumentReferences.Clear();
+		invoiceDto.PayableAmount = 0;
+
+		await InvoiceRepository.CreateAsync(entity.Info);
+
+		// Reload data after copying
+		await LoadDataAsync();
+	}
+
+	private async Task ResetFilters()
+	{
+		filterYear = null;
+		filterPaidStatus = "";
+		filterSearch = "";
+		currentPage = 1;
+		await LoadDataAsync();
+	}
+
+	private async Task SortByColumn(string column)
+	{
+		if (sortBy == column)
+		{
+			sortAsc = !sortAsc;
+		}
+		else
+		{
+			sortBy = column;
+			sortAsc = true;
+		}
+
+		currentPage = 1;
+		await LoadDataAsync();
+	}
+}

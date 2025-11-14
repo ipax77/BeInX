@@ -1,0 +1,441 @@
+@using BlazorInvoice.Pdf
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.Extensions.Logging
+@using Microsoft.JSInterop
+@using beinx.shared
+@using beinx.shared.Interfaces
+@using beinx.web.Bases
+@using beinx.web.Forms
+@using beinx.web.Modals
+@using pax.BBToast
+@using pax.XRechnung.NET
+@using pax.XRechnung.NET.AnnotatedDtos
+@inherits DraftAwareComponentBase<InvoiceDtoInfo, InvoiceEntity>
+@inject IInvoiceRepository InvoiceRepository
+@inject IInvoiceService InvoiceService
+@inject IToastService ToastService
+
+<div class="container-fluid mt-2 mb-5">
+	@if (IsLoading)
+	{
+		<p><em>Loading ...</em></p>
+	}
+	else
+	{
+		<div>
+			<h2>@editOrCreateText</h2>
+		</div>
+		<div class="row">
+			<div class="col-5">
+				<hr />
+				@if (!prerequisitesSatisfied)
+				{
+					<h6 class="text-uppercase text-muted fw-bold mb-3">
+						@Loc["Prerequisites"]
+					</h6>
+				}
+				<div>
+					<EntitySelector DisplayName="@CurrentDraft.Data.InvoiceDto.SellerParty.Name"
+									EntityId="CurrentDraft.Data.SellerId"
+									SelectOrCreateLabel="@Loc["Select or Create Seller"]"
+									EditLabel="@Loc["Edit Seller"]"
+									DeleteLabel="@Loc["Delete"]"
+									OnSelectOrCreate="() => sellerSelectModal?.Show(null)"
+									OnEdit="(id) => sellerSelectModal?.Show(id)"
+									OnDelete="HandleSellerDelete" />
+
+					<EntitySelector DisplayName="@CurrentDraft.Data.InvoiceDto.BuyerParty.Name"
+									EntityId="CurrentDraft.Data.BuyerId"
+									SelectOrCreateLabel="@Loc["Select or Create Buyer"]"
+									EditLabel="@Loc["Edit Buyer"]"
+									DeleteLabel="@Loc["Delete"]"
+									OnSelectOrCreate="() => buyerSelectModal?.Show(null)"
+									OnEdit="(id) => buyerSelectModal?.Show(id)"
+									OnDelete="HandleBuyerDelete" />
+
+					<EntitySelector DisplayName="@CurrentDraft.Data.InvoiceDto.PaymentMeans.Name"
+									EntityId="CurrentDraft.Data.PaymentId"
+									SelectOrCreateLabel="@Loc["Select or Create Payment Means"]"
+									EditLabel="@Loc["Edit Payment Means"]"
+									DeleteLabel="@Loc["Delete"]"
+									OnSelectOrCreate="() => paymentsSelectModal?.Show(null)"
+									OnEdit="(id) => paymentsSelectModal?.Show(id)"
+									OnDelete="HandlePaymentDelete" />
+				</div>
+				<hr />
+				@if (prerequisitesSatisfied)
+				{
+					<CascadingValue Value="EditContext" Name="invoiceEditContext">
+						<div>
+							<InvoiceForm Invoice="@CurrentDraft.Data.InvoiceDto"
+										 OnCodeListRequested="HandleCodeListRequest" />
+						</div>
+						<hr />
+						<div>
+							<InvoiceLinesSection Invoice="@CurrentDraft.Data.InvoiceDto"
+												 OnCodeListRequested="HandleCodeListRequest"
+												 OnInvoiceChanged="@(e => SaveDraftAsync())" />
+						</div>
+					</CascadingValue>
+				}
+			</div>
+			<div class="col-7">
+				@if (prerequisitesSatisfied)
+				{
+					<div class="sticky-top mt-2">
+						<div class="btn-group p-1 border rounded bg-dark-subtle">
+							<button type="button" class="btn btn-outline-success"
+									@onclick="Save">
+								@Loc["Save"]
+							</button>
+							<button type="button" class="btn btn-outline-warning"
+									@onclick="Export">
+								@Loc["Export"]
+							</button>
+						</div>
+
+						<div class="mb-2">
+							<button class="btn btn-outline-light" type="button" @onclick="e => ShowPdfComponent = !ShowPdfComponent">
+								@if (ShowPdfComponent)
+								{
+									<i class="bi bi-chevron-double-up"></i>
+									<span>Hide PDF</span>
+								}
+								else
+								{
+									<i class="bi bi-chevron-double-down"></i>
+									<span>Show PDF</span>
+								}
+							</button>
+						</div>
+						@if (ShowPdfComponent)
+						{
+							<div class="mt-2 w-100">
+								<InvoicePdfComponent @ref="invoicePdfComponent" Invoice="CurrentDraft.Data.InvoiceDto" />
+							</div>
+						}
+						<div class="mb-2">
+							<button class="btn btn-outline-light" type="button" data-bs-toggle="collapse" data-bs-target="#validation"
+									aria-expanded="false" aria-controls="validation" @onclick="e => ShowValidation = !ShowValidation">
+								@if (ShowValidation)
+								{
+									<i class="bi bi-chevron-double-up"></i>
+									<span>Hide @Loc["Validation"]</span>
+								}
+								else
+								{
+									<i class="bi bi-chevron-double-down"></i>
+									<span>Show @Loc["Validation"]</span>
+								}
+							</button>
+						</div>
+						<div class="collapse" id="validation">
+							<div class="btn-group mt-2">
+								<button type="button" class="btn btn-outline-primary" @onclick="ValidateInvoiceSchema">
+									Validate
+									XML
+								</button>
+@* 								<div class="form-check form-switch ms-2 mt-1">
+									<label for="xmlvalidation" class="form-check-label">Show Warnings</label>
+									<input id="xmlvalidation" type="checkbox" class="form-check-input" role="switch" @bind="appConfig.ShowValidationWarnings" @bind:after="() => ConfigService.UpdateConfig(appConfig)" />
+								</div> *@
+							</div>
+							<div class="mt-2">
+								@if (invoiceValidationResult is not null && ShowValidation)
+								{
+									<ValidationResultComponent Result="invoiceValidationResult" ShowWarnings="true" />
+								}
+							</div>
+						</div>
+						<div class="mb-2">
+							<button class="btn btn-outline-light" type="button" data-bs-toggle="collapse" data-bs-target="#xmlText"
+									aria-expanded="false" aria-controls="xmlText" @onclick="e => ShowXmlComponent = !ShowXmlComponent">
+								@if (ShowXmlComponent)
+								{
+									<i class="bi bi-chevron-double-up"></i>
+									<span>Hide Xml</span>
+								}
+								else
+								{
+									<i class="bi bi-chevron-double-down"></i>
+									<span>Show Xml</span>
+								}
+							</button>
+						</div>
+						<div class="collapse" id="xmlText">
+							@if (ShowXmlComponent)
+							{
+								<InvoiceXmlComponent @ref="invoiceXmlComponent" Invoice="CurrentDraft.Data.InvoiceDto" />
+							}
+						</div>
+						<div class="mb-2">
+							<button class="btn btn-outline-light" type="button" data-bs-toggle="collapse" data-bs-target="#chatgpt"
+									aria-expanded="false" aria-controls="validation" @onclick="e => ShowJsonComponent = !ShowJsonComponent">
+								@if (ShowJsonComponent)
+								{
+									<i class="bi bi-chevron-double-up"></i>
+									<span>Hide Json</span>
+								}
+								else
+								{
+									<i class="bi bi-chevron-double-down"></i>
+									<span>Show Json</span>
+								}
+							</button>
+						</div>
+						<div class="collapse" id="chatgpt">
+							@if (ShowJsonComponent)
+							{
+								<InvoiceJsonComponent @ref="invoiceJsonComponent" Invoice="CurrentDraft.Data.InvoiceDto" />
+							}
+						</div>
+					</div>
+				}
+			</div>
+		</div>
+		<PaymentsSelectModal @ref="paymentsSelectModal" SelectedPaymentId="CurrentDraft.Data.PaymentId"
+							 OnCodeListRequested="HandleCodeListRequest"
+							 OnPaymentSelected="OnPaymentSelected" />
+		<SellerSelectModal @ref="sellerSelectModal" SelectedSellerId="CurrentDraft.Data.SellerId"
+						   OnCodeListRequested="HandleCodeListRequest"
+						   OnSellerSelected="OnSellerSelected" />
+		<BuyerSelectModal @ref="buyerSelectModal" SelectedBuyerId="CurrentDraft.Data.BuyerId"
+						  OnCodeListRequested="HandleCodeListRequest"
+						  OnBuyerSelected="OnBuyerSelected" />
+		<CodeListModal @ref="codeListModal" OnSelected="HandleCodeSelected" />
+	}
+</div>
+
+
+@code {
+	[Parameter, EditorRequired]
+	public int? SelectedInvoiceId { get; set; }
+
+	PaymentsSelectModal? paymentsSelectModal;
+	SellerSelectModal? sellerSelectModal;
+	BuyerSelectModal? buyerSelectModal;
+
+	InvoicePdfComponent? invoicePdfComponent;
+	InvoiceXmlComponent? invoiceXmlComponent;
+	InvoiceJsonComponent? invoiceJsonComponent;
+
+	private bool prerequisitesSatisfied => CurrentDraft.Data.PaymentId > 0
+		&& CurrentDraft.Data.SellerId > 0
+		&& CurrentDraft.Data.BuyerId > 0;
+
+	private string editOrCreateText = string.Empty;
+
+	private bool ShowPdfComponent = true;
+	private bool ShowJsonComponent = false;
+	private bool ShowXmlComponent = false;
+	private bool ShowValidation = false;
+
+	InvoiceValidationResult? invoiceValidationResult = null;
+
+	protected override async Task OnInitializedAsync()
+	{
+		if (SelectedInvoiceId.HasValue)
+		{
+			var entity = await InvoiceRepository.GetByIdAsync(SelectedInvoiceId.Value);
+			if (entity != null)
+			{
+				EditItem(SelectedInvoiceId.Value, entity.Info);
+			}
+		}
+		else
+		{
+			var dto = CreateNewDto();
+			EditItem(0, dto);
+		}
+		await base.OnInitializedAsync();
+		SelectedInvoiceId = CurrentDraft.EntityId;
+		editOrCreateText = SelectedInvoiceId.HasValue ? Loc["Edit Invoice"] : Loc["Create New Invoice"];
+	}
+
+	private void OnPaymentSelected(PaymentMeansEntity args)
+	{
+		CurrentDraft.Data.PaymentId = args.Id ?? 0;
+		CurrentDraft.Data.InvoiceDto.PaymentMeans = args.Payment;
+		StateHasChanged();
+		UpdateVisuals();
+	}
+
+	private void OnSellerSelected(PartyEntity<SellerAnnotationDto> args)
+	{
+		CurrentDraft.Data.SellerId = args.Id ?? 0;
+		CurrentDraft.Data.InvoiceDto.SellerParty = args.Party;
+		CurrentDraft.Data.InvoiceDto.EmbedSellerLogo(args.Logo);
+		StateHasChanged();
+		UpdateVisuals();
+	}
+
+	private void OnBuyerSelected(PartyEntity<BuyerAnnotationDto> args)
+	{
+		CurrentDraft.Data.BuyerId = args.Id ?? 0;
+		CurrentDraft.Data.InvoiceDto.BuyerParty = args.Party;
+		StateHasChanged();
+		UpdateVisuals();
+	}
+
+	private void HandleSellerDelete()
+	{
+		CurrentDraft.Data.SellerId = 0;
+		CurrentDraft.Data.InvoiceDto.SellerParty = new();
+	}
+
+	private void HandleBuyerDelete()
+	{
+		CurrentDraft.Data.BuyerId = 0;
+		CurrentDraft.Data.InvoiceDto.BuyerParty = new();
+	}
+
+	private void HandlePaymentDelete()
+	{
+		CurrentDraft.Data.PaymentId = 0;
+		CurrentDraft.Data.InvoiceDto.PaymentMeans = new();
+	}
+
+	private async Task Save()
+	{
+		try
+		{
+			CurrentDraft.Data.InvoiceDto.UpdateAmount();
+			if (SelectedInvoiceId.HasValue && SelectedInvoiceId.Value > 0)
+			{
+				await UpdateAsync(SelectedInvoiceId.Value, CurrentDraft.Data);
+				await DraftRepository.ClearDraftAsync(SelectedInvoiceId.Value);
+			}
+			else
+			{
+				var newId = await CreateAsync(CurrentDraft.Data);
+				SelectedInvoiceId = newId;
+				CurrentDraft.EntityId = newId;
+				await DraftRepository.ClearDraftAsync(0);
+			}
+			ToastService.ShowSuccess(Loc["Invoice saved successfully."]);
+		}
+		catch (Exception ex)
+		{
+			ToastService.ShowError(Loc["An error occurred while saving the invoice: {0}", ex.Message]);
+			return;
+		}
+	}
+
+	public async Task Export()
+	{
+		try
+		{
+			if (IsEditing)
+			{
+				await Save();
+			}
+			var exportResult = await InvoiceService.ExportInvoice(SelectedInvoiceId ?? 0);
+			if (exportResult.FinalizeResult is null)
+			{
+				ToastService.ShowError(exportResult.Error ?? "Unexpected Error");
+				return;
+			}
+			await Download(exportResult.FileName, exportResult.FinalizeResult.MimeType, exportResult.FinalizeResult.Blob);
+		}
+		catch (Exception ex)
+		{
+			ToastService.ShowError(Loc["An error occurred while exporting the invoice: {0}", ex.Message]);
+		}
+	}
+
+	private async Task Download(string fileName, string mimeType, byte[] blob)
+	{
+		var stream = new MemoryStream(blob);
+		using var streamRef = new DotNetStreamReference(stream);
+		await JSRuntime.InvokeVoidAsync("downloadFileFromStream", fileName, streamRef, mimeType);
+	}
+
+	private void ValidateInvoiceSchema()
+	{
+		if (EditContext is not null)
+		{
+			EditContext.Validate();
+		}
+		var mapper = new BlazorInvoiceMapper();
+		var xmlInvoice = mapper.ToXml(CurrentDraft.Data.InvoiceDto);
+		invoiceValidationResult = XmlInvoiceValidator.Validate(xmlInvoice);
+	}
+
+	protected override async Task SaveDraftAsync()
+	{
+		UpdateVisuals();
+		await base.SaveDraftAsync();
+	}
+
+	protected override Task<List<InvoiceEntity>> GetAllAsync()
+	{
+		return Task.FromResult(new List<InvoiceEntity>());
+	}
+
+	protected override Task<int> CreateAsync(InvoiceDtoInfo dto)
+		=> InvoiceRepository.CreateAsync(dto);
+
+	protected override Task UpdateAsync(int id, InvoiceDtoInfo dto)
+		=> InvoiceRepository.UpdateAsync(id, dto);
+
+	protected override Task DeleteAsync(int id)
+		=> InvoiceRepository.DeleteAsync(id);
+
+	protected override InvoiceDtoInfo CreateNewDto()
+	{
+		// Initialize with minimal defaults; the InvoiceForm will handle editing
+		return new InvoiceDtoInfo
+		{
+			InvoiceDto = new BlazorInvoiceDto
+			{
+				Id = Guid.NewGuid().ToString(),
+				IssueDate = DateTime.Today,
+				DueDate = DateTime.Today.AddDays(14),
+				InvoiceTypeCode = "380",
+				DocumentCurrencyCode = "EUR",
+				GlobalTaxCategory = "S",
+				GlobalTaxScheme = "VAT",
+				GlobalTax = 0,
+				PayableAmount = 0,
+				PaymentTermsNote = "",
+				SellerParty = new SellerAnnotationDto(),
+				BuyerParty = new BuyerAnnotationDto(),
+				PaymentMeans = new PaymentAnnotationDto(),
+				InvoiceLines = []
+			},
+			SellerId = 0,
+			BuyerId = 0,
+			PaymentId = 0
+		};
+	}
+
+	protected override int GetEntityId(InvoiceEntity entity) => entity.Id ?? 0;
+
+	protected override async Task AfterCreatedAsync(int id, InvoiceDtoInfo dto)
+	{
+		Items.Add(new InvoiceEntity
+		{
+			Id = id,
+			Info = dto,
+			Year = dto.InvoiceDto.IssueDate.Year,
+			IsPaid = false,
+			IsImported = false,
+			UpdatedAt = DateTime.UtcNow
+		});
+		await InvokeAsync(StateHasChanged);
+	}
+
+	protected override async Task AfterUpdatedAsync(int id, InvoiceDtoInfo dto)
+	{
+		await InvokeAsync(StateHasChanged);
+		UpdateVisuals();
+	}
+
+	private void UpdateVisuals()
+	{
+		invoicePdfComponent?.Update(CurrentDraft.Data.InvoiceDto);
+		invoiceXmlComponent?.Update(CurrentDraft.Data.InvoiceDto);
+		invoiceJsonComponent?.Update(CurrentDraft.Data.InvoiceDto);
+	}
+
+}

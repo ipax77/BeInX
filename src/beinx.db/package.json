@@ -1,0 +1,25 @@
+{
+  "name": "beinx.db",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "test": "vitest",
+    "build": "webpack"
+  },
+  "author": "",
+  "license": "MIT",
+  "description": "",
+  "devDependencies": {
+    "@types/pako": "^2.0.4",
+    "fake-indexeddb": "^6.2.5",
+    "happy-dom": "^20.0.10",
+    "ts-loader": "^9.5.4",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.8",
+    "webpack": "^5.102.1",
+    "webpack-cli": "^6.0.1"
+  },
+  "dependencies": {
+    "pako": "^2.1.0"
+  }
+}
