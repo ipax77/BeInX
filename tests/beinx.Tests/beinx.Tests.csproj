@@ -12,9 +12,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src2\beinx.db\beinx.db.csproj" />
-    <ProjectReference Include="..\..\src2\beinx.shared\beinx.shared.csproj" />
-    <ProjectReference Include="..\..\src2\beinx.web\beinx.web.csproj" />
+    <ProjectReference Include="..\..\src\beinx.db\beinx.db.csproj" />
+    <ProjectReference Include="..\..\src\beinx.shared\beinx.shared.csproj" />
+    <ProjectReference Include="..\..\src\beinx.web\beinx.web.csproj" />
   </ItemGroup>
 
   <ItemGroup>
