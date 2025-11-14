@@ -98,7 +98,7 @@ public static class ZugferdMapper
         );
 
         using var memoryStream = new MemoryStream();
-        desc.Save(memoryStream, ZUGFeRDVersion.Version23, Profile.Basic);
+        desc.Save(memoryStream, ZUGFeRDVersion.Version23, Profile.Comfort);
         memoryStream.Position = 0;
         return Encoding.UTF8.GetString(memoryStream.ToArray());
     }
@@ -154,6 +154,7 @@ public static class ZugferdMapper
             DocumentCurrencyCode = desc.Currency.ToString(),
             InvoiceTypeCode = GetEnumAttributeValue(desc.Type),
             Note = desc.Notes.FirstOrDefault()?.Content,
+            PayableAmount = (double)(desc.DuePayableAmount ?? 0),
             BuyerParty = new BuyerAnnotationDto
             {
                 Name = desc.Buyer?.Name ?? string.Empty,
@@ -163,7 +164,13 @@ public static class ZugferdMapper
                 CountryCode = desc.Buyer?.Country.ToString() ?? string.Empty,
                 Email = desc.BuyerElectronicAddress?.Address ?? string.Empty,
                 Telefone = desc.BuyerContact?.PhoneNo ?? string.Empty,
-                TaxId = desc.BuyerTaxRegistration?.FirstOrDefault()?.No ?? string.Empty
+                TaxId = desc.BuyerTaxRegistration?
+                    .FirstOrDefault(r => r.SchemeID == TaxRegistrationSchemeID.VA)?
+                    .No ?? string.Empty,
+                CompanyId = desc.BuyerTaxRegistration?
+                    .FirstOrDefault(r => r.SchemeID == TaxRegistrationSchemeID.FC)?
+                    .No ?? string.Empty,
+                BuyerReference = desc.ReferenceOrderNo ?? string.Empty
             },
             SellerParty = new SellerAnnotationDto
             {
@@ -174,8 +181,12 @@ public static class ZugferdMapper
                 CountryCode = desc.Seller?.Country.ToString() ?? string.Empty,
                 Email = desc.SellerElectronicAddress?.Address ?? string.Empty,
                 Telefone = desc.SellerContact?.PhoneNo ?? string.Empty,
-                TaxId = desc.SellerTaxRegistration?.FirstOrDefault()?.No ?? string.Empty,
-                CompanyId = desc.SellerTaxRegistration?.FirstOrDefault(r => r.SchemeID == TaxRegistrationSchemeID.FC)?.No
+                TaxId = desc.SellerTaxRegistration?
+                    .FirstOrDefault(r => r.SchemeID == TaxRegistrationSchemeID.VA)?
+                    .No ?? string.Empty,
+                CompanyId = desc.SellerTaxRegistration?
+                    .FirstOrDefault(r => r.SchemeID == TaxRegistrationSchemeID.FC)?
+                    .No ?? string.Empty
             },
             GlobalTax = (double)(desc.TradeLineItems.FirstOrDefault()?.TaxPercent ?? 0),
             GlobalTaxScheme = desc.TradeLineItems.FirstOrDefault()?.TaxType.ToString() ?? string.Empty,
