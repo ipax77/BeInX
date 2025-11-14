@@ -3,7 +3,7 @@
 # BeInX
 **Blazor eInvoice XRechnung App**
 
-BeInX is a lightweight, open-source application designed to create, manage, and export simplified e-invoices for freelancers in compliance with the XRechnung and ZUGFeRD standard. It runs locally and completely offline.
+BeInX is a lightweight, open-source application designed to create, manage, and export simplified e-invoices for freelancers in compliance with the XRechnung and ZUGFeRD standard. It runs locally and completely offline as Progressive Web App.
 
 <img src="images/beinx_inv.png" alt="beinx" />
 
@@ -17,7 +17,7 @@ BeInX is a lightweight, open-source application designed to create, manage, and 
 * Only **one VAT category** per invoice
 * Only **credit transfer** is supported as a payment method
 * PDF generation optimized for **time-based services**
-* Imported invoices are treated the same as created.
+* Imported invoices are treated the same as newly created invoices.
 
 ## ⚠️ Important Legal Disclaimer
 
@@ -36,7 +36,7 @@ BeInX does not collect or transmit any personal data. See our full [privacy poli
 
 # Change Log
 
-<details><summary>v1.0.0</summary>
+<details><summary>v0.5.0</summary>
 
 >- Rewrite as Progressive Web App using local IndexedDb
 
