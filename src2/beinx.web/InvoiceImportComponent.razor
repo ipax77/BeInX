@@ -31,7 +31,7 @@
         else
         {
             <div class="ms-2">
-                <span style="width: 50px;"></span>
+                <button type="button" class="btn btn-outline-secondary" @onclick="Reset">@Loc["Reset"]</button>
             </div>
         }
     </div>
@@ -39,12 +39,12 @@
         <textarea class="form-control" rows="12" @bind="xmlTextInput" @bind:after="ValidateText"></textarea>
     </div>
 
-    @if (!string.IsNullOrEmpty(message))
+    @if (importResult != null && !string.IsNullOrEmpty(importResult.Message))
     {
-        <div class="alert alert-info mt-3">@message</div>
+        <div class="alert alert-info mt-3">@importResult.Message</div>
     }
 
-    @if (xmlInvoice != null)
+    @if (importResult?.XmlInvoice != null)
     {
         <div class="btn-group mt-2 mb-3">
             <button type="button" class="btn btn-outline-warning" @onclick="Import">@Loc["Import"]</button>
@@ -53,6 +53,11 @@
         <h3 class="mt-2 mb-2">@Loc["Result"]</h3>
         <!-- Tabs for results -->
         <ul class="nav nav-tabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="json-tab" data-bs-toggle="tab" data-bs-target="#json-content" type="button" role="tab">
+                    JSON
+                </button>
+            </li>
             <li class="nav-item" role="presentation">
                 <button class="nav-link active" id="xml-tab" data-bs-toggle="tab" data-bs-target="#xml-content" type="button" role="tab">
                     XRechnung XML
@@ -63,29 +68,24 @@
                     ZUGFeRD XML
                 </button>
             </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="json-tab" data-bs-toggle="tab" data-bs-target="#json-content" type="button" role="tab">
-                    JSON
-                </button>
-            </li>
         </ul>
 
         <div class="tab-content border border-top-0 p-3 bgchart2">
-            <div class="tab-pane fade show active" id="xml-content" role="tabpanel">
-                <pre class="bgchart p-3 border rounded" style="max-height: 500px; overflow-y: auto;"><code>@xmlText</code></pre>
+            <div class="tab-pane fade show active" id="json-content" role="tabpanel">
+                <pre class="bgchart p-3 border rounded" style="max-height: 500px; overflow-y: auto;"><code>@importResult.JsonText</code></pre>
+            </div>
+            <div class="tab-pane fade" id="xml-content" role="tabpanel">
+                <pre class="bgchart p-3 border rounded" style="max-height: 500px; overflow-y: auto;"><code>@importResult.XmlText</code></pre>
             </div>
             <div class="tab-pane fade" id="zugferd-content" role="tabpanel">
-                <pre class="bgchart p-3 border rounded" style="max-height: 500px; overflow-y: auto;"><code>@zXmlText</code></pre>
-            </div>
-            <div class="tab-pane fade" id="json-content" role="tabpanel">
-                <pre class="bgchart p-3 border rounded" style="max-height: 500px; overflow-y: auto;"><code>@jsonText</code></pre>
+                <pre class="bgchart p-3 border rounded" style="max-height: 500px; overflow-y: auto;"><code>@importResult.ZXmlText</code></pre>
             </div>
         </div>
     }
-    @if (schemaResult != null)
+    @if (importResult?.SchemaResult != null)
     {
         <div class="mb-5 mt-3">
-            <ValidationResultComponent Result="schemaResult" />
+            <ValidationResultComponent Result="importResult.SchemaResult" />
         </div>
     }
 </div>
