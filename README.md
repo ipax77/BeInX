@@ -13,17 +13,11 @@ BeInX is a lightweight, open-source application designed to create, manage, and 
 * Spanish
 * French
 
-## Installation
-To install the latest release:
-1. Download the app from the  [latest GitHub release](https://github.com/ipax77/beinx/releases/latest) 
-2. Follow the official [.NET MAUI Windows app installation guide](https://learn.microsoft.com/en-us/dotnet/maui/windows/deployment/publish-cli#installing-the-app).
-
 ## Limitations
 * Only **one VAT category** per invoice
 * Only **credit transfer** is supported as a payment method
 * PDF generation optimized for **time-based services**
-* Currently runs on Windows Desktop only (via .NET MAUI)
-* Installation via GitHub Releases requires manual setup and may be time-consuming until the app is published on the Microsoft Store
+* Imported invoices are treated the same as created.
 
 ## ⚠️ Important Legal Disclaimer
 
@@ -42,24 +36,9 @@ BeInX does not collect or transmit any personal data. See our full [privacy poli
 
 # Change Log
 
-<details open="open"><summary>v1.0.3</summary>
-
->- ZUGFeRD PDF export with embedded ZUGFeRD v2.3 BASIC XML
-
-</details>
-
-<details><summary>v1.0.2</summary>
-
->- Add ZUGFeRD PDF export (PDF/A3b)
->- Fix Invoice Lines ux
->- Invoice Lines import with Clear/Parse buttons
->- Update msix cert
-
-</details>
-
 <details><summary>v1.0.0</summary>
 
->- Repository initialized
+>- Rewrite as Progressive Web App using local IndexedDb
 
 </details>
 

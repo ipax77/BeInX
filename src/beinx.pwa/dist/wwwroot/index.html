@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>beinx.pwa</title>
+    <base href="/" />
+    <link href="_framework/dotnet.9otv3empw5.js" rel="preload" as="script" fetchpriority="high" crossorigin="anonymous" integrity="sha256-B90TixotBKrA3KJzX3CuxlnIkyn+ErzoZ+QfGYRkAow=" />
+    <link rel="stylesheet" href="_content/beinx.web/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="_content/beinx.web/css/app.css" />
+    <link rel="stylesheet" href="_content/beinx.web/css/bootstrap-icons/font/bootstrap-icons.min.css" />
+    <link rel="icon" type="image/svg+xml" href="beinxicon.svg" />
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <link href="beinx.pwa.styles.css" rel="stylesheet" />
+    <link href="manifest.webmanifest" rel="manifest" />
+    <link rel="apple-touch-icon" sizes="512x512" href="favicon.png" />
+    <link rel="apple-touch-icon" sizes="192x192" href="favicon.png" />
+    <script type="importmap">{
+  "imports": {
+    "./_framework/blazor.webassembly.js": "./_framework/blazor.webassembly.66stpp682q.js",
+    "./_framework/dotnet.js": "./_framework/dotnet.9otv3empw5.js",
+    "./_framework/dotnet.native.js": "./_framework/dotnet.native.c6r37wtn26.js",
+    "./_framework/dotnet.runtime.js": "./_framework/dotnet.runtime.o0qy896u8v.js"
+  },
+  "scopes": {},
+  "integrity": {
+    "./_framework/blazor.webassembly.66stpp682q.js": "sha256-3lCWrko3zwspV40aQhs2S/IMkRSarnHRKIdkHhuXIBA=",
+    "./_framework/blazor.webassembly.js": "sha256-3lCWrko3zwspV40aQhs2S/IMkRSarnHRKIdkHhuXIBA=",
+    "./_framework/dotnet.9otv3empw5.js": "sha256-B90TixotBKrA3KJzX3CuxlnIkyn+ErzoZ+QfGYRkAow=",
+    "./_framework/dotnet.js": "sha256-B90TixotBKrA3KJzX3CuxlnIkyn+ErzoZ+QfGYRkAow=",
+    "./_framework/dotnet.native.c6r37wtn26.js": "sha256-VCMBEhkAtr1dkjqzfawPKUTOORovKMUIlmlcXFsF4kQ=",
+    "./_framework/dotnet.native.js": "sha256-VCMBEhkAtr1dkjqzfawPKUTOORovKMUIlmlcXFsF4kQ=",
+    "./_framework/dotnet.runtime.js": "sha256-yJvgPPUUvavYVmu9VD/fYtMcoEnLVaB0Cr7JAE29btw=",
+    "./_framework/dotnet.runtime.o0qy896u8v.js": "sha256-yJvgPPUUvavYVmu9VD/fYtMcoEnLVaB0Cr7JAE29btw="
+  }
+}</script>
+</head>
+
+<body>
+    <div id="app">
+        <svg class="loading-progress">
+            <circle r="40%" cx="50%" cy="50%" />
+            <circle r="40%" cx="50%" cy="50%" />
+        </svg>
+        <div class="loading-progress-text"></div>
+    </div>
+
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="." class="reload">Reload</a>
+        <span class="dismiss">🗙</span>
+    </div>
+    <script src="_framework/blazor.webassembly.66stpp682q.js" autostart="true"></script>
+    <!--<script>
+        Blazor.start({
+            loadBootResource: function (type, name, defaultUri, integrity) {
+                return `${defaultUri}?v=2`;
+            }
+        })
+    </script>-->
+    <script>navigator.serviceWorker.register('service-worker.js', { updateViaCache: 'none' });</script>
+    <script src="_content/beinx.web/js/bootstrap.bundle.min.js"></script>
+    <script src="_content/beinx.web/js/blazorinvoice.js"></script>
+    <script>
+        window.blazorCulture = {
+            get: () => window.localStorage['BlazorCulture'],
+            set: (value) => window.localStorage['BlazorCulture'] = value
+        };
+    </script>
+</body>
+
+</html>

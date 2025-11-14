@@ -1,4 +1,4 @@
-﻿using BlazorInvoice.Shared.Interfaces;
+﻿using beinx.shared.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace BlazorInvoice.Pdf;

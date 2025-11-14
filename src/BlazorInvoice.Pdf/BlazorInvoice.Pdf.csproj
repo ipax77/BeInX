@@ -12,11 +12,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="10.0.0-*" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="10.0.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\BlazorInvoice.Shared\BlazorInvoice.Shared.csproj" />
+    <ProjectReference Include="..\beinx.shared\beinx.shared.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,5 +1,6 @@
-import { PDFDict, PDFDocument, PDFHexString, PDFName, PDFString } from "pdf-lib";
+import { PDFArray, PDFDict, PDFDocument, PDFHexString, PDFName, PDFString } from "pdf-lib";
 import { InvoiceDto } from "./dtos/invoice-dto";
+import * as pako from "pako";
 
 export class PdfA3Converter {
     public async createA3Pdf(doc: PDFDocument, invoiceDto: InvoiceDto, culture: string, hexId: string, xmlInvoice: string)
@@ -157,5 +158,44 @@ export class PdfA3Converter {
     private setDocumentId(doc: PDFDocument, hexId: string): void {
         const hexBuffer = PDFHexString.of(hexId)
         doc.context.trailerInfo.ID = doc.context.obj([hexBuffer, hexBuffer])
+    }
+
+    public async getXmlString(pdfBytes: Uint8Array): Promise<string | null> {
+        const pdfDoc = await PDFDocument.load(pdfBytes);
+
+        const catalog = pdfDoc.catalog;
+        const namesDict = catalog.lookup(PDFName.of('Names')) as PDFDict;
+        if (!namesDict) return null;
+
+        const embeddedFiles = namesDict.lookup(PDFName.of('EmbeddedFiles')) as PDFDict;
+        if (!embeddedFiles) return null;
+
+        const namesArray = embeddedFiles.lookup(PDFName.of('Names')) as PDFArray;
+        if (!namesArray || namesArray.size() === 0) return null;
+
+        for (let i = 0; i < namesArray.size(); i += 2) {
+            const nameObj = namesArray.lookup(i) as PDFString;
+            const name = nameObj?.decodeText?.() ?? '';
+
+            if (name === 'invoice.xml') {
+                const fileSpec = namesArray.lookup(i + 1) as PDFDict;
+                if (!fileSpec) continue;
+
+                const efDict = fileSpec.lookup(PDFName.of('EF')) as PDFDict;
+                if (!efDict) continue;
+
+                const fStream = efDict.lookup(PDFName.of('F'));
+                if (!fStream) continue;
+
+                const compressed = (fStream as any).getContents?.();
+                if (!compressed) continue;
+
+                // 🔧 Decompress using pako (zlib inflate)
+                const decoded = pako.inflate(compressed);
+                return new TextDecoder('utf-8').decode(decoded);
+            }
+        }
+
+        return null;
     }
 }
