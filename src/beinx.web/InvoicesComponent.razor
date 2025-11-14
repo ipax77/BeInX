@@ -270,12 +270,12 @@
 
 	private void NewItem()
 	{
-		NavigationManager.NavigateTo("/invoice");
+		NavigationManager.NavigateTo("invoice");
 	}
 
 	private void EditItem(int id)
 	{
-		NavigationManager.NavigateTo($"/invoice/{id}");
+		NavigationManager.NavigateTo($"invoice/{id}");
 	}
 
 	private async Task SetPaid(int id, bool isPaid)

@@ -200,16 +200,16 @@
 		switch (draft.EntityType)
 		{
 			case "PaymentMeans":
-				NavigationManager.NavigateTo("/payments");
+				NavigationManager.NavigateTo("payments");
 				break;
 			case "Buyers":
-				NavigationManager.NavigateTo("/buyers");
+				NavigationManager.NavigateTo("buyers");
 				break;
 			case "Sellers":
-				NavigationManager.NavigateTo("/sellers");
+				NavigationManager.NavigateTo("sellers");
 				break;
 			case "Invoices":
-				NavigationManager.NavigateTo("/invoice");
+				NavigationManager.NavigateTo("invoice");
 				break;
 			default:
 				break;
@@ -218,7 +218,7 @@
 
 	private void EditItem(int id)
 	{
-		NavigationManager.NavigateTo($"/invoice/{id}");
+		NavigationManager.NavigateTo($"invoice/{id}");
 	}
 
 	private async Task SetPaid(int id, bool isPaid)
