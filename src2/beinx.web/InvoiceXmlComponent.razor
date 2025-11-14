@@ -1,5 +1,12 @@
 @using beinx.shared
 @using pax.XRechnung.NET
+@using beinx.shared.Interfaces
+@inject IInvoiceService InvoiceService
+
+<div class="btn-group mb-2" role="group">
+    <button type="button" class="btn @(currentView == XmlViewType.XRechnung ? "btn-primary" : "btn-outline-primary")" @onclick="() => SetView(XmlViewType.XRechnung)">XRechnung XML</button>
+    <button type="button" class="btn @(currentView == XmlViewType.Zugferd ? "btn-primary" : "btn-outline-primary")" @onclick="() => SetView(XmlViewType.Zugferd)">ZUGFeRD XML</button>
+</div>
 
 <div class="w-100 p-1 border">
     <textarea @bind="xmlText" rows="15" disabled class="form-input w-100"></textarea>
@@ -12,6 +19,10 @@
     private string xmlText = string.Empty;
     private BlazorInvoiceMapper mapper = new BlazorInvoiceMapper();
 
+    private enum XmlViewType { XRechnung, Zugferd }
+
+    private XmlViewType currentView = XmlViewType.XRechnung;
+
     protected override void OnInitialized()
     {
         CreateText();
@@ -23,12 +34,25 @@
         CreateText();
     }
 
+    private void SetView(XmlViewType viewType)
+    {
+        currentView = viewType;
+        CreateText();
+    }
+
     private void CreateText()
     {
         try
         {
-            var xmlInvoice = mapper.ToXml(Invoice);
-            xmlText = XmlInvoiceWriter.Serialize(xmlInvoice);
+            if (currentView == XmlViewType.XRechnung)
+            {
+                var xmlInvoice = mapper.ToXml(Invoice);
+                xmlText = XmlInvoiceWriter.Serialize(xmlInvoice);
+            }
+            else // XmlViewType.Zugferd
+            {
+                xmlText = InvoiceService.GetZugferdXmlString(Invoice);
+            }
         }
         catch (Exception ex)
         {
