@@ -1,5 +1,6 @@
 using beinx.shared;
 using beinx.shared.Interfaces;
+using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
 namespace BlazorInvoice.Pdf
@@ -9,10 +10,11 @@ namespace BlazorInvoice.Pdf
         private readonly Lazy<Task<IJSObjectReference>> moduleTask;
         private static readonly HashSet<string> SupportedCultures = ["en", "fr", "es", "de"];
 
-        public PdfJsInterop(IJSRuntime jsRuntime)
+        public PdfJsInterop(IJSRuntime jsRuntime, NavigationManager nav)
         {
+            var baseUri = nav.BaseUri;
             moduleTask = new(() => jsRuntime.InvokeAsync<IJSObjectReference>(
-                "import", "./_content/BlazorInvoice.Pdf/dist/pdf-generator.js").AsTask());
+                "import", $"{baseUri}_content/BlazorInvoice.Pdf/dist/pdf-generator.js").AsTask());
         }
 
         public async ValueTask<string> CreateInvoicePdf(BlazorInvoiceDto invoice, string cultureName)
