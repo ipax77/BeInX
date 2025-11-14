@@ -24,7 +24,7 @@ export class PdfA3Converter {
     }
 
     protected async loadIccProfile(): Promise<Uint8Array> {
-        const response = await fetch('./_content/Blazorinvoice.Pdf/colorprofiles/sRGB2014.icc');
+        const response = await fetch('./_content/BlazorInvoice.Pdf/colorprofiles/sRGB2014.icc');
         const buffer = await response.arrayBuffer();
         return new Uint8Array(buffer);
     }
