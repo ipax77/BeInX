@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 namespace beinx.PlaywrightTests;
 
 [TestClass]
-public sealed class SellersTest : PageTest
+public sealed class BuyersTest : PageTest
 {
     [TestMethod]
     public async Task HasTitle()
@@ -13,24 +13,24 @@ public sealed class SellersTest : PageTest
         await Page.GotoAsync("https://localhost:6066/");
         await Expect(Page).ToHaveTitleAsync(new Regex("Home"));
         await Page.GetByRole(AriaRole.Button, new() { Name = "Parties" }).ClickAsync();
-        await Page.GetByRole(AriaRole.Link, new() { Name = "Sellers" }).ClickAsync();
-        await Expect(Page).ToHaveTitleAsync(new Regex("Sellers"));
+        await Page.GetByRole(AriaRole.Link, new() { Name = "Buyers" }).ClickAsync();
+        await Expect(Page).ToHaveTitleAsync(new Regex("Buyers"));
     }
 
     [TestMethod]
-    public async Task CanCreateNewSeller()
+    public async Task CanCreateNewBuyer()
     {
-        // 1️⃣ Navigate to Sellers
+        // 1️⃣ Navigate to Buyers
         await Page.GotoAsync("https://localhost:6066/");
         await Page.GetByRole(AriaRole.Button, new() { Name = "Parties" }).ClickAsync();
-        await Page.GetByRole(AriaRole.Link, new() { Name = "Sellers" }).ClickAsync();
-        await Expect(Page).ToHaveTitleAsync(new Regex("Sellers"));
+        await Page.GetByRole(AriaRole.Link, new() { Name = "Buyers" }).ClickAsync();
+        await Expect(Page).ToHaveTitleAsync(new Regex("Buyers"));
 
         // 2️⃣ Click "Add New Seller"
-        await Page.GetByRole(AriaRole.Button, new() { NameRegex = new Regex("Add New Seller", RegexOptions.IgnoreCase) }).ClickAsync();
+        await Page.GetByRole(AriaRole.Button, new() { NameRegex = new Regex("Add New Buyer", RegexOptions.IgnoreCase) }).ClickAsync();
 
         // 3️⃣ Fill out the form using label associations
-        await Page.FillAsync("#bt27", "Test Seller");         // Name
+        await Page.FillAsync("#bt27", "Test Buyer");         // Name
         await Page.FillAsync("#bt28", "My Registration");     // Registration Name
         await Page.FillAsync("#bt35", "Main Street 1");       // Street Name
         await Page.FillAsync("#bt38", "12345");               // Postal Zone
@@ -38,9 +38,7 @@ public sealed class SellersTest : PageTest
         await Page.FillAsync("#bt40", "DE");                  // Country
         await Page.FillAsync("#bt42", "0123456789");          // Telephone
         await Page.FillAsync("#bt43", "test@example.com");    // Email
-        await Page.FillAsync("#btweb", "https://example.com");// Website
-        await Page.FillAsync("#bt31", "DE999999999");         // Tax ID
-        await Page.FillAsync("#bt32", "123/4567/8901");       // Company ID
+        await Page.FillAsync("#bt10", "test@example.com");    // Buyer Reference
 
         // 4️⃣ Save
         await Page.GetByRole(AriaRole.Button, new() { Name = "Save" }).ClickAsync();
@@ -49,6 +47,6 @@ public sealed class SellersTest : PageTest
         await Expect(Page.GetByRole(AriaRole.Table)).ToBeVisibleAsync();
 
         // 6️⃣ Verify entry exists (first table again)
-        await Expect(Page.Locator("table").First).ToContainTextAsync("Test Seller");
+        await Expect(Page.Locator("table").First).ToContainTextAsync("Test Buyer");
     }
 }

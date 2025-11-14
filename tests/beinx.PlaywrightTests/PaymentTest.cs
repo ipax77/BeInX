@@ -40,8 +40,8 @@ public sealed class PaymentTest : PageTest
         await Expect(Page.GetByRole(AriaRole.Table)).ToBeVisibleAsync();
 
         // 6️⃣ Verify the new entry is in the table
-        await Expect(Page.Locator("table")).ToContainTextAsync("Test Bank");
-        await Expect(Page.Locator("table")).ToContainTextAsync("DE12345678901234567890");
+        await Expect(Page.Locator("table").First).ToContainTextAsync("Test Bank");
+        await Expect(Page.Locator("table").First).ToContainTextAsync("DE12345678901234567890");
     }
 
     [TestMethod]
@@ -67,20 +67,20 @@ public sealed class PaymentTest : PageTest
 
         // Wait for table to reappear and contain our new record
         await Expect(Page.GetByRole(AriaRole.Table)).ToBeVisibleAsync();
-        await Expect(Page.Locator("table")).ToContainTextAsync(_bankName);
+        await Expect(Page.Locator("table").First).ToContainTextAsync(_bankName);
 
         // --- UPDATE ---
         await Page.GetByRole(AriaRole.Button, new() { NameRegex = new Regex("Edit", RegexOptions.IgnoreCase) }).ClickAsync();
         await Page.GetByLabel("Bank Name").FillAsync($"{_bankName}-Edited");
         await Page.GetByRole(AriaRole.Button, new() { NameRegex = new Regex("Save", RegexOptions.IgnoreCase) }).ClickAsync();
 
-        await Expect(Page.Locator("table")).ToContainTextAsync($"{_bankName}-Edited");
+        await Expect(Page.Locator("table").First).ToContainTextAsync($"{_bankName}-Edited");
 
         // --- DELETE ---
         // Click Delete button for that entry
         await Page.GetByRole(AriaRole.Button, new() { NameRegex = new Regex("Delete", RegexOptions.IgnoreCase) }).ClickAsync();
 
         // Wait for table update (Blazor re-render)
-        await Expect(Page.Locator("table")).Not.ToContainTextAsync($"{_bankName}-Edited");
+        await Expect(Page.Locator("table").First).Not.ToContainTextAsync($"{_bankName}-Edited");
     }
 }
