@@ -2,7 +2,7 @@
 using pax.XRechnung.NET.AnnotatedDtos;
 using System.Globalization;
 
-namespace BlazorInvoice.Weblib.Services;
+namespace beinx.web.Services;
 
 public static class LineImportService
 {

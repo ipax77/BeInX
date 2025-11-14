@@ -2,7 +2,7 @@
 using beinx.shared;
 using pax.XRechnung.NET.AnnotatedDtos;
 
-namespace BlazorInvoice.Tests;
+namespace beinx.Tests;
 
 [TestClass]
 public sealed class ZugferdTests
