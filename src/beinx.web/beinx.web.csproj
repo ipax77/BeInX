@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
@@ -12,16 +12,16 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="9.0.10" />
-    <PackageReference Include="Microsoft.Extensions.Localization" Version="9.0.10" />
-    <PackageReference Include="pax.BlazorChartJs" Version="0.8.5" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="10.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Localization" Version="10.0.0" />
+    <PackageReference Include="pax.BlazorChartJs" Version="0.8.6-rc2" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\BlazorInvoice.Localization\BlazorInvoice.Localization.csproj" />
-    <ProjectReference Include="..\BlazorInvoice.Shared\BlazorInvoice.Shared.csproj" />
-    <ProjectReference Include="..\pax.BBToast\pax.BBToast.csproj" />
+    <ProjectReference Include="..\beinx.shared\beinx.shared.csproj" />
+    <ProjectReference Include="..\beinx.loc\beinx.loc.csproj" />
     <ProjectReference Include="..\BlazorInvoice.Pdf\BlazorInvoice.Pdf.csproj" />
+    <ProjectReference Include="..\pax.BBToast\pax.BBToast.csproj" />
   </ItemGroup>
 
 </Project>
