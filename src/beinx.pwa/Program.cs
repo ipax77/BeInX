@@ -1,6 +1,7 @@
 using beinx.db;
 using beinx.pwa;
 using BlazorInvoice.Pdf;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.JSInterop;
@@ -17,10 +18,15 @@ builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.
 builder.Services.AddLocalization();
 builder.Services.AddValidation();
 
+var baseUri = builder.Services
+    .BuildServiceProvider()
+    .GetRequiredService<NavigationManager>()
+    .BaseUri;
+
 builder.Services.AddChartJs(o =>
 {
-    o.ChartJsLocation = $"/_content/beinx.web/js/chart.umd.min.js?v=4.5.1";
-    o.ChartJsPluginDatalabelsLocation = $"/_content/beinx.web/js/chartjs-plugin-datalabels.js?v=2.2.0";
+    o.ChartJsLocation = $"{baseUri}_content/beinx.web/js/chart.umd.min.js?v=4.5.1";
+    o.ChartJsPluginDatalabelsLocation = $"{baseUri}_content/beinx.web/js/chartjs-plugin-datalabels.js?v=2.2.0";
 });
 
 builder.Services.AddBeinxDbServices();
