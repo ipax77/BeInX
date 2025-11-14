@@ -207,12 +207,13 @@ public static class ZugferdMapper
                 Description = line.Description,
                 Quantity = (double)line.BilledQuantity,
                 QuantityCode = line.UnitCode.ToString() ?? string.Empty,
+# pragma warning disable CS0618
                 UnitPrice = line.NetUnitPrice == null ? 0 : (double)line.NetUnitPrice,
+#pragma warning restore CS0618
                 StartDate = line.BillingPeriodStart,
                 EndDate = line.BillingPeriodEnd
             }).ToList()
         };
-
         return dto;
     }
 
