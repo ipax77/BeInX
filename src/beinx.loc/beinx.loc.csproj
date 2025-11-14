@@ -1,11 +1,20 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>net9.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
 
+	<ItemGroup>
+		<PackageReference Include="CsvHelper" Version="33.1.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<EmbeddedResource Include="Resources\InvoiceLoc.csv" />
+	</ItemGroup>
+	
 	<ItemGroup>
 		<Compile Update="InvoiceLoc.Designer.cs">
 			<DesignTime>True</DesignTime>
@@ -14,7 +23,7 @@
 		</Compile>
 	</ItemGroup>
 
-  <ItemGroup>
+	<ItemGroup>
 		<EmbeddedResource Update="InvoiceLoc.resx">
 			<Generator>PublicResXFileCodeGenerator</Generator>
 			<LastGenOutput>InvoiceLoc.Designer.cs</LastGenOutput>
