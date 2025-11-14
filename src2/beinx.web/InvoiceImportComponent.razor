@@ -15,17 +15,28 @@
 @inject IPdfJsInterop PdfJsInterop
 
 <div class="container-fluid mt-3">
-    <div class="alert alert-dark d-flex align-items-center" style="max-width: 600px;">
+    <div class="alert alert-dark d-flex align-items-start" style="max-width: 800px;">
         <div class="fw-bold">
             @Loc["ImpDesc"]
         </div>
         <div class="ms-3">
             <InputFile @ref="inputFile" class="form-control" OnChange="LoadFile" accept=".json,.xml,.pdf" />
         </div>
+        @if (isLoading)
+        {
+            <div class="spinner-border ms-2" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        }
+        else
+        {
+            <div class="ms-2">
+                <span style="width: 50px;"></span>
+            </div>
+        }
     </div>
-
     <div>
-        <textarea class="form-control" rows="12" @bind="xmlText" @bind:after="Validate"></textarea>
+        <textarea class="form-control" rows="12" @bind="xmlTextInput" @bind:after="ValidateText"></textarea>
     </div>
 
     @if (!string.IsNullOrEmpty(message))
@@ -38,166 +49,45 @@
         <div class="btn-group mt-2 mb-3">
             <button type="button" class="btn btn-outline-warning" @onclick="Import">@Loc["Import"]</button>
         </div>
-    }
 
+        <h3 class="mt-2 mb-2">@Loc["Result"]</h3>
+        <!-- Tabs for results -->
+        <ul class="nav nav-tabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="xml-tab" data-bs-toggle="tab" data-bs-target="#xml-content" type="button" role="tab">
+                    XRechnung XML
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="zugferd-tab" data-bs-toggle="tab" data-bs-target="#zugferd-content" type="button" role="tab">
+                    ZUGFeRD XML
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="json-tab" data-bs-toggle="tab" data-bs-target="#json-content" type="button" role="tab">
+                    JSON
+                </button>
+            </li>
+        </ul>
+
+        <div class="tab-content border border-top-0 p-3 bgchart2">
+            <div class="tab-pane fade show active" id="xml-content" role="tabpanel">
+                <pre class="bgchart p-3 border rounded" style="max-height: 500px; overflow-y: auto;"><code>@xmlText</code></pre>
+            </div>
+            <div class="tab-pane fade" id="zugferd-content" role="tabpanel">
+                <pre class="bgchart p-3 border rounded" style="max-height: 500px; overflow-y: auto;"><code>@zXmlText</code></pre>
+            </div>
+            <div class="tab-pane fade" id="json-content" role="tabpanel">
+                <pre class="bgchart p-3 border rounded" style="max-height: 500px; overflow-y: auto;"><code>@jsonText</code></pre>
+            </div>
+        </div>
+    }
     @if (schemaResult != null)
     {
-        <div class="mb-5">
-            <h3>Schema Validation Result</h3>
+        <div class="mb-5 mt-3">
             <ValidationResultComponent Result="schemaResult" />
         </div>
     }
 </div>
 
-@code {
-    private string xmlText = string.Empty;
-    private string message = string.Empty;
-    private InvoiceValidationResult? schemaResult;
-    private XmlInvoice? xmlInvoice;
-    private BlazorInvoiceDto? InvoiceDto;
-    private InputFile? inputFile;
 
-    private async Task LoadFile(InputFileChangeEventArgs e)
-    {
-        try
-        {
-            var file = e.File;
-            if (file is null)
-            {
-                ToastService.ShowError(Loc["No file selected."]);
-                return;
-            }
-
-            // Determine file type
-            var fileName = file.Name.ToLowerInvariant();
-            using var stream = new MemoryStream();
-            await file.OpenReadStream(maxAllowedSize: 5 * 1024 * 1024).CopyToAsync(stream);
-            stream.Position = 0;
-
-            if (fileName.EndsWith(".json"))
-            {
-                // 🟢 JSON import
-                stream.Position = 0;
-                InvoiceDto = await JsonSerializer.DeserializeAsync<BlazorInvoiceDto>(stream);
-                if (InvoiceDto is null)
-                {
-                    ToastService.ShowError(Loc["Failed parsing json file"]);
-                    message = Loc["Failed parsing json file"];
-                    return;
-                }
-
-                // Convert to XML (for preview + validation)
-                var mapper = new BlazorInvoiceMapper();
-                xmlInvoice = mapper.ToXml(InvoiceDto);
-                if (xmlInvoice is null)
-                {
-                    ToastService.ShowError(Loc["Failed mapping json to xml"]);
-                    message = Loc["Failed mapping json to xml"];
-                    return;
-                }
-
-                xmlText = XmlInvoiceWriter.Serialize(xmlInvoice);
-                await Validate();
-            }
-            else if (fileName.EndsWith(".xml"))
-            {
-                // 🟢 Plain XML import
-                xmlText = Encoding.UTF8.GetString(stream.ToArray());
-                await Validate();
-            }
-            else if (fileName.EndsWith(".pdf"))
-            {
-                // 🟢 Extract embedded XML from PDF
-                var pdfBytes = stream.ToArray();
-                var extractedXml = await PdfJsInterop.GetXmlString(pdfBytes);
-
-                if (string.IsNullOrWhiteSpace(extractedXml))
-                {
-                    ToastService.ShowError(Loc["Failed getting xml data from pdf"]);
-                    message = Loc["Failed getting xml data from pdf"];
-                    return;
-                }
-
-                xmlText = extractedXml;
-                await Validate();
-            }
-            else
-            {
-                ToastService.ShowError("Unsupported file type. Please choose .xml or .pdf.");
-            }
-        }
-        catch (Exception ex)
-        {
-            ToastService.ShowError("Failed to load file: " + ex.Message);
-        }
-    }
-
-    private async Task Validate()
-    {
-        try
-        {
-            message = string.Empty;
-            xmlInvoice = null;
-            InvoiceDto = null;
-
-            InvoiceDto = InvoiceService.GetDtoFromZugferdXmlString(xmlText);
-            // var serializer = new XmlSerializer(typeof(XmlInvoice));
-            // using var stream = new MemoryStream(Encoding.UTF8.GetBytes(xmlText));
-            // xmlInvoice = (XmlInvoice?)serializer.Deserialize(stream);
-
-            // if (xmlInvoice is null)
-            // {
-            //     message = Loc["Failed to parse XML."];
-            //     ToastService.ShowError(message);
-            //     return;
-            // }
-
-            // schemaResult = XmlInvoiceValidator.Validate(xmlInvoice);
-            // if (!schemaResult.IsValid)
-            // {
-            //     message = $"XML {Loc["ValFailed"]}";
-            //     ToastService.ShowError(message);
-            //     return;
-            // }
-            // var mapper = new BlazorInvoiceMapper();
-            // InvoiceDto = mapper.FromXml(xmlInvoice);
-
-            var mapper = new BlazorInvoiceMapper();
-            xmlInvoice = mapper.ToXml(InvoiceDto);
-            schemaResult = XmlInvoiceValidator.Validate(xmlInvoice);
-            if (!schemaResult.IsValid)
-            {
-                message = $"XML {Loc["ValFailed"]}";
-                ToastService.ShowError(message);
-                return;
-            }
-            message = Loc["XML parsed and validated successfully."];
-        }
-        catch (Exception ex)
-        {
-            message = $"Unexpected error: {ex.Message}";
-            ToastService.ShowError(message);
-        }
-
-        await InvokeAsync(StateHasChanged);
-    }
-
-    private async Task Import()
-    {
-        if (InvoiceDto == null)
-        {
-            ToastService.ShowError("No invoice to import.");
-            return;
-        }
-
-        var result = await InvoiceService.ImportInvoice(InvoiceDto);
-        if (!string.IsNullOrEmpty(result.Error))
-        {
-            ToastService.ShowError(result.Error);
-        }
-        else
-        {
-            ToastService.ShowSuccess(Loc["Invoice saved successfully."]);
-        }
-    }
-}

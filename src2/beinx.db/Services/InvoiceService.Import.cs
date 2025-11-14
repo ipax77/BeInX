@@ -18,7 +18,7 @@ public partial class InvoiceService
                 PaymentId = await GetPaymentId(invoiceDto.PaymentMeans)
             };
 
-            await invoiceRepository.CreateAsync(info);
+            await invoiceRepository.CreateAsync(info, true);
             return new(info, null);
         }
         catch (Exception ex)
@@ -106,5 +106,10 @@ public partial class InvoiceService
     public BlazorInvoiceDto? GetDtoFromZugferdXmlString(string xml)
     {
         return ZugferdMapper.MapFromZugferd(xml);
+    }
+
+    public string GetZugferdXmlString(BlazorInvoiceDto dto)
+    {
+        return ZugferdMapper.MapToZugferd(dto);
     }
 }
