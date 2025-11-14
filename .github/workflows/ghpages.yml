@@ -19,7 +19,13 @@ jobs:
             dotnet-version: '10.0.x'
 
         - name: Publish .NET Core Project
-          run: dotnet publish src/beinx.pwa/beinx.pwa.csproj -c Release -o release --nologo -p:BaseHref=/BeInX/
+          run: dotnet publish src/beinx.pwa/beinx.pwa.csproj -c Release -o release --nologo -p:PublishProfile=FolderProfile
+        
+        - name: Rewrite base href
+          uses: SteveSandersonMS/ghaction-rewrite-base-href@v1.1.0
+          with:
+            html_path: release/wwwroot/index.html
+            base_href: /BeInX/    
         
         - name: copy index.html to 404.html
           run: cp release/wwwroot/index.html release/wwwroot/404.html
