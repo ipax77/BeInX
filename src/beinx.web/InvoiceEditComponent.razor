@@ -22,8 +22,18 @@
 	}
 	else
 	{
-		<div>
-			<h2>@editOrCreateText</h2>
+		<div class="d-flex align-items-center">
+			<div>
+				<h2>@editOrCreateText</h2>
+			</div>
+			@if (!prerequisitesSatisfied)
+			{
+				<div class="ms-3">
+					<button type="button" class="btn btn-sm btn-outline-light" @onclick="CreateSampleInvoice">
+						@Loc["Create Sample Invoice"]
+					</button>
+				</div>
+			}
 		</div>
 		<div class="row">
 			<div class="col-5">
@@ -135,7 +145,7 @@
 									Validate
 									XML
 								</button>
-@* 								<div class="form-check form-switch ms-2 mt-1">
+								@* 								<div class="form-check form-switch ms-2 mt-1">
 									<label for="xmlvalidation" class="form-check-label">Show Warnings</label>
 									<input id="xmlvalidation" type="checkbox" class="form-check-input" role="switch" @bind="appConfig.ShowValidationWarnings" @bind:after="() => ConfigService.UpdateConfig(appConfig)" />
 								</div> *@
@@ -427,6 +437,23 @@
 
 	protected override async Task AfterUpdatedAsync(int id, InvoiceDtoInfo dto)
 	{
+		await InvokeAsync(StateHasChanged);
+		UpdateVisuals();
+	}
+
+	private async Task CreateSampleInvoice()
+	{
+		var result = await InvoiceService.ImportSampleDto();
+		if (result.Info is null)
+		{
+			ToastService.ShowError(result.Error ?? "Import failed.");
+			return;
+		}
+		SelectedInvoiceId = result.Id;
+		EditItem(SelectedInvoiceId.Value, result.Info);
+		sellerSelectModal?.LoadItemsAsync();
+		buyerSelectModal?.LoadItemsAsync();
+		paymentsSelectModal?.LoadItemsAsync();
 		await InvokeAsync(StateHasChanged);
 		UpdateVisuals();
 	}

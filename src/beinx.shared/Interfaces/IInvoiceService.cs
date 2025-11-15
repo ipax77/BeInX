@@ -12,4 +12,5 @@ public interface IInvoiceService
     Task<ImportResult> ImportInvoice(BlazorInvoiceDto invoiceDto);
     BlazorInvoiceDto? GetDtoFromZugferdXmlString(string xml);
     string GetZugferdXmlString(BlazorInvoiceDto dto);
+    Task<ImportResult> ImportSampleDto();
 }

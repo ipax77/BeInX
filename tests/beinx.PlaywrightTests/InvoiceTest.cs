@@ -13,7 +13,7 @@ public sealed class InvoiceTest : PageTest
         await Page.GotoAsync("https://localhost:6066/");
         await Expect(Page).ToHaveTitleAsync(new Regex("Home"));
         await Page.ClickAsync("a[href='invoice']");
-        await Expect(Page).ToHaveTitleAsync(new Regex("beinx.pwa"));
+        await Expect(Page).ToHaveTitleAsync(new Regex("Invoice"));
     }
 
     [TestMethod]
@@ -22,7 +22,7 @@ public sealed class InvoiceTest : PageTest
         await Page.GotoAsync("https://localhost:6066/");
         await Expect(Page).ToHaveTitleAsync(new Regex("Home"));
         await Page.ClickAsync("a[href='invoice']");
-        await Expect(Page).ToHaveTitleAsync(new Regex("beinx.pwa"));
+        await Expect(Page).ToHaveTitleAsync(new Regex("Invoice"));
 
         // prerequisites
         await Page.GetByRole(AriaRole.Button, new() { NameRegex = new Regex("Select or Create Seller", RegexOptions.IgnoreCase) }).ClickAsync();

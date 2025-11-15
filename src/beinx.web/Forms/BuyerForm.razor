@@ -1,12 +1,14 @@
 ﻿@using Microsoft.AspNetCore.Components.Forms
 @using Microsoft.Extensions.Localization
+@using Microsoft.JSInterop
 @using beinx.loc
 @using pax.XRechnung.NET.AnnotatedDtos
 @using pax.XRechnung.NET.BaseDtos
 @inject IStringLocalizer<InvoiceLoc> Loc
+@inject IJSRuntime JSRuntime
 
 <div>
-    <EditForm EditContext="partyEditContext" FormName="InvoicePartyForm" OnValidSubmit="HandleValidSubmit">
+    <EditForm EditContext="partyEditContext" FormName="InvoicePartyForm" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="@(e => JSRuntime.InvokeVoidAsync("scrollToFirstError"))">
         <DataAnnotationsValidator />
         <div class="mb-3">
             <label for="bt27" class="form-label">Name</label>
