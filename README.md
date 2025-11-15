@@ -45,7 +45,14 @@ BeInX does not collect or transmit any personal data. See our full [privacy poli
 
 # Change Log
 
-<details open="open"><summary>v0.5.1</summary>
+<details open="open"><summary>v0.5.2</summary>
+
+>- Improved mobile responsiveness.
+>- Refined collapsed navigation menu behavior.
+
+</details>
+
+<details><summary>v0.5.1</summary>
 
 >- Add Sample Invoice
 

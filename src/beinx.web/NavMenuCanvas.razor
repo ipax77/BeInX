@@ -1,0 +1,186 @@
+@using System.Globalization
+@using Microsoft.AspNetCore.Components.Routing
+@using Microsoft.Extensions.Localization
+@using beinx.loc
+@using beinx.shared
+@using Microsoft.JSInterop
+@using beinx.shared.Interfaces
+@inject IStringLocalizer<InvoiceLoc> Loc
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
+@inject IConfigService ConfigService
+@implements IDisposable
+
+<nav class="navbar navbar-expand-lg bg-body-tertiary fixed-top">
+	<div class="container-fluid">
+		<div class="navbar-brand p-1 bg-light rounded rounded-2">
+			<img src="./_content/beinx.web/images/beinx.svg" alt="beinx"
+				 style="height: 25px;" />
+		</div>
+		<button class="navbar-toggler" type="button"
+				data-bs-toggle="offcanvas"
+				data-bs-target="#navbarOffcanvasLg"
+				aria-controls="navbarOffcanvasLg"
+				aria-label="Toggle navigation">
+			<span class="navbar-toggler-icon"></span>
+		</button>
+		<div class="offcanvas offcanvas-end"
+		   tabindex="-1"
+		   id="navbarOffcanvasLg"
+		   aria-labelledby="navbarOffcanvasLgLabel"
+		   data-bs-backdrop="true"
+		   data-bs-scroll="false">
+			<div class="offcanvas-header">
+				<h5>Menu</h5>
+				<button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+			</div>
+			<div class="offcanvas-body">
+				<ul class="navbar-nav me-auto mb-2 mb-lg-0">
+					<li class="nav-item">
+						<NavLink class="nav-link" href="" Match="NavLinkMatch.All" @onclick="CloseNavbar">
+							<i class="bi bi-house-door"></i> @Loc["Dashboard"]
+						</NavLink>
+					</li>
+					<li class="nav-item">
+						<NavLink class="nav-link" href="invoices" @onclick="CloseNavbar">
+							<i class="bi bi-file-earmark-text"></i> @Loc["Invoices"]
+						</NavLink>
+					</li>
+					<li class="nav-item">
+						<NavLink class="nav-link" href="invoice" @onclick="CloseNavbar">
+							<i class="bi bi-pencil-square"></i> @Loc["New Invoice"]
+						</NavLink>
+					</li>
+					<li class="nav-item dropdown">
+						<a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+							<i class="bi bi-people"></i> @Loc["Parties"]
+						</a>
+						<ul class="dropdown-menu">
+							<li><NavLink class="dropdown-item" href="sellers">@Loc["Sellers"]</NavLink></li>
+							<li><NavLink class="dropdown-item" href="buyers">@Loc["Buyers"]</NavLink></li>
+						</ul>
+					</li>
+					<li class="nav-item">
+						<NavLink class="nav-link" href="payments" @onclick="CloseNavbar">
+							<i class="bi bi-credit-card"></i> @Loc["Means of Payments"]
+						</NavLink>
+					</li>
+					<li class="nav-item">
+						<NavLink class="nav-link" href="import" @onclick="CloseNavbar">
+							<i class="bi bi-upload"></i> @Loc["Import"]
+						</NavLink>
+					</li>
+					<li class="nav-item">
+						<NavLink class="nav-link" href="config" @onclick="CloseNavbar">
+							<i class="bi bi-gear"></i> @Loc["Settings"]
+						</NavLink>
+					</li>
+				</ul>
+				@if (IsBackupOld)
+				{
+					<div class="alert alert-warning py-1 px-2 mb-0 me-3 pointer" style="font-size: 0.9rem;" @onclick="e => ConfigService.DownloadBackup()">
+						<i class="bi bi-exclamation-triangle-fill"></i>
+						@Loc["OldBackup"]
+					</div>
+				}
+				else
+				{
+					<div class="me-2 mt-2">
+						v0.5.2
+					</div>
+				}
+				@if (IsHomePage)
+				{
+					<form class="d-flex" name="cultureselect">
+						<fieldset>
+							<label class="form-label">
+								<select class="form-select"
+										required
+										@bind="cultureName"
+										@bind:after="@(() => SetCulture(cultureName))">
+									<option value="iv">@Loc["Language"] ..</option>
+									@foreach (var culture in ConfigService.GetSupportedCultures())
+									{
+										<option value="@culture.TwoLetterISOLanguageName">@culture.NativeName</option>
+									}
+								</select>
+							</label>
+						</fieldset>
+					</form>
+				}
+				else
+				{
+					<div class="navbar-text text-muted me-3">
+						<i class="bi bi-translate"></i> @CultureInfo.CurrentCulture.NativeName
+					</div>
+				}
+			</div>
+		</div>
+	</div>
+</nav>
+
+@code {
+	AppConfigDto appConfig = new();
+	string cultureName = "iv";
+
+	private bool IsBackupOld => (DateTime.UtcNow - appConfig.LastBackup).TotalDays > 7;
+	private bool IsHomePage =>
+	string.IsNullOrEmpty(NavigationManager.ToBaseRelativePath(NavigationManager.Uri));
+
+	protected override async Task OnInitializedAsync()
+	{
+		appConfig = await ConfigService.GetConfig();
+		if (!string.IsNullOrEmpty(appConfig.CultureName))
+		{
+			cultureName = appConfig.CultureName;
+		}
+		ConfigService.OnUpdate += UpdateConfig;
+		NavigationManager.LocationChanged += LocationChanged;
+	}
+
+	private void UpdateConfig(AppConfigDto newConfig)
+	{
+		appConfig = newConfig;
+		InvokeAsync(StateHasChanged);
+	}
+
+	private async Task SetCulture(string name)
+	{
+		var cultureInfo = new CultureInfo(name);
+		if (CultureInfo.CurrentCulture != cultureInfo)
+		{
+			await JSRuntime.InvokeVoidAsync("blazorCulture.set", cultureInfo.Name);
+			CultureInfo.CurrentCulture = cultureInfo;
+			CultureInfo.CurrentUICulture = cultureInfo;
+			CultureInfo.DefaultThreadCurrentCulture = cultureInfo;
+			CultureInfo.DefaultThreadCurrentUICulture = cultureInfo;
+
+			await CultureLoader.LoadSatelliteAssembliesAsync();
+
+			appConfig.CultureName = cultureInfo.TwoLetterISOLanguageName;
+			await ConfigService.UpdateConfig(appConfig);
+			var currentUri = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
+			if (string.IsNullOrEmpty(currentUri))
+			{
+				NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
+			}
+		}
+	}
+
+	private void LocationChanged(object? sender, LocationChangedEventArgs e)
+	{
+		InvokeAsync(StateHasChanged);
+	}
+
+	private void CloseNavbar()
+	{
+		// Close the navbar collapse when a link is clicked
+		JSRuntime.InvokeVoidAsync("closeNavbar");
+	}
+
+	public void Dispose()
+	{
+		ConfigService.OnUpdate -= UpdateConfig;
+		NavigationManager.LocationChanged -= LocationChanged;
+	}
+}
