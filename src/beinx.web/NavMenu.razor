@@ -1,6 +1,7 @@
 @using System.Globalization
 @using Microsoft.AspNetCore.Components.Routing
 @using Microsoft.Extensions.Localization
+@using Microsoft.Extensions.Logging
 @using beinx.loc
 @using beinx.shared
 @using Microsoft.JSInterop
@@ -17,52 +18,53 @@
                 aria-controls="navbarToggler01" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
+        <a class="navbar-brand" href="#">BeInX</a>
         <div class="collapse navbar-collapse" id="navbarToggler01">
-            <a class="navbar-brand" href="#">
+            <NavLink class="navbar-brand" href="" Match="NavLinkMatch.All" @onclick="CloseNavbar">
                 <div class="p-1 bg-light rounded rounded-2">
                     <img src="./_content/beinx.web/images/beinx.svg" alt="beinx"
                          style="height: 25px;" />
                 </div>
-            </a>
+            </NavLink>
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 <li class="nav-item">
-                    <a class="nav-link" href="">
+                    <NavLink class="nav-link" href="" Match="NavLinkMatch.All" @onclick="CloseNavbar">
                         <i class="bi bi-house-door"></i> @Loc["Dashboard"]
-                    </a>
+                    </NavLink>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="invoices">
+                    <NavLink class="nav-link" href="invoices" @onclick="CloseNavbar">
                         <i class="bi bi-file-earmark-text"></i> @Loc["Invoices"]
-                    </a>
+                    </NavLink>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="invoice">
+                    <NavLink class="nav-link" href="invoice" @onclick="CloseNavbar">
                         <i class="bi bi-pencil-square"></i> @Loc["New Invoice"]
-                    </a>
+                    </NavLink>
                 </li>
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
                         <i class="bi bi-people"></i> @Loc["Parties"]
                     </a>
                     <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="sellers">@Loc["Sellers"]</a></li>
-                        <li><a class="dropdown-item" href="buyers">@Loc["Buyers"]</a></li>
+                        <li><NavLink class="dropdown-item" href="sellers" @onclick="CloseNavbar">@Loc["Sellers"]</NavLink></li>
+                        <li><NavLink class="dropdown-item" href="buyers" @onclick="CloseNavbar">@Loc["Buyers"]</NavLink></li>
                     </ul>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="payments">
+                    <NavLink class="nav-link" href="payments" @onclick="CloseNavbar">
                         <i class="bi bi-credit-card"></i> @Loc["Means of Payments"]
-                    </a>
+                    </NavLink>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="import">
+                    <NavLink class="nav-link" href="import" @onclick="CloseNavbar">
                         <i class="bi bi-upload"></i> @Loc["Import"]
-                    </a>
+                    </NavLink>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="config">
+                    <NavLink class="nav-link" href="config" @onclick="CloseNavbar">
                         <i class="bi bi-gear"></i> @Loc["Settings"]
-                    </a>
+                    </NavLink>
                 </li>
             </ul>
             @if (IsBackupOld)
@@ -71,7 +73,8 @@
                     <i class="bi bi-exclamation-triangle-fill"></i>
                     @Loc["OldBackup"]
                 </div>
-            } else
+            }
+            else
             {
                 <div class="me-2">
                     v0.5.2
@@ -157,6 +160,12 @@
     private void LocationChanged(object? sender, LocationChangedEventArgs e)
     {
 		InvokeAsync(StateHasChanged);
+    }
+
+    private void CloseNavbar()
+    {
+        // Close the navbar collapse when a link is clicked
+        // JSRuntime.InvokeVoidAsync("closeNavMenu");
     }
 
     public void Dispose()
