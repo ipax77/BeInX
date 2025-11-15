@@ -8,7 +8,7 @@
 @inject IJSRuntime JSRuntime
 
 <div>
-    <EditForm EditContext="partyEditContext" FormName="InvoicePartyForm" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="@(e => JSRuntime.InvokeVoidAsync("scrollToFirstError"))>
+    <EditForm EditContext="partyEditContext" FormName="InvoicePartyForm" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="@(e => JSRuntime.InvokeVoidAsync("scrollToFirstError"))">
         <DataAnnotationsValidator />
         <div class="mb-3">
             <label for="bt27" class="form-label">Name</label>
