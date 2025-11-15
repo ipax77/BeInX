@@ -451,6 +451,9 @@
 		}
 		SelectedInvoiceId = result.Id;
 		EditItem(SelectedInvoiceId.Value, result.Info);
+		sellerSelectModal?.LoadItemsAsync();
+		buyerSelectModal?.LoadItemsAsync();
+		paymentsSelectModal?.LoadItemsAsync();
 		await InvokeAsync(StateHasChanged);
 		UpdateVisuals();
 	}

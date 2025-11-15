@@ -303,9 +303,6 @@ export class InvoiceRepository {
     }
 
     async getFilteredInvoiceCount(request: InvoicesRequest): Promise<number> {
-        const json = JSON.stringify(request, null, 2);
-        console.log(json);
-
         const db = await openDB();
         const transaction = db.transaction(STORES.invoices, "readonly");
         const store = transaction.objectStore(STORES.invoices);

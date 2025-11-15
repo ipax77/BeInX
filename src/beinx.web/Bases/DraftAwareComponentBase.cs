@@ -52,7 +52,7 @@ public abstract class DraftAwareComponentBase<TDto, TEntity> : ComponentBase, ID
     protected abstract Task UpdateAsync(int id, TDto dto);
     protected abstract Task DeleteAsync(int id);
 
-    protected virtual async Task LoadItemsAsync()
+    public virtual async Task LoadItemsAsync()
     {
         IsLoading = true;
         StateHasChanged();
