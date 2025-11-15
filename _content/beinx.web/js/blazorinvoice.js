@@ -1,3 +1,4 @@
+// v0.5.1
 let dsmodal = null;
 function openModalById(id) {
     const modalElement = document.getElementById(id);
@@ -115,5 +116,17 @@ function scrollToElement(elementId) {
     const element = document.getElementById(elementId);
     if (element) {
         element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+}
+
+function scrollToFirstError() {
+    // Find first element with validation error (Bootstrap + Blazor)
+    const error = document.querySelector(".validation-message, .invalid-feedback");
+
+    if (error) {
+        error.scrollIntoView({
+            behavior: "smooth",
+            block: "center"
+        });
     }
 }
