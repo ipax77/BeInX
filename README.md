@@ -3,9 +3,18 @@
 # BeInX
 **Blazor eInvoice XRechnung App**
 
-BeInX is a lightweight, open-source application designed to create, manage, and export simplified e-invoices for freelancers in compliance with the XRechnung and ZUGFeRD standard. It runs locally and completely offline as Progressive Web App.
+BeInX is a lightweight, open-source application designed to create, manage, and export simplified e-invoices for freelancers in compliance with the XRechnung and ZUGFeRD standards. It runs locally and completely offline as Progressive Web App (PWA).
 
 <img src="images/beinx_inv.png" alt="beinx" />
+
+## BeInX on GitHub Pages (Installable PWA)
+
+BeInX is available as a fully **functional Progressive Web App (PWA)** hosted on GitHub Pages:
+
+👉 [https://ipax77.github.io/BeInX/](https://ipax77.github.io/BeInX/)
+
+BeInX can be used directly in your browser or installed as a PWA on Windows, macOS, Linux, Android, or iOS.
+After the initial load, the app continues to work offline, with all data stored locally in the browser's IndexedDB.
 
 ## Supported Languages
 * English
