@@ -145,10 +145,6 @@
 									Validate
 									XML
 								</button>
-								@* 								<div class="form-check form-switch ms-2 mt-1">
-									<label for="xmlvalidation" class="form-check-label">Show Warnings</label>
-									<input id="xmlvalidation" type="checkbox" class="form-check-input" role="switch" @bind="appConfig.ShowValidationWarnings" @bind:after="() => ConfigService.UpdateConfig(appConfig)" />
-								</div> *@
 							</div>
 							<div class="mt-2">
 								@if (invoiceValidationResult is not null && ShowValidation)

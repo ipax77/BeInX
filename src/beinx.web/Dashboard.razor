@@ -14,31 +14,36 @@
 
 <div class="container-fluid mt-3">
 	<div class="row">
-		<div class="col-4">
+		<!-- Header Section - Full width on mobile -->
+		<div class="col-12 col-lg-4 mb-3">
 			<div class="p-3 border rounded bgchart">
 				<h3>Blazor eInvoice XRechung App</h3>
 				<p class="text-muted">Manage and view your eInvoices effortlessly</p>
 				<p class="small text-warning mt-3">
-					Use of this application is subject to our <a href="https://github.com/ipax77/BeInX/blob/main/DISCLAIMER.md" target="_blank">Full Disclaimer</a> <span class="text-white-50">(external link)</span>
+					Use of this application is subject to our <a href="https://github.com/ipax77/BeInX/blob/main/DISCLAIMER.md" target="_blank">Full Disclaimer</a>
+					<span class="text-white-50">(external link)</span>
 				</p>
 			</div>
-			<div class="d-flex align-items-end gap-3 my-3">
-				<div>
+			<button class="btn btn-outline-light mt-1 mb-3 w-100 w-sm-auto" @onclick="@(e => NavigationManager.NavigateTo("invoice"))">@Loc["Create New Invoice"]</button>
+			<div class="d-flex flex-column flex-sm-row align-items-stretch align-items-sm-end gap-2 gap-sm-3 my-3">
+				<div class="flex-grow-1">
 					<label for="yearInput" class="form-label">@Loc["Stats For Year"]</label>
 					<input id="yearInput" type="number" class="form-control" step="1" @bind="year"
 						   @bind:after="LoadStats" />
 				</div>
-				<div class="mb-1">
-					<button type="button" class="btn btn-sm btn-outline-primary" @onclick="LoadStats">@Loc["Refresh"]</button>
+				<div>
+					<button type="button" class="btn btn-sm btn-outline-primary w-100 w-sm-auto" @onclick="LoadStats">@Loc["Refresh"]</button>
 				</div>
 			</div>
-
 		</div>
-		<div class="col-7">
+
+		<!-- Stats Cards Section - Full width on mobile -->
+		<div class="col-12 col-lg-7 mb-3">
 			@if (statsResponse != null)
 			{
-				<div class="row">
-					<div class="col-auto">
+				<!-- Stats Cards - Stack on mobile, row on larger screens -->
+				<div class="row g-2 g-sm-3">
+					<div class="col-12 col-sm-4">
 						<div class="card">
 							<div class="card-header bgchart2">
 								@Loc["Total Invoices"]
@@ -48,7 +53,7 @@
 							</div>
 						</div>
 					</div>
-					<div class="col-auto">
+					<div class="col-12 col-sm-4">
 						<div class="card">
 							<div class="card-header bgchart2">
 								@Loc["Paid"]
@@ -58,7 +63,7 @@
 							</div>
 						</div>
 					</div>
-					<div class="col-auto">
+					<div class="col-12 col-sm-4">
 						<div class="card">
 							<div class="card-header bgchart2">
 								@Loc["Unpaid"]
@@ -69,57 +74,95 @@
 						</div>
 					</div>
 				</div>
-				<h5 class="mt-2">@Loc["Unpaid Invoices"]</h5>
-				<div class="table-responsive border rounded p-2 mt-2" style="max-height: 300px;">
+
+				<!-- Unpaid Invoices Table -->
+				<h5 class="mt-3">@Loc["Unpaid Invoices"]</h5>
+				<div class="table-responsive border rounded p-2 mt-2" style="max-height: 400px;">
 					<table class="table table-sm table-striped">
-						<thead>
+						<thead class="sticky-top bg-dark">
 							<tr>
-								<th>@Loc["Invoice ID"]</th>
-								<th>@Loc["Issue Date"]</th>
-								<th>@Loc["Seller"]</th>
-								<th>@Loc["Buyer"]</th>
-								<th>@Loc["Amount"]</th>
-								<th>@Loc["Paid?"]</th>
-								<th></th>
+								<th class="text-nowrap">@Loc["Invoice ID"]</th>
+								<th class="text-nowrap d-none d-md-table-cell">@Loc["Issue Date"]</th>
+								<th class="text-nowrap d-none d-lg-table-cell">@Loc["Seller"]</th>
+								<th class="text-nowrap d-none d-lg-table-cell">@Loc["Buyer"]</th>
+								<th class="text-nowrap">@Loc["Amount"]</th>
+								<th class="text-nowrap d-none d-sm-table-cell">@Loc["Paid?"]</th>
+								<th class="text-nowrap">Actions</th>
 							</tr>
 						</thead>
 						<tbody>
 							@foreach (var inv in statsResponse.UnpaidInvoices)
 							{
 								<tr>
-									<td><span class="text-truncate d-inline-block" style="max-width: 120px">@inv.InvoiceId</span></td>
-									<td>@inv.IssueDate.ToShortDateString()</td>
-									<td><span class="text-truncate d-inline-block" style="max-width: 120px">@inv.SellerName</span></td>
-									<td><span class="text-truncate d-inline-block" style="max-width: 120px">@inv.BuyerName</span></td>
-									<td>@inv.PayableAmount.ToString("N2")</td>
-									<td>@(inv.IsPaid ? "✔️" : "❌")</td>
 									<td>
-										<button class="btn btn-sm btn-outline-warning me-1"
-												@onclick="() => EditItem(inv.Id)">
-											@Loc["Edit"]
-										</button>
-										@if (inv.IsPaid)
-										{
-											<button class="btn btn-sm btn-outline-info me-1"
-													@onclick="() => SetPaid(inv.Id, false)">
-												@Loc["Set Unpaid"]
+										<span class="text-truncate d-inline-block" style="max-width: 100px">@inv.InvoiceId</span>
+										<!-- Mobile: Show date below ID -->
+										<small class="d-block d-md-none text-muted">@inv.IssueDate.ToShortDateString()</small>
+									</td>
+									<td class="d-none d-md-table-cell">@inv.IssueDate.ToShortDateString()</td>
+									<td class="d-none d-lg-table-cell"><span class="text-truncate d-inline-block" style="max-width: 120px">@inv.SellerName</span></td>
+									<td class="d-none d-lg-table-cell"><span class="text-truncate d-inline-block" style="max-width: 120px">@inv.BuyerName</span></td>
+									<td class="text-nowrap">@inv.PayableAmount.ToString("N2")</td>
+									<td class="d-none d-sm-table-cell">@(inv.IsPaid ? "✔️" : "❌")</td>
+									<td>
+										<!-- Mobile: Compact icon buttons in a horizontal group -->
+										<div class="d-lg-none d-flex gap-1 flex-nowrap">
+											<button class="btn btn-sm btn-outline-warning" title="@Loc["Edit"]"
+													@onclick="() => EditItem(inv.Id)">
+												✏️
 											</button>
-										}
-										else
-										{
-											<button class="btn btn-sm btn-outline-light me-1"
-													@onclick="() => SetPaid(inv.Id, true)">
-												@Loc["Set Paid"]
+											@if (inv.IsPaid)
+											{
+												<button class="btn btn-sm btn-outline-info" title="@Loc["Set Unpaid"]"
+														@onclick="() => SetPaid(inv.Id, false)">
+													↩️
+												</button>
+											}
+											else
+											{
+												<button class="btn btn-sm btn-outline-success" title="@Loc["Set Paid"]"
+														@onclick="() => SetPaid(inv.Id, true)">
+													✓
+												</button>
+											}
+											<button class="btn btn-sm btn-outline-secondary" title="@Loc["Copy"]"
+													@onclick="() => Copy(inv.Id)">
+												📋
 											</button>
-										}
-										<button class="btn btn-sm btn-outline-secondary"
-												@onclick="() => Copy(inv.Id)">
-											@Loc["Copy"]
-										</button>
-										<button class="btn btn-sm btn-outline-danger"
-												@onclick="() => DeleteItemAsync(inv.Id)">
-											@Loc["Delete"]
-										</button>
+											<button class="btn btn-sm btn-outline-danger" title="@Loc["Delete"]"
+													@onclick="() => DeleteItemAsync(inv.Id)">
+												🗑️
+											</button>
+										</div>
+										<!-- Desktop: Full text buttons -->
+										<div class="d-none d-lg-inline-flex gap-1 flex-wrap">
+											<button class="btn btn-sm btn-outline-warning"
+													@onclick="() => EditItem(inv.Id)">
+												@Loc["Edit"]
+											</button>
+											@if (inv.IsPaid)
+											{
+												<button class="btn btn-sm btn-outline-info"
+														@onclick="() => SetPaid(inv.Id, false)">
+													@Loc["Set Unpaid"]
+												</button>
+											}
+											else
+											{
+												<button class="btn btn-sm btn-outline-light"
+														@onclick="() => SetPaid(inv.Id, true)">
+													@Loc["Set Paid"]
+												</button>
+											}
+											<button class="btn btn-sm btn-outline-secondary"
+													@onclick="() => Copy(inv.Id)">
+												@Loc["Copy"]
+											</button>
+											<button class="btn btn-sm btn-outline-danger"
+													@onclick="() => DeleteItemAsync(inv.Id)">
+												@Loc["Delete"]
+											</button>
+										</div>
 									</td>
 								</tr>
 							}
@@ -129,14 +172,17 @@
 			}
 		</div>
 	</div>
+
+	<!-- Stats Table and Chart Section -->
 	<div class="row mt-2">
-		<div class="col-4">
+		<!-- Stats Table - Full width on mobile -->
+		<div class="col-12 col-lg-4 mb-3">
 			<div class="table-responsive">
 				<table class="table table-striped">
 					<thead class="table-light">
 						<tr>
 							<th>@Loc["Time Period"]</th>
-							<th>@Loc["Amount (tax inclusive)"]</th>
+							<th class="text-end">@Loc["Amount (tax inclusive)"]</th>
 						</tr>
 					</thead>
 					@if (statsResponse != null)
@@ -145,8 +191,8 @@
 							@foreach (var stat in statsResponse.Steps)
 							{
 								<tr>
-									<td>@stat.Start.ToShortDateString() - @stat.End.ToShortDateString()</td>
-									<td class="text-end">@stat.TotalAmountWithVat.ToString("N2")</td>
+									<td class="text-nowrap">@stat.Start.ToShortDateString() - @stat.End.ToShortDateString()</td>
+									<td class="text-end text-nowrap">@stat.TotalAmountWithVat.ToString("N2")</td>
 								</tr>
 							}
 						</tbody>
@@ -162,7 +208,9 @@
 				</table>
 			</div>
 		</div>
-		<div class="col-7">
+
+		<!-- Chart Section - Full width on mobile -->
+		<div class="col-12 col-lg-7 mb-3">
 			@if (statsResponse != null)
 			{
 				<StatsChartComponent @ref="statsChartComponent" StatsResponse="statsResponse" />
