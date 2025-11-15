@@ -1,4 +1,4 @@
-// v0.5.1
+// v0.5.2
 let dsmodal = null;
 function openModalById(id) {
     const modalElement = document.getElementById(id);
@@ -129,4 +129,17 @@ function scrollToFirstError() {
             block: "center"
         });
     }
+}
+
+function closeNavbar() {
+    const navbar = document.getElementById("navbarOffcanvasLg");
+    if (!navbar) {
+        return;
+    }
+    const offcanvas = bootstrap.Offcanvas.getInstance(navbar)
+        || new bootstrap.Offcanvas(navbar);
+    if (!offcanvas) {
+        return;
+    }
+    offcanvas.hide();
 }

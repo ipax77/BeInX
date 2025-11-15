@@ -1,4 +1,4 @@
-@import '_content/beinx.web/beinx.web.pqff64yxoh.bundle.scp.css';
+@import '_content/beinx.web/beinx.web.b0rpzvtw6i.bundle.scp.css';
 @import '_content/BlazorInvoice.Pdf/BlazorInvoice.Pdf.j9zyoahwxo.bundle.scp.css';
 
 /* /Layout/MainLayout.razor.rz.scp.css */
@@ -6,6 +6,10 @@
     display: flex;
     flex-direction: column;
     min-height: 100vh;
+}
+
+main[b-8szp3cqa30] {
+    padding-top: 70px;
 }
 
 #blazor-error-ui[b-8szp3cqa30] {
