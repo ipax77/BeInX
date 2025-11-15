@@ -22,21 +22,22 @@
 	}
 	else
 	{
-		<div class="d-flex align-items-center">
+		<div class="d-flex flex-column flex-sm-row align-items-start align-items-sm-center gap-2 mb-3">
 			<div>
-				<h2>@editOrCreateText</h2>
+				<h2 class="mb-0">@editOrCreateText</h2>
 			</div>
 			@if (!prerequisitesSatisfied)
 			{
-				<div class="ms-3">
-					<button type="button" class="btn btn-sm btn-outline-light" @onclick="CreateSampleInvoice">
+				<div>
+					<button type="button" class="btn btn-sm btn-outline-light w-100 w-sm-auto" @onclick="CreateSampleInvoice">
 						@Loc["Create Sample Invoice"]
 					</button>
 				</div>
 			}
 		</div>
 		<div class="row">
-			<div class="col-5">
+			<!-- Left Column: Form Sections -->
+			<div class="col-12 col-lg-5 mb-4">
 				<hr />
 				@if (!prerequisitesSatisfied)
 				{
@@ -89,110 +90,149 @@
 					</CascadingValue>
 				}
 			</div>
-			<div class="col-7">
+
+			<!-- Right Column: Actions and Preview -->
+			<div class="col-12 col-lg-7">
 				@if (prerequisitesSatisfied)
 				{
-					<div class="sticky-top mt-2">
-						<div class="btn-group p-1 border rounded bg-dark-subtle">
-							<button type="button" class="btn btn-outline-success"
+					<!-- Action Buttons - Sticky on desktop, normal on mobile -->
+					<div class="sticky-lg-top mt-2">
+						<!-- Save & Export Buttons -->
+						<div class="d-flex flex-column flex-sm-row gap-2 mb-3 p-2 border rounded bg-dark-subtle">
+							<button type="button" class="btn btn-outline-success flex-grow-1"
 									@onclick="Save">
 								@Loc["Save"]
 							</button>
-							<button type="button" class="btn btn-outline-warning"
+							<button type="button" class="btn btn-outline-warning flex-grow-1"
 									@onclick="Export">
 								@Loc["Export"]
 							</button>
 						</div>
 
+						<!-- PDF Toggle -->
 						<div class="mb-2">
-							<button class="btn btn-outline-light" type="button" @onclick="e => ShowPdfComponent = !ShowPdfComponent">
-								@if (ShowPdfComponent)
-								{
-									<i class="bi bi-chevron-double-up"></i>
-									<span>Hide PDF</span>
-								}
-								else
-								{
-									<i class="bi bi-chevron-double-down"></i>
-									<span>Show PDF</span>
-								}
+							<button class="btn btn-outline-light w-100 text-start d-flex justify-content-between align-items-center"
+									type="button"
+									@onclick="e => ShowPdfComponent = !ShowPdfComponent">
+								<span>
+									@if (ShowPdfComponent)
+									{
+										<i class="bi bi-chevron-double-up"></i>
+										<span>Hide PDF</span>
+									}
+									else
+									{
+										<i class="bi bi-chevron-double-down"></i>
+										<span>Show PDF</span>
+									}
+								</span>
 							</button>
 						</div>
 						@if (ShowPdfComponent)
 						{
-							<div class="mt-2 w-100">
+							<div class="mt-2 mb-3">
 								<InvoicePdfComponent @ref="invoicePdfComponent" Invoice="CurrentDraft.Data.InvoiceDto" />
 							</div>
 						}
+
+						<!-- Validation Toggle -->
 						<div class="mb-2">
-							<button class="btn btn-outline-light" type="button" data-bs-toggle="collapse" data-bs-target="#validation"
-									aria-expanded="false" aria-controls="validation" @onclick="e => ShowValidation = !ShowValidation">
-								@if (ShowValidation)
-								{
-									<i class="bi bi-chevron-double-up"></i>
-									<span>Hide @Loc["Validation"]</span>
-								}
-								else
-								{
-									<i class="bi bi-chevron-double-down"></i>
-									<span>Show @Loc["Validation"]</span>
-								}
+							<button class="btn btn-outline-light w-100 text-start d-flex justify-content-between align-items-center"
+									type="button"
+									data-bs-toggle="collapse"
+									data-bs-target="#validation"
+									aria-expanded="false"
+									aria-controls="validation"
+									@onclick="e => ShowValidation = !ShowValidation">
+								<span>
+									@if (ShowValidation)
+									{
+										<i class="bi bi-chevron-double-up"></i>
+										<span>Hide @Loc["Validation"]</span>
+									}
+									else
+									{
+										<i class="bi bi-chevron-double-down"></i>
+										<span>Show @Loc["Validation"]</span>
+									}
+								</span>
 							</button>
 						</div>
 						<div class="collapse" id="validation">
-							<div class="btn-group mt-2">
-								<button type="button" class="btn btn-outline-primary" @onclick="ValidateInvoiceSchema">
-									Validate
-									XML
+							<div class="d-flex gap-2 mt-2 mb-2">
+								<button type="button" class="btn btn-outline-primary flex-grow-1" @onclick="ValidateInvoiceSchema">
+									Validate XML
 								</button>
 							</div>
-							<div class="mt-2">
+							<div class="mb-3">
 								@if (invoiceValidationResult is not null && ShowValidation)
 								{
 									<ValidationResultComponent Result="invoiceValidationResult" ShowWarnings="true" />
 								}
 							</div>
 						</div>
+
+						<!-- XML Toggle -->
 						<div class="mb-2">
-							<button class="btn btn-outline-light" type="button" data-bs-toggle="collapse" data-bs-target="#xmlText"
-									aria-expanded="false" aria-controls="xmlText" @onclick="e => ShowXmlComponent = !ShowXmlComponent">
-								@if (ShowXmlComponent)
-								{
-									<i class="bi bi-chevron-double-up"></i>
-									<span>Hide Xml</span>
-								}
-								else
-								{
-									<i class="bi bi-chevron-double-down"></i>
-									<span>Show Xml</span>
-								}
+							<button class="btn btn-outline-light w-100 text-start d-flex justify-content-between align-items-center"
+									type="button"
+									data-bs-toggle="collapse"
+									data-bs-target="#xmlText"
+									aria-expanded="false"
+									aria-controls="xmlText"
+									@onclick="e => ShowXmlComponent = !ShowXmlComponent">
+								<span>
+									@if (ShowXmlComponent)
+									{
+										<i class="bi bi-chevron-double-up"></i>
+										<span>Hide Xml</span>
+									}
+									else
+									{
+										<i class="bi bi-chevron-double-down"></i>
+										<span>Show Xml</span>
+									}
+								</span>
 							</button>
 						</div>
 						<div class="collapse" id="xmlText">
 							@if (ShowXmlComponent)
 							{
-								<InvoiceXmlComponent @ref="invoiceXmlComponent" Invoice="CurrentDraft.Data.InvoiceDto" />
+								<div class="mb-3">
+									<InvoiceXmlComponent @ref="invoiceXmlComponent" Invoice="CurrentDraft.Data.InvoiceDto" />
+								</div>
 							}
 						</div>
+
+						<!-- JSON Toggle -->
 						<div class="mb-2">
-							<button class="btn btn-outline-light" type="button" data-bs-toggle="collapse" data-bs-target="#chatgpt"
-									aria-expanded="false" aria-controls="validation" @onclick="e => ShowJsonComponent = !ShowJsonComponent">
-								@if (ShowJsonComponent)
-								{
-									<i class="bi bi-chevron-double-up"></i>
-									<span>Hide Json</span>
-								}
-								else
-								{
-									<i class="bi bi-chevron-double-down"></i>
-									<span>Show Json</span>
-								}
+							<button class="btn btn-outline-light w-100 text-start d-flex justify-content-between align-items-center"
+									type="button"
+									data-bs-toggle="collapse"
+									data-bs-target="#chatgpt"
+									aria-expanded="false"
+									aria-controls="chatgpt"
+									@onclick="e => ShowJsonComponent = !ShowJsonComponent">
+								<span>
+									@if (ShowJsonComponent)
+									{
+										<i class="bi bi-chevron-double-up"></i>
+										<span>Hide Json</span>
+									}
+									else
+									{
+										<i class="bi bi-chevron-double-down"></i>
+										<span>Show Json</span>
+									}
+								</span>
 							</button>
 						</div>
 						<div class="collapse" id="chatgpt">
 							@if (ShowJsonComponent)
 							{
-								<InvoiceJsonComponent @ref="invoiceJsonComponent" Invoice="CurrentDraft.Data.InvoiceDto" />
+								<div class="mb-3">
+									<InvoiceJsonComponent @ref="invoiceJsonComponent" Invoice="CurrentDraft.Data.InvoiceDto" />
+								</div>
 							}
 						</div>
 					</div>
@@ -211,7 +251,6 @@
 		<CodeListModal @ref="codeListModal" OnSelected="HandleCodeSelected" />
 	}
 </div>
-
 
 @code {
 	[Parameter, EditorRequired]
