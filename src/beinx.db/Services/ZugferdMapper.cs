@@ -15,7 +15,6 @@ public static class ZugferdMapper
         bool isSmallBusiness = taxRate == 0; // keine Umsatzsteuer nach § 19 UStG
         decimal taxAmount = isSmallBusiness ? 0 : Math.Round(payableAmount - taxExclusiveAmount, 2);
 
-
         InvoiceDescriptor desc = InvoiceDescriptor.CreateInvoice(
             invoice.Id,
             invoice.IssueDate,
@@ -36,7 +35,7 @@ public static class ZugferdMapper
             id: string.Empty
         );
         desc.AddBuyerTaxRegistration(invoice.BuyerParty.TaxId, TaxRegistrationSchemeID.VA);
-        desc.SetBuyerElectronicAddress(invoice.BuyerParty.Email, ElectronicAddressSchemeIdentifiers.EM);
+        desc.SetBuyerElectronicAddress(invoice.BuyerParty.Email, ElectronicAddressSchemeIdentifiers.GermanyVatNumber);
         desc.SetBuyerContact(
             name: invoice.BuyerParty.Name,
             emailAddress: invoice.BuyerParty.Email,
@@ -57,7 +56,7 @@ public static class ZugferdMapper
             emailAddress: invoice.SellerParty.Email,
             phoneno: invoice.SellerParty.Telefone
         );
-        desc.SetSellerElectronicAddress(invoice.SellerParty.Email, ElectronicAddressSchemeIdentifiers.EM);
+        desc.SetSellerElectronicAddress(invoice.SellerParty.Email, ElectronicAddressSchemeIdentifiers.GermanyVatNumber);
 
         desc.AddApplicableTradeTax(
             basisAmount: taxExclusiveAmount,
@@ -72,7 +71,6 @@ public static class ZugferdMapper
             description: invoice.PaymentTermsNote,
             dueDate: invoice.DueDate
         );
-
         desc.AddCreditorFinancialAccount(
             iban: invoice.PaymentMeans.Iban,
             bic: invoice.PaymentMeans.Bic,
@@ -98,9 +96,10 @@ public static class ZugferdMapper
         );
 
         using var memoryStream = new MemoryStream();
-        desc.Save(memoryStream, ZUGFeRDVersion.Version23, Profile.Comfort);
+        desc.Save(memoryStream, ZUGFeRDVersion.Version23, Profile.Basic, ZUGFeRDFormats.CII);
         memoryStream.Position = 0;
-        return Encoding.UTF8.GetString(memoryStream.ToArray());
+        var xml = Encoding.UTF8.GetString(memoryStream.ToArray());
+        return xml;
     }
 
     private static void AddLine(InvoiceLineAnnotationDto line, BlazorInvoiceDto invoice, InvoiceDescriptor desc)
@@ -146,6 +145,8 @@ public static class ZugferdMapper
     {
         using var stream = new MemoryStream(Encoding.UTF8.GetBytes(xmlText));
         var desc = InvoiceDescriptor.Load(stream);
+
+        var terms = desc.GetTradePaymentTerms();
 
         var dto = new BlazorInvoiceDto
         {
@@ -193,12 +194,12 @@ public static class ZugferdMapper
             GlobalTaxCategory = desc.TradeLineItems.FirstOrDefault()?.TaxCategoryCode.ToString() ?? string.Empty,
             PaymentMeans = new PaymentAnnotationDto
             {
-                Iban = desc.CreditorBankAccounts.FirstOrDefault()?.IBAN ?? string.Empty,
-                Bic = desc.CreditorBankAccounts.FirstOrDefault()?.BIC ?? string.Empty,
-                Name = desc.CreditorBankAccounts.FirstOrDefault()?.BankName ?? string.Empty,
+                Iban = desc.GetCreditorFinancialAccounts().FirstOrDefault()?.IBAN ?? string.Empty,
+                Bic = desc.GetCreditorFinancialAccounts().FirstOrDefault()?.BIC ?? string.Empty,
+                Name = desc.GetCreditorFinancialAccounts().FirstOrDefault()?.BankName ?? string.Empty,
                 PaymentMeansTypeCode = desc.PaymentMeans.TypeCode == null ? "30" : GetEnumAttributeValue(desc.PaymentMeans.TypeCode.Value)
             },
-            PaymentTermsNote = desc.PaymentTerms.FirstOrDefault()?.Description ?? string.Empty,
+            PaymentTermsNote = desc.GetTradePaymentTerms().FirstOrDefault()?.Description ?? string.Empty,
             DueDate = desc.PaymentTerms.FirstOrDefault()?.DueDate,
             InvoiceLines = desc.TradeLineItems.Select((line, index) => new InvoiceLineAnnotationDto
             {
@@ -207,9 +208,7 @@ public static class ZugferdMapper
                 Description = line.Description,
                 Quantity = (double)line.BilledQuantity,
                 QuantityCode = line.UnitCode.ToString() ?? string.Empty,
-# pragma warning disable CS0618
-                UnitPrice = line.NetUnitPrice == null ? 0 : (double)line.NetUnitPrice,
-#pragma warning restore CS0618
+                UnitPrice = (double)line.NetUnitPrice,
                 StartDate = line.BillingPeriodStart,
                 EndDate = line.BillingPeriodEnd
             }).ToList()

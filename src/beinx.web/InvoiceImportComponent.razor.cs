@@ -1,5 +1,6 @@
 ﻿using beinx.shared;
 using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.Extensions.Logging;
 using pax.XRechnung.NET;
 using pax.XRechnung.NET.XmlModels;
 using System.Text;
@@ -146,7 +147,7 @@ public partial class InvoiceImportComponent
             importResult = new InvoiceImportResult { Message = Loc["Failed getting xml data"] };
             return;
         }
-
+        Logger.LogInformation(xml);
         var doc = XDocument.Parse(xml);
         var root = doc.Root;
 

@@ -18,8 +18,8 @@ public sealed class ZugferdTests
             IssueDate = DateTime.UtcNow,
             InvoiceTypeCode = "380",
             DocumentCurrencyCode = "EUR",
-            Note = "Dies ist eine Testrechnung.",
-            SellerParty = new SellerAnnotationDto()
+            Note = "Test Note",
+            SellerParty = new()
             {
                 Name = "Seller Name",
                 StreetName = "Test Street",
@@ -30,9 +30,9 @@ public sealed class ZugferdTests
                 Email = "seller@example.com",
                 RegistrationName = "Seller Name",
                 TaxId = "DE12345678",
-                CompanyId = "000/0000/000"
+                CompanyId = "000/000/0000 0",
             },
-            BuyerParty = new BuyerAnnotationDto()
+            BuyerParty = new()
             {
                 Name = "Buyer Name",
                 StreetName = "Test Street",
@@ -42,21 +42,23 @@ public sealed class ZugferdTests
                 Telefone = "1234/54321",
                 Email = "buyer@example.com",
                 RegistrationName = "Buyer Name",
-                BuyerReference = "DE87654321"
+                BuyerReference = "04011000-12345-34",
             },
-            PaymentMeans = new PaymentAnnotationDto()
+            PaymentMeans = new()
             {
                 Iban = "DE12 1234 1234 1234 1234 12",
                 Bic = "BICABCDE",
                 Name = "Bank Name",
                 PaymentMeansTypeCode = "30",
             },
-            PaymentTermsNote = "Zahlbar innerhalb 14 Tagen nach Erhalt der Rechnung.",
+            PaymentTermsNote = "Zahlbar innerhalb von 14 Tagen nach Erhalt der Rechnung.",
             PayableAmount = 119.0,
             InvoiceLines = [
-                new InvoiceLineAnnotationDto()
+                new()
                 {
                     Id = "1",
+                    StartDate = new(DateTime.Today.Year, DateTime.Today.Month, DateTime.Today.Day, 0, 0, 0),
+                    EndDate = new(DateTime.Today.Year, DateTime.Today.Month, DateTime.Today.Day, 0, 0, 0),
                     Quantity = 1.0,
                     QuantityCode = "HUR",
                     UnitPrice = 100.0,
@@ -75,7 +77,7 @@ public sealed class ZugferdTests
         Assert.Contains("Test Job", xmlText, "Invoice line description not found in XML.");
         Assert.Contains("Buyer Name", xmlText, "Buyer name not found in XML.");
         Assert.Contains("Seller Name", xmlText, "Seller name not found in XML.");
-        Assert.Contains("Zahlbar innerhalb 14 Tagen", xmlText, "Payment terms not included.");
+        Assert.Contains("Zahlbar innerhalb von 14 Tagen", xmlText, "Payment terms not included.");
     }
 
     [TestMethod]
@@ -88,7 +90,7 @@ public sealed class ZugferdTests
         Assert.Contains("Test Job", xmlText, "Invoice line description not found in XML.");
         Assert.Contains("Buyer Name", xmlText, "Buyer name not found in XML.");
         Assert.Contains("Seller Name", xmlText, "Seller name not found in XML.");
-        Assert.Contains("Zahlbar innerhalb 14 Tagen", xmlText, "Payment terms not included.");
+        Assert.Contains("Zahlbar innerhalb von 14 Tagen", xmlText, "Payment terms not included.");
 
     }
 
@@ -146,7 +148,15 @@ public sealed class ZugferdTests
         var invoice = GetInvoiceAnnDto();
         var xmlText = ZugferdMapper.MapToZugferd(invoice);
         var reverseDto = ZugferdMapper.MapFromZugferd(xmlText);
-        reverseDto.PaymentMeans.Name = invoice.PaymentMeans.Name; // Manually set for now
+
+        // manually fix missing properties for ZUGFeRDVersion.Version23, Profile.Basic
+        reverseDto.SellerParty.Telefone = invoice.SellerParty.Telefone;
+        reverseDto.BuyerParty.Telefone = invoice.BuyerParty.Telefone;
+        reverseDto.SellerParty.RegistrationName = invoice.SellerParty.RegistrationName;
+        reverseDto.BuyerParty.RegistrationName = invoice.BuyerParty.RegistrationName;
+        reverseDto.PaymentMeans.Name = invoice.PaymentMeans.Name;
+        reverseDto.PaymentMeans.Bic = invoice.PaymentMeans.Bic;
+
         DtoAssert.AreEqual(invoice, reverseDto);
     }
 }
@@ -189,7 +199,7 @@ public static class DtoAssert
         Assert.AreEqual(e.Telefone, a.Telefone);
         Assert.AreEqual(e.TaxId, a.TaxId);
         Assert.AreEqual(e.BuyerReference, a.BuyerReference);
-        //Assert.AreEqual(e.RegistrationName, a.RegistrationName);
+        Assert.AreEqual(e.RegistrationName, a.RegistrationName);
     }
 
     private static void AssertSeller(SellerAnnotationDto e, SellerAnnotationDto a)
@@ -203,7 +213,7 @@ public static class DtoAssert
         Assert.AreEqual(e.Telefone, a.Telefone);
         Assert.AreEqual(e.TaxId, a.TaxId);
         Assert.AreEqual(e.CompanyId, a.CompanyId);
-        //Assert.AreEqual(e.RegistrationName, a.RegistrationName);
+        Assert.AreEqual(e.RegistrationName, a.RegistrationName);
     }
 
     private static void AssertPayment(PaymentAnnotationDto e, PaymentAnnotationDto a)
