@@ -19,7 +19,11 @@ public class BlazorInvoiceDto : InvoiceAnnotationDto
         set => base.SellerParty = value;
     }
 
-    public new BlazorBuyerAnnotationDto BuyerParty { get; set; } = new();
+    public new BlazorBuyerAnnotationDto BuyerParty 
+    {
+        get => (BlazorBuyerAnnotationDto)base.BuyerParty;
+        set => base.BuyerParty = value;
+    }    
 
     public new List<InvoiceLineAnnotationDto> InvoiceLines
     {
@@ -49,31 +53,9 @@ public class BlazorInvoiceMapper : InvoiceMapperBase<BlazorInvoiceDto, DocumentR
     }
 }
 
-public class BlazorBuyerAnnotationDto : IPartyBaseDto
+public class BlazorBuyerAnnotationDto : BuyerAnnotationDto
 {
-    public string? Website { get; set; }
-    public string? LogoReferenceId { get; set; }
-    [Required]
-    public string Name { get; set; } = string.Empty;
-    [Required]
-    public string? StreetName { get; set; }
     public string? AdditionalStreetName { get; set; }
-    [Required]
-    public string City { get; set; } = string.Empty;
-    [Required]
-    public string PostCode { get; set; } = string.Empty;
-    [Required]
-    [ValidCode(CodeListType.Country_Codes_8)]
-    public string CountryCode { get; set; } = string.Empty;
-    public string Telefone { get; set; } = string.Empty;
-    [Required]
-    public string Email { get; set; } = string.Empty;
-    [Required]
-    public string RegistrationName { get; set; } = string.Empty;
-    [Required]
-    public string TaxId { get; set; } = string.Empty;
-    public string? CompanyId { get; set; }
-    public string BuyerReference { get; set; } = string.Empty;
 }
 
 public class BlazorInvoiceBuyerPartyAnnotationMapper : InvoiceBuyerPartyMapperBase<BlazorBuyerAnnotationDto>
