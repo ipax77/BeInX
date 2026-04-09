@@ -3,8 +3,7 @@
 @using beinx.web.Bases
 @using beinx.web.Forms
 @using beinx.web.Modals
-@using pax.XRechnung.NET.AnnotatedDtos
-@inherits DraftAwareComponentBase<BuyerAnnotationDto, PartyEntity<BuyerAnnotationDto>>
+@inherits DraftAwareComponentBase<BlazorBuyerAnnotationDto, PartyEntity<BlazorBuyerAnnotationDto>>
 @inject IBuyerRepository BuyerRepository
 
 <div class="container-fluid mt-2 mb-5">
@@ -64,29 +63,29 @@
 	<CodeListModal @ref="codeListModal" OnSelected="HandleCodeSelected" />
 </div>
 @code {
-	protected override Task<List<PartyEntity<BuyerAnnotationDto>>> GetAllAsync()
+	protected override Task<List<PartyEntity<BlazorBuyerAnnotationDto>>> GetAllAsync()
 		=> BuyerRepository.GetAllAsync();
 
-	protected override Task<int> CreateAsync(BuyerAnnotationDto dto)
+	protected override Task<int> CreateAsync(BlazorBuyerAnnotationDto dto)
 		=> BuyerRepository.CreateAsync(dto);
 
-	protected override Task UpdateAsync(int id, BuyerAnnotationDto dto)
+	protected override Task UpdateAsync(int id, BlazorBuyerAnnotationDto dto)
 		=> BuyerRepository.UpdateAsync(id, dto);
 
 	protected override Task DeleteAsync(int id)
 		=> BuyerRepository.DeleteAsync(id);
 
-	protected override BuyerAnnotationDto CreateNewDto() => new();
+	protected override BlazorBuyerAnnotationDto CreateNewDto() => new();
 
-	protected override int GetEntityId(PartyEntity<BuyerAnnotationDto> entity) => entity.Id ?? 0;
+	protected override int GetEntityId(PartyEntity<BlazorBuyerAnnotationDto> entity) => entity.Id ?? 0;
 
-	protected override async Task AfterCreatedAsync(int id, BuyerAnnotationDto dto)
+	protected override async Task AfterCreatedAsync(int id, BlazorBuyerAnnotationDto dto)
 	{
-		Items.Add(new PartyEntity<BuyerAnnotationDto> { Id = id, Party = dto });
+		Items.Add(new PartyEntity<BlazorBuyerAnnotationDto> { Id = id, Party = dto });
 		await InvokeAsync(StateHasChanged);
 	}
 
-	protected override async Task AfterUpdatedAsync(int id, BuyerAnnotationDto dto)
+	protected override async Task AfterUpdatedAsync(int id, BlazorBuyerAnnotationDto dto)
 	{
 		var existing = Items.FirstOrDefault(p => p.Id == id);
 		if (existing != null) existing.Party = dto;

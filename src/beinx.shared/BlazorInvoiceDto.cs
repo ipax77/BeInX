@@ -1,5 +1,7 @@
-﻿using pax.XRechnung.NET.AnnotatedDtos;
+﻿using System.ComponentModel.DataAnnotations;
+using pax.XRechnung.NET.AnnotatedDtos;
 using pax.XRechnung.NET.BaseDtos;
+using pax.XRechnung.NET.XmlModels;
 
 namespace beinx.shared;
 
@@ -17,11 +19,7 @@ public class BlazorInvoiceDto : InvoiceAnnotationDto
         set => base.SellerParty = value;
     }
 
-    public new BuyerAnnotationDto BuyerParty
-    {
-        get => base.BuyerParty;
-        set => base.BuyerParty = value;
-    }
+    public new BlazorBuyerAnnotationDto BuyerParty { get; set; } = new();
 
     public new List<InvoiceLineAnnotationDto> InvoiceLines
     {
@@ -37,17 +35,65 @@ public class BlazorInvoiceDto : InvoiceAnnotationDto
 }
 
 public class BlazorInvoiceMapper : InvoiceMapperBase<BlazorInvoiceDto, DocumentReferenceAnnotationDto,
-    SellerAnnotationDto, BuyerAnnotationDto, PaymentAnnotationDto, InvoiceLineAnnotationDto>
+    SellerAnnotationDto, BlazorBuyerAnnotationDto, PaymentAnnotationDto, InvoiceLineAnnotationDto>
 {
     public BlazorInvoiceMapper()
     : base(
         new DocumentReferenceAnnotationMapper(),
         new InvoiceSellerPartyAnnotationMapper(),
-        new InvoiceBuyerPartyAnnotationMapper(),
+        new BlazorInvoiceBuyerPartyAnnotationMapper(),
         new PaymentMeansAnnotationMapper(),
         new InvoiceLineAnnotationMapper()
     )
     {
+    }
+}
+
+public class BlazorBuyerAnnotationDto : IPartyBaseDto
+{
+    public string? Website { get; set; }
+    public string? LogoReferenceId { get; set; }
+    [Required]
+    public string Name { get; set; } = string.Empty;
+    [Required]
+    public string? StreetName { get; set; }
+    public string? AdditionalStreetName { get; set; }
+    [Required]
+    public string City { get; set; } = string.Empty;
+    [Required]
+    public string PostCode { get; set; } = string.Empty;
+    [Required]
+    [ValidCode(CodeListType.Country_Codes_8)]
+    public string CountryCode { get; set; } = string.Empty;
+    public string Telefone { get; set; } = string.Empty;
+    [Required]
+    public string Email { get; set; } = string.Empty;
+    [Required]
+    public string RegistrationName { get; set; } = string.Empty;
+    [Required]
+    public string TaxId { get; set; } = string.Empty;
+    public string? CompanyId { get; set; }
+    public string BuyerReference { get; set; } = string.Empty;
+}
+
+public class BlazorInvoiceBuyerPartyAnnotationMapper : InvoiceBuyerPartyMapperBase<BlazorBuyerAnnotationDto>
+{
+    public override BlazorBuyerAnnotationDto FromXml(XmlParty xmlParty)
+    {
+        var dto = base.FromXml(xmlParty);
+        var myDto = (BlazorBuyerAnnotationDto)dto;
+        myDto.AdditionalStreetName = xmlParty.PostalAddress.AdditionalStreetName;
+        return myDto;
+    }
+
+    public override XmlParty ToXml(IPartyBaseDto partyBaseDto)
+    {
+        var xml = base.ToXml(partyBaseDto);
+        if (partyBaseDto is BlazorBuyerAnnotationDto annotationDto)
+        {
+            xml.PostalAddress.AdditionalStreetName = InvoiceMapperUtils.GetNullableString(annotationDto.AdditionalStreetName);
+        }
+        return xml;
     }
 }
 

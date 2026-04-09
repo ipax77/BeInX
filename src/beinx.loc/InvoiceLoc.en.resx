@@ -88,6 +88,9 @@
   <data name="BT-35" xml:space="preserve">
     <value>The main line in an address. This is typically either the street name and house number or the text "P.O. Box" followed by the P.O. Box number.</value>
   </data>
+  <data name="BT-36" xml:space="preserve">
+    <value>An additional address line in a mailing address that can be used to provide further details in addition to the main line.</value>
+  </data>
   <data name="BT-37" xml:space="preserve">
     <value>The name of the city or municipality where the seller's address is located.</value>
   </data>

@@ -20,7 +20,7 @@ public abstract class BasePartyRepository<TDto> : IBasePartyRepository<TDto>, ID
         => _interop.CallAsync<int>("partyRepository.createParty", dto, _isSeller);
 
     // Update an existing party
-    public async Task UpdateAsync(int id, IPartyBaseDto dto)
+    public async Task UpdateAsync(int id, TDto dto)
         => await _interop.CallVoidAsync("partyRepository.updateParty", id, dto, _isSeller);
 
     // Delete a party
@@ -70,7 +70,7 @@ public class SellerRepository : BasePartyRepository<SellerAnnotationDto>, ISelle
     }
 }
 
-public class BuyerRepository : BasePartyRepository<BuyerAnnotationDto>, IBuyerRepository
+public class BuyerRepository : BasePartyRepository<BlazorBuyerAnnotationDto>, IBuyerRepository
 {
     public BuyerRepository(IIndexedDbInterop interop)
         : base(interop, isSeller: false)

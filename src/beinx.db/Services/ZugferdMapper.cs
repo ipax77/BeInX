@@ -34,6 +34,7 @@ public static class ZugferdMapper
             GetEnum<CountryCodes>(invoice.BuyerParty.CountryCode),
             id: string.Empty
         );
+        desc.Buyer.AddressLine3 = invoice.BuyerParty.AdditionalStreetName;
         desc.AddBuyerTaxRegistration(invoice.BuyerParty.TaxId, TaxRegistrationSchemeID.VA);
         desc.SetBuyerElectronicAddress(invoice.BuyerParty.Email, ElectronicAddressSchemeIdentifiers.GermanyVatNumber);
         desc.SetBuyerContact(
@@ -156,10 +157,11 @@ public static class ZugferdMapper
             InvoiceTypeCode = GetEnumAttributeValue(desc.Type),
             Note = desc.Notes.FirstOrDefault()?.Content,
             PayableAmount = (double)(desc.DuePayableAmount ?? 0),
-            BuyerParty = new BuyerAnnotationDto
+            BuyerParty = new BlazorBuyerAnnotationDto
             {
                 Name = desc.Buyer?.Name ?? string.Empty,
                 StreetName = desc.Buyer?.Street,
+                AdditionalStreetName = desc.Buyer?.AddressLine3,
                 PostCode = desc.Buyer?.Postcode ?? string.Empty,
                 City = desc.Buyer?.City ?? string.Empty,
                 CountryCode = desc.Buyer?.Country.ToString() ?? string.Empty,

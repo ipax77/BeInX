@@ -36,6 +36,7 @@ public sealed class ZugferdTests
             {
                 Name = "Buyer Name",
                 StreetName = "Test Street",
+                AdditionalStreetName = "c/o test",
                 City = "Test City",
                 PostCode = "123456",
                 CountryCode = "DE",
@@ -188,10 +189,11 @@ public static class DtoAssert
         }
     }
 
-    private static void AssertBuyer(BuyerAnnotationDto e, BuyerAnnotationDto a)
+    private static void AssertBuyer(BlazorBuyerAnnotationDto e, BlazorBuyerAnnotationDto a)
     {
         Assert.AreEqual(e.Name, a.Name);
         Assert.AreEqual(e.StreetName, a.StreetName);
+        Assert.AreEqual(e.AdditionalStreetName, e.AdditionalStreetName);
         Assert.AreEqual(e.PostCode, a.PostCode);
         Assert.AreEqual(e.City, a.City);
         Assert.AreEqual(e.CountryCode, a.CountryCode);

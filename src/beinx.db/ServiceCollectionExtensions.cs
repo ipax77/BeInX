@@ -23,8 +23,8 @@ public static class ServiceCollectionExtensions
 
         // Buyer repository and draft
         services.AddScoped<IBuyerRepository, BuyerRepository>();
-        services.AddScoped<IDraftRepository<BuyerAnnotationDto>>(sp =>
-            (IDraftRepository<BuyerAnnotationDto>)sp.GetRequiredService<IBuyerRepository>());
+        services.AddScoped<IDraftRepository<BlazorBuyerAnnotationDto>>(sp =>
+            (IDraftRepository<BlazorBuyerAnnotationDto>)sp.GetRequiredService<IBuyerRepository>());
 
         services.AddScoped<IInvoiceRepository, InvoiceRepository>();
         services.AddScoped<IDraftRepository<InvoiceDtoInfo>>(sp =>

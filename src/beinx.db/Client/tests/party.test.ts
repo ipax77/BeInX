@@ -7,6 +7,7 @@ export const getTestParty = (): IPartyBaseDto => ({
     logoReferenceId: undefined,
     name: 'Test Company Ltd.',
     streetName: 'Test Street 123',
+    additionalStreetName: "c/o test",
     city: 'Test City',
     postCode: '12345',
     countryCode: 'DE',

@@ -42,7 +42,7 @@ public partial class InvoiceService
         return await sellerRepository.CreateAsync(seller);
     }
 
-    private async Task<int> GetBuyerId(BuyerAnnotationDto buyer)
+    private async Task<int> GetBuyerId(BlazorBuyerAnnotationDto buyer)
     {
         var buyers = await buyerRepository.GetAllAsync();
 
