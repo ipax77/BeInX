@@ -88,6 +88,9 @@
   <data name="BT-35" xml:space="preserve">
     <value>La ligne principale d'une adresse. Cela correspond généralement au nom de la rue et au numéro de maison, ou au texte "Boîte postale" suivi du numéro de boîte postale.</value>
   </data>
+  <data name="BT-36" xml:space="preserve">
+    <value>Une ligne d'adresse supplémentaire dans une adresse postale, pouvant être utilisée pour fournir des détails complémentaires à la ligne principale.</value>
+  </data>
   <data name="BT-37" xml:space="preserve">
     <value>Le nom de la ville ou de la commune où se trouve l'adresse du vendeur.</value>
   </data>

@@ -1,5 +1,7 @@
-﻿using pax.XRechnung.NET.AnnotatedDtos;
+﻿using System.ComponentModel.DataAnnotations;
+using pax.XRechnung.NET.AnnotatedDtos;
 using pax.XRechnung.NET.BaseDtos;
+using pax.XRechnung.NET.XmlModels;
 
 namespace beinx.shared;
 
@@ -17,11 +19,11 @@ public class BlazorInvoiceDto : InvoiceAnnotationDto
         set => base.SellerParty = value;
     }
 
-    public new BuyerAnnotationDto BuyerParty
+    public new BlazorBuyerAnnotationDto BuyerParty 
     {
-        get => base.BuyerParty;
+        get => (BlazorBuyerAnnotationDto)base.BuyerParty;
         set => base.BuyerParty = value;
-    }
+    }    
 
     public new List<InvoiceLineAnnotationDto> InvoiceLines
     {
@@ -37,17 +39,43 @@ public class BlazorInvoiceDto : InvoiceAnnotationDto
 }
 
 public class BlazorInvoiceMapper : InvoiceMapperBase<BlazorInvoiceDto, DocumentReferenceAnnotationDto,
-    SellerAnnotationDto, BuyerAnnotationDto, PaymentAnnotationDto, InvoiceLineAnnotationDto>
+    SellerAnnotationDto, BlazorBuyerAnnotationDto, PaymentAnnotationDto, InvoiceLineAnnotationDto>
 {
     public BlazorInvoiceMapper()
     : base(
         new DocumentReferenceAnnotationMapper(),
         new InvoiceSellerPartyAnnotationMapper(),
-        new InvoiceBuyerPartyAnnotationMapper(),
+        new BlazorInvoiceBuyerPartyAnnotationMapper(),
         new PaymentMeansAnnotationMapper(),
         new InvoiceLineAnnotationMapper()
     )
     {
+    }
+}
+
+public class BlazorBuyerAnnotationDto : BuyerAnnotationDto
+{
+    public string? AdditionalStreetName { get; set; }
+}
+
+public class BlazorInvoiceBuyerPartyAnnotationMapper : InvoiceBuyerPartyMapperBase<BlazorBuyerAnnotationDto>
+{
+    public override BlazorBuyerAnnotationDto FromXml(XmlParty xmlParty)
+    {
+        var dto = base.FromXml(xmlParty);
+        var myDto = (BlazorBuyerAnnotationDto)dto;
+        myDto.AdditionalStreetName = xmlParty.PostalAddress.AdditionalStreetName;
+        return myDto;
+    }
+
+    public override XmlParty ToXml(IPartyBaseDto partyBaseDto)
+    {
+        var xml = base.ToXml(partyBaseDto);
+        if (partyBaseDto is BlazorBuyerAnnotationDto annotationDto)
+        {
+            xml.PostalAddress.AdditionalStreetName = InvoiceMapperUtils.GetNullableString(annotationDto.AdditionalStreetName);
+        }
+        return xml;
     }
 }
 

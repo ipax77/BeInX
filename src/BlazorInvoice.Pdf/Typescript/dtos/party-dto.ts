@@ -4,6 +4,7 @@ export interface PartyDto {
     logoReferenceId?: string,
     name: string;
     streetName?: string;
+    additionalStreetName?: string;
     city: string;
     postCode: string;
     countryCode: string;

@@ -1,6 +1,5 @@
 @using BlazorInvoice.Pdf
 @using Microsoft.AspNetCore.Components.Forms
-@using Microsoft.Extensions.Logging
 @using Microsoft.JSInterop
 @using beinx.shared
 @using beinx.shared.Interfaces
@@ -314,7 +313,7 @@
 		UpdateVisuals();
 	}
 
-	private void OnBuyerSelected(PartyEntity<BuyerAnnotationDto> args)
+	private void OnBuyerSelected(PartyEntity<BlazorBuyerAnnotationDto> args)
 	{
 		CurrentDraft.Data.BuyerId = args.Id ?? 0;
 		CurrentDraft.Data.InvoiceDto.BuyerParty = args.Party;
@@ -444,7 +443,7 @@
 				PayableAmount = 0,
 				PaymentTermsNote = "",
 				SellerParty = new SellerAnnotationDto(),
-				BuyerParty = new BuyerAnnotationDto(),
+				BuyerParty = new BlazorBuyerAnnotationDto(),
 				PaymentMeans = new PaymentAnnotationDto(),
 				InvoiceLines = []
 			},

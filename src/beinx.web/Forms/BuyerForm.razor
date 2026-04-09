@@ -2,8 +2,7 @@
 @using Microsoft.Extensions.Localization
 @using Microsoft.JSInterop
 @using beinx.loc
-@using pax.XRechnung.NET.AnnotatedDtos
-@using pax.XRechnung.NET.BaseDtos
+@using beinx.shared
 @inject IStringLocalizer<InvoiceLoc> Loc
 @inject IJSRuntime JSRuntime
 
@@ -32,6 +31,14 @@
             <small id="bt35desc" class="@descClass">@Loc["BT-35"]</small>
             <div>
                 <ValidationMessage For="@(() => Party.StreetName)" />
+            </div>
+        </div>
+        <div class="mb-3">
+            <label for="bt36" class="form-label">Additional Street Name</label>
+            <InputText class="form-control" id="bt36" aria-describedby="bt36desc" @bind-Value="Party.AdditionalStreetName" />
+            <small id="bt36desc" class="@descClass">@Loc["BT-36"]</small>
+            <div>
+                <ValidationMessage For="@(() => Party.AdditionalStreetName)" />
             </div>
         </div>
         <div class="mb-3">
@@ -94,10 +101,10 @@
 
 @code {
     [Parameter, EditorRequired]
-    public BuyerAnnotationDto Party { get; set; }
+    public BlazorBuyerAnnotationDto Party { get; set; }
 
     [Parameter]
-    public EventCallback<BuyerAnnotationDto> OnValidSubmit { get; set; }
+    public EventCallback<BlazorBuyerAnnotationDto> OnValidSubmit { get; set; }
 
     [Parameter]
     public EventCallback OnCancel { get; set; }

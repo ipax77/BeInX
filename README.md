@@ -45,7 +45,13 @@ BeInX does not collect or transmit any personal data. See our full [privacy poli
 
 # Change Log
 
-<details open="open"><summary>v0.5.3</summary>
+<details open="open"><summary>v0.5.4</summary>
+
+>- Add c/o address line
+
+</details>
+
+<details><summary>v0.5.3</summary>
 
 >- Update ZUGFeRD-csharp v18.0.0-beta2
 >- Using basic ZUGFeRD-csharp format (ZUGFeRDVersion.Version23, Profile.Basic, ZUGFeRDFormats.CII)

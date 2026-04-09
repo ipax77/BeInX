@@ -67,7 +67,7 @@ describe('invoices CRUD', () => {
     const invoiceInfo = await getTestInvoiceInfo();
     const id = await invoiceRepository.createInvoice(invoiceInfo, false);
 
-    await invoiceRepository.markAsPaid(id);
+    await invoiceRepository.setPaid(id, true);
     const updated = await invoiceRepository.getById(id);
     expect(updated?.isPaid).toBe(true);
   });

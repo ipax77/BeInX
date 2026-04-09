@@ -285,15 +285,20 @@ export class PdfGenerator {
   private drawBuyer(page: PDFPage, buyer: PartyDto): void {
     let { x, y } = this.calculateStartPosition(page, 0, this.marginY * 2 - 30);
 
-    this.drawText(page, buyer.registrationName, x, y, 14);
-    this.drawText(page, buyer.streetName, x, y - 20, 14);
-    this.drawText(page, `${buyer.postCode} ${buyer.city}`, x, y - 36, 14);
+    this.drawText(page, buyer.registrationName, x, y, 16, this.fonts.bold);
+    this.drawText(page, buyer.streetName, x, y - 22, 14);
+    if (buyer.additionalStreetName) {
+      this.drawText(page, buyer.additionalStreetName, x, y - 36, 14);
+      this.drawText(page, `${buyer.postCode} ${buyer.city}`, x, y - 54, 16);
+    } else {
+      this.drawText(page, `${buyer.postCode} ${buyer.city}`, x, y - 40, 16);
+    }
   }
 
   private drawNote(page: PDFPage, invoice: InvoiceDto): number {
-    let { x, y } = this.calculateStartPosition(page, 0, this.marginY * 3 - 20);
+    let { x, y } = this.calculateStartPosition(page, 0, this.marginY * 3 - 15);
 
-    this.drawText(page, this.t("invoice"), x, y, 14, this.fonts.bold);
+    this.drawText(page, this.t("invoice"), x, y, 16, this.fonts.bold);
     y -= 20;
     
     if (invoice.note) {
@@ -658,7 +663,7 @@ export class PdfGenerator {
 }
 
 function generateObjectUrl(pdfBytes: Uint8Array): string {
-  const blob = new Blob([pdfBytes], { type: "application/pdf" });
+  const blob = new Blob([pdfBytes as unknown as BlobPart], { type: "application/pdf" });
   return URL.createObjectURL(blob);
 }
 
@@ -782,8 +787,9 @@ const sampleBuyer = (): PartyDto => {
     postCode: "12345",
     countryCode: "DE",
     streetName: "Test Street 21",
+    additionalStreetName: "c/o test",
     telefone: "",
-    registrationName: "",
+    registrationName: "Test Buyer",
     taxId: "",
     companyId: "",
   };
