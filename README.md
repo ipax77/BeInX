@@ -45,7 +45,15 @@ BeInX does not collect or transmit any personal data. See our full [privacy poli
 
 # Change Log
 
-<details open="open"><summary>v0.5.4</summary>
+<details open="open"><summary>v0.5.5</summary>
+
+>- Update ZUGFeRD-csharp to v18.0.0
+>- Use the ZUGFeRD 2.3 Comfort/EN16931 profile for PDF/A-3 exports and preserve the seller CompanyId
+>- Improve ZUGFeRD mapping memory and CPU efficiency
+
+</details>
+
+<details><summary>v0.5.4</summary>
 
 >- Add c/o address line
 

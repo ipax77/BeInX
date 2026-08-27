@@ -36,7 +36,7 @@ public static class ZugferdMapper
         );
         desc.Buyer.AddressLine3 = invoice.BuyerParty.AdditionalStreetName;
         desc.AddBuyerTaxRegistration(invoice.BuyerParty.TaxId, TaxRegistrationSchemeID.VA);
-        desc.SetBuyerElectronicAddress(invoice.BuyerParty.Email, ElectronicAddressSchemeIdentifiers.GermanyVatNumber);
+        desc.SetBuyerElectronicAddress(invoice.BuyerParty.Email, ElectronicAddressSchemeIdentifiers.ElectronicMailSmtp);
         desc.SetBuyerContact(
             name: invoice.BuyerParty.Name,
             emailAddress: invoice.BuyerParty.Email,
@@ -57,7 +57,7 @@ public static class ZugferdMapper
             emailAddress: invoice.SellerParty.Email,
             phoneno: invoice.SellerParty.Telefone
         );
-        desc.SetSellerElectronicAddress(invoice.SellerParty.Email, ElectronicAddressSchemeIdentifiers.GermanyVatNumber);
+        desc.SetSellerElectronicAddress(invoice.SellerParty.Email, ElectronicAddressSchemeIdentifiers.ElectronicMailSmtp);
 
         desc.AddApplicableTradeTax(
             basisAmount: taxExclusiveAmount,
@@ -97,10 +97,9 @@ public static class ZugferdMapper
         );
 
         using var memoryStream = new MemoryStream();
-        desc.Save(memoryStream, ZUGFeRDVersion.Version23, Profile.Basic, ZUGFeRDFormats.CII);
-        memoryStream.Position = 0;
-        var xml = Encoding.UTF8.GetString(memoryStream.ToArray());
-        return xml;
+        desc.Save(memoryStream, ZUGFeRDVersion.Version23, Profile.Comfort, ZUGFeRDFormats.CII);
+        return Encoding.UTF8.GetString(
+            memoryStream.GetBuffer().AsSpan(0, checked((int)memoryStream.Length)));
     }
 
     private static void AddLine(InvoiceLineAnnotationDto line, BlazorInvoiceDto invoice, InvoiceDescriptor desc)
@@ -131,14 +130,11 @@ public static class ZugferdMapper
 
     public static T GetEnumFromAttributeValue<T>(string code) where T : Enum
     {
-        foreach (var field in typeof(T).GetFields())
+        if (EnumStringValueCache<T>.ValuesByCode.TryGetValue(code, out var value))
         {
-            var attribute = Attribute.GetCustomAttribute(field, typeof(EnumStringValueAttribute)) as EnumStringValueAttribute;
-            if (attribute != null && attribute.Value == code)
-            {
-                return (T)field.GetValue(null)!;
-            }
+            return value;
         }
+
         throw new ArgumentException($"Invalid code '{code}' for enum type '{typeof(T).Name}'");
     }
 
@@ -147,7 +143,11 @@ public static class ZugferdMapper
         using var stream = new MemoryStream(Encoding.UTF8.GetBytes(xmlText));
         var desc = InvoiceDescriptor.Load(stream);
 
-        var terms = desc.GetTradePaymentTerms();
+        var paymentTerm = desc.GetTradePaymentTerms().FirstOrDefault();
+        var firstTradeLine = desc.TradeLineItems.FirstOrDefault();
+        var creditorAccount = desc.GetCreditorFinancialAccounts().FirstOrDefault();
+        var buyerTaxRegistrations = GetTaxRegistrationNumbers(desc.BuyerTaxRegistration);
+        var sellerTaxRegistrations = GetTaxRegistrationNumbers(desc.SellerTaxRegistration);
 
         var dto = new BlazorInvoiceDto
         {
@@ -167,12 +167,8 @@ public static class ZugferdMapper
                 CountryCode = desc.Buyer?.Country.ToString() ?? string.Empty,
                 Email = desc.BuyerElectronicAddress?.Address ?? string.Empty,
                 Telefone = desc.BuyerContact?.PhoneNo ?? string.Empty,
-                TaxId = desc.BuyerTaxRegistration?
-                    .FirstOrDefault(r => r.SchemeID == TaxRegistrationSchemeID.VA)?
-                    .No ?? string.Empty,
-                CompanyId = desc.BuyerTaxRegistration?
-                    .FirstOrDefault(r => r.SchemeID == TaxRegistrationSchemeID.FC)?
-                    .No ?? string.Empty,
+                TaxId = buyerTaxRegistrations.TaxId,
+                CompanyId = buyerTaxRegistrations.CompanyId,
                 BuyerReference = desc.ReferenceOrderNo ?? string.Empty
             },
             SellerParty = new SellerAnnotationDto
@@ -184,25 +180,21 @@ public static class ZugferdMapper
                 CountryCode = desc.Seller?.Country.ToString() ?? string.Empty,
                 Email = desc.SellerElectronicAddress?.Address ?? string.Empty,
                 Telefone = desc.SellerContact?.PhoneNo ?? string.Empty,
-                TaxId = desc.SellerTaxRegistration?
-                    .FirstOrDefault(r => r.SchemeID == TaxRegistrationSchemeID.VA)?
-                    .No ?? string.Empty,
-                CompanyId = desc.SellerTaxRegistration?
-                    .FirstOrDefault(r => r.SchemeID == TaxRegistrationSchemeID.FC)?
-                    .No ?? string.Empty
+                TaxId = sellerTaxRegistrations.TaxId,
+                CompanyId = sellerTaxRegistrations.CompanyId
             },
-            GlobalTax = (double)(desc.TradeLineItems.FirstOrDefault()?.TaxPercent ?? 0),
-            GlobalTaxScheme = desc.TradeLineItems.FirstOrDefault()?.TaxType.ToString() ?? string.Empty,
-            GlobalTaxCategory = desc.TradeLineItems.FirstOrDefault()?.TaxCategoryCode.ToString() ?? string.Empty,
+            GlobalTax = (double)(firstTradeLine?.TaxPercent ?? 0),
+            GlobalTaxScheme = firstTradeLine?.TaxType.ToString() ?? string.Empty,
+            GlobalTaxCategory = firstTradeLine?.TaxCategoryCode.ToString() ?? string.Empty,
             PaymentMeans = new PaymentAnnotationDto
             {
-                Iban = desc.GetCreditorFinancialAccounts().FirstOrDefault()?.IBAN ?? string.Empty,
-                Bic = desc.GetCreditorFinancialAccounts().FirstOrDefault()?.BIC ?? string.Empty,
-                Name = desc.GetCreditorFinancialAccounts().FirstOrDefault()?.BankName ?? string.Empty,
+                Iban = creditorAccount?.IBAN ?? string.Empty,
+                Bic = creditorAccount?.BIC ?? string.Empty,
+                Name = creditorAccount?.BankName ?? string.Empty,
                 PaymentMeansTypeCode = desc.PaymentMeans.TypeCode == null ? "30" : GetEnumAttributeValue(desc.PaymentMeans.TypeCode.Value)
             },
-            PaymentTermsNote = desc.GetTradePaymentTerms().FirstOrDefault()?.Description ?? string.Empty,
-            DueDate = desc.PaymentTerms.FirstOrDefault()?.DueDate,
+            PaymentTermsNote = paymentTerm?.Description ?? string.Empty,
+            DueDate = paymentTerm?.DueDate,
             InvoiceLines = desc.TradeLineItems.Select((line, index) => new InvoiceLineAnnotationDto
             {
                 Id = (index + 1).ToString(),
@@ -218,18 +210,80 @@ public static class ZugferdMapper
         return dto;
     }
 
+    private static (string TaxId, string CompanyId) GetTaxRegistrationNumbers(
+        IEnumerable<TaxRegistration>? registrations)
+    {
+        string taxId = string.Empty;
+        string companyId = string.Empty;
+
+        if (registrations == null)
+        {
+            return (taxId, companyId);
+        }
+
+        foreach (var registration in registrations)
+        {
+            if (registration.SchemeID == TaxRegistrationSchemeID.VA && taxId.Length == 0)
+            {
+                taxId = registration.No ?? string.Empty;
+            }
+            else if (registration.SchemeID == TaxRegistrationSchemeID.FC && companyId.Length == 0)
+            {
+                companyId = registration.No ?? string.Empty;
+            }
+
+            if (taxId.Length > 0 && companyId.Length > 0)
+            {
+                break;
+            }
+        }
+
+        return (taxId, companyId);
+    }
+
     private static string GetEnumAttributeValue<T>(T enumValue) where T : Enum
     {
         if (enumValue == null)
         {
             return string.Empty;
         }
-        var member = typeof(T).GetMember(enumValue.ToString()).FirstOrDefault();
-        if (member == null)
+
+        var name = enumValue.ToString();
+        if (EnumStringValueCache<T>.CodesByName.TryGetValue(name, out var code))
         {
-            return enumValue.ToString();
+            return code;
         }
-        var attr = (EnumStringValueAttribute?)Attribute.GetCustomAttribute(member, typeof(EnumStringValueAttribute));
-        return attr?.Value ?? enumValue.ToString();
+
+        return name;
+    }
+
+    private static class EnumStringValueCache<T> where T : Enum
+    {
+        internal static readonly IReadOnlyDictionary<string, T> ValuesByCode;
+        internal static readonly IReadOnlyDictionary<string, string> CodesByName;
+
+        static EnumStringValueCache()
+        {
+            var valuesByCode = new Dictionary<string, T>(StringComparer.Ordinal);
+            var codesByName = new Dictionary<string, string>(StringComparer.Ordinal);
+
+            foreach (var field in typeof(T).GetFields())
+            {
+                var attribute = Attribute.GetCustomAttribute(
+                    field,
+                    typeof(EnumStringValueAttribute)) as EnumStringValueAttribute;
+
+                if (attribute == null)
+                {
+                    continue;
+                }
+
+                valuesByCode.TryAdd(attribute.Value, (T)field.GetValue(null)!);
+                codesByName.TryAdd(field.Name, attribute.Value);
+            }
+
+            ValuesByCode = valuesByCode;
+            CodesByName = codesByName;
+        }
     }
 }

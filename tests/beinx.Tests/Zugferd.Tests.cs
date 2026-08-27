@@ -1,6 +1,8 @@
 ﻿using beinx.db.Services;
 using beinx.shared;
 using pax.XRechnung.NET.AnnotatedDtos;
+using s2industries.ZUGFeRD;
+using System.Xml.Linq;
 
 namespace beinx.Tests;
 
@@ -29,7 +31,7 @@ public sealed class ZugferdTests
                 Telefone = "1234/54321",
                 Email = "seller@example.com",
                 RegistrationName = "Seller Name",
-                TaxId = "DE12345678",
+                TaxId = "DE123456789",
                 CompanyId = "000/000/0000 0",
             },
             BuyerParty = new()
@@ -79,6 +81,29 @@ public sealed class ZugferdTests
         Assert.Contains("Buyer Name", xmlText, "Buyer name not found in XML.");
         Assert.Contains("Seller Name", xmlText, "Seller name not found in XML.");
         Assert.Contains("Zahlbar innerhalb von 14 Tagen", xmlText, "Payment terms not included.");
+
+        var xml = XDocument.Parse(xmlText);
+        Assert.AreEqual("CrossIndustryInvoice", xml.Root?.Name.LocalName);
+
+        var guidelineId = xml.Descendants()
+            .Single(e => e.Name.LocalName == "GuidelineSpecifiedDocumentContextParameter")
+            .Elements()
+            .Single(e => e.Name.LocalName == "ID");
+        Assert.AreEqual("urn:cen.eu:en16931:2017", guidelineId.Value);
+
+        var companyId = xml.Descendants()
+            .Where(e => e.Name.LocalName == "SpecifiedTaxRegistration")
+            .SelectMany(e => e.Elements().Where(id => id.Name.LocalName == "ID"))
+            .Single(id => (string?)id.Attribute("schemeID") == "FC");
+        Assert.AreEqual(invoice.SellerParty.CompanyId, companyId.Value);
+
+        var electronicAddresses = xml.Descendants()
+            .Where(e => e.Name.LocalName == "URIID")
+            .Where(e => (string?)e.Attribute("schemeID") == "EM")
+            .Select(e => e.Value)
+            .ToList();
+        CollectionAssert.Contains(electronicAddresses, invoice.SellerParty.Email);
+        CollectionAssert.Contains(electronicAddresses, invoice.BuyerParty.Email);
     }
 
     [TestMethod]
@@ -140,6 +165,7 @@ public sealed class ZugferdTests
         Assert.AreEqual(invoice.InvoiceTypeCode, reverseDto.InvoiceTypeCode);
         Assert.AreEqual(invoice.BuyerParty.Name, reverseDto.BuyerParty.Name);
         Assert.AreEqual(invoice.SellerParty.TaxId, reverseDto.SellerParty.TaxId);
+        Assert.AreEqual(invoice.SellerParty.CompanyId, reverseDto.SellerParty.CompanyId);
         Assert.AreEqual(invoice.PaymentMeans.Iban, reverseDto.PaymentMeans.Iban);
     }
 
@@ -150,15 +176,23 @@ public sealed class ZugferdTests
         var xmlText = ZugferdMapper.MapToZugferd(invoice);
         var reverseDto = ZugferdMapper.MapFromZugferd(xmlText);
 
-        // manually fix missing properties for ZUGFeRDVersion.Version23, Profile.Basic
-        reverseDto.SellerParty.Telefone = invoice.SellerParty.Telefone;
-        reverseDto.BuyerParty.Telefone = invoice.BuyerParty.Telefone;
+        // Normalize DTO fields that are not represented by the Comfort/EN16931 mapping.
         reverseDto.SellerParty.RegistrationName = invoice.SellerParty.RegistrationName;
         reverseDto.BuyerParty.RegistrationName = invoice.BuyerParty.RegistrationName;
         reverseDto.PaymentMeans.Name = invoice.PaymentMeans.Name;
-        reverseDto.PaymentMeans.Bic = invoice.PaymentMeans.Bic;
 
         DtoAssert.AreEqual(invoice, reverseDto);
+    }
+
+    [TestMethod]
+    public void InvalidEnumAttributeCodeThrows()
+    {
+        var exception = Assert.Throws<ArgumentException>(() =>
+        {
+            ZugferdMapper.GetEnumFromAttributeValue<InvoiceType>("invalid");
+        });
+
+        Assert.Contains("Invalid code 'invalid'", exception.Message);
     }
 }
 
@@ -193,7 +227,7 @@ public static class DtoAssert
     {
         Assert.AreEqual(e.Name, a.Name);
         Assert.AreEqual(e.StreetName, a.StreetName);
-        Assert.AreEqual(e.AdditionalStreetName, e.AdditionalStreetName);
+        Assert.AreEqual(e.AdditionalStreetName, a.AdditionalStreetName);
         Assert.AreEqual(e.PostCode, a.PostCode);
         Assert.AreEqual(e.City, a.City);
         Assert.AreEqual(e.CountryCode, a.CountryCode);
