@@ -259,6 +259,9 @@
   <data name="Amount (tax inclusive)" xml:space="preserve">
     <value>Montant (TTC)</value>
   </data>
+  <data name="Amounts include tax" xml:space="preserve">
+    <value>Montants TTC</value>
+  </data>
   <data name="Total" xml:space="preserve">
     <value>Total</value>
   </data>
@@ -522,6 +525,9 @@
   </data>
   <data name="ChartTitle" xml:space="preserve">
     <value>Factures payées (TTC)</value>
+  </data>
+  <data name="ChartTitleTaxExclusive" xml:space="preserve">
+    <value>Factures payées (hors taxes)</value>
   </data>
   <data name="Create Sample Invoice" xml:space="preserve">
     <value>Créer une facture d'exemple</value>

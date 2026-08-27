@@ -5,6 +5,14 @@ import { FinalizeResult, IDraft, InvoiceDtoInfo, InvoiceEntity, InvoiceListItem,
 export class InvoiceRepository {
     private drafts = new DraftRepository();
 
+    private getTaxExclusiveAmount(invoice: InvoiceDtoInfo["invoiceDto"]): number {
+        let total = 0;
+        for (const line of invoice.invoiceLines) {
+            total += line.lineTotal ?? line.quantity * line.unitPrice;
+        }
+        return total;
+    }
+
     async createInvoice(invoiceInfo: InvoiceDtoInfo, isImported: boolean): Promise<number> {
         const db = await openDB();
         const transaction = db.transaction(STORES.invoices, "readwrite");
@@ -222,6 +230,7 @@ export class InvoiceRepository {
                     isPaid: value.isPaid,
                     year: value.year,
                     payableAmount: dto.payableAmount,
+                    taxExclusiveAmount: this.getTaxExclusiveAmount(dto),
                 });
 
                 if (result.length >= limit) {
@@ -292,6 +301,7 @@ export class InvoiceRepository {
                         isPaid: value.isPaid,
                         year: value.year,
                         payableAmount: dto.payableAmount,
+                        taxExclusiveAmount: this.getTaxExclusiveAmount(dto),
                     });
                 }
 

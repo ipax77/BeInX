@@ -14,4 +14,5 @@ public class StatsStepResponse
     public DateTime Start { get; init; }
     public DateTime End { get; init; }
     public double TotalAmountWithVat { get; init; }
+    public double TotalAmountWithoutVat { get; init; }
 }
