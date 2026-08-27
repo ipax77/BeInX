@@ -20,4 +20,8 @@
     <ProjectReference Include="..\BlazorInvoice.Pdf\BlazorInvoice.Pdf.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="beinx.Tests" />
+  </ItemGroup>
+
 </Project>

@@ -54,6 +54,7 @@ public class InvoiceListItem
     public bool IsPaid { get; set; }
     public int Year { get; set; }
     public double PayableAmount { get; set; }
+    public double TaxExclusiveAmount { get; set; }
 }
 
 public class InvoicesRequest

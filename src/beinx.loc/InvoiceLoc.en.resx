@@ -259,6 +259,9 @@
   <data name="Amount (tax inclusive)" xml:space="preserve">
     <value>Amount (tax inclusive)</value>
   </data>
+  <data name="Amounts include tax" xml:space="preserve">
+    <value>Amounts include tax</value>
+  </data>
   <data name="Total" xml:space="preserve">
     <value>Total</value>
   </data>
@@ -522,6 +525,9 @@
   </data>
   <data name="ChartTitle" xml:space="preserve">
     <value>Paid Invoices (tax inclusive)</value>
+  </data>
+  <data name="ChartTitleTaxExclusive" xml:space="preserve">
+    <value>Paid Invoices (tax exclusive)</value>
   </data>
   <data name="Create Sample Invoice" xml:space="preserve">
     <value>Create Sample Invoice</value>

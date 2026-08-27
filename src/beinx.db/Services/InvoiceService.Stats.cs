@@ -15,15 +15,64 @@ public partial class InvoiceService
 
         var invoices = await invoiceRepository.GetFilteredListAsync(request);
         var config = await configService.GetConfig();
-
-
-        DateTime start = new(year, 1, 1);
-        DateTime end = new(year + 1, 1, 1);
         var monthStep = config.StatsIsMonthNotQuater ? 1 : 3;
         var monthEndDay = config.StatsMonthEndDay == 0 ? 1 : config.StatsMonthEndDay;
 
-        var steps = GetSteps(invoices
-            .Where(x => x.IsPaid && x.IssueDate >= start && x.IssueDate < end), year, monthStep, monthEndDay);
+        return AggregateStats(invoices, year, monthStep, monthEndDay);
+    }
+
+    internal static StatsResponse AggregateStats(
+        IReadOnlyList<InvoiceListItem> invoices,
+        int year,
+        int monthStep,
+        int monthEndDay)
+    {
+        DateTime start = new(year, 1, 1);
+        DateTime end = new(year + 1, 1, 1);
+        var periods = GetPeriods(year, monthStep, monthEndDay);
+        var totalsWithVat = new double[periods.Count];
+        var totalsWithoutVat = new double[periods.Count];
+        List<InvoiceListItem> unpaidInvoices = [];
+
+        foreach (var invoice in invoices)
+        {
+            if (!invoice.IsPaid)
+            {
+                unpaidInvoices.Add(invoice);
+                continue;
+            }
+
+            if (invoice.IssueDate < start || invoice.IssueDate >= end)
+            {
+                continue;
+            }
+
+            for (var index = 0; index < periods.Count; index++)
+            {
+                var period = periods[index];
+                if (invoice.IssueDate <= period.StartExclusive || invoice.IssueDate > period.EndInclusive)
+                {
+                    continue;
+                }
+
+                totalsWithVat[index] += invoice.PayableAmount;
+                totalsWithoutVat[index] += invoice.TaxExclusiveAmount;
+                break;
+            }
+        }
+
+        var steps = new List<StatsStepResponse>(periods.Count);
+        for (var index = 0; index < periods.Count; index++)
+        {
+            var period = periods[index];
+            steps.Add(new StatsStepResponse
+            {
+                Start = period.StartExclusive.AddDays(1),
+                End = period.EndInclusive,
+                TotalAmountWithVat = totalsWithVat[index],
+                TotalAmountWithoutVat = totalsWithoutVat[index]
+            });
+        }
 
         return new StatsResponse
         {
@@ -31,20 +80,20 @@ public partial class InvoiceService
             End = end.AddDays(-1),
             Steps = steps,
             TotalInvoices = invoices.Count,
-            UnpaidInvoices = invoices.Where(x => !x.IsPaid).ToList()
+            UnpaidInvoices = unpaidInvoices
         };
     }
 
-    private static List<StatsStepResponse> GetSteps(IEnumerable<InvoiceListItem> records, int year, int monthStep, int monthEndDay)
+    private static List<StatsPeriod> GetPeriods(int year, int monthStep, int monthEndDay)
     {
-        var steps = new List<StatsStepResponse>();
+        var periods = new List<StatsPeriod>(12 / monthStep);
         var endDate = new DateOnly(year + 1, 1, 1).AddDays(-1);
 
         // JANUARY
         {
             var periodStart = new DateOnly(year, 1, 1).AddDays(-1);
             var periodEnd = SafeDateOnly(year, 1 + monthStep, monthEndDay);
-            steps.Add(GetStep(records, periodStart, periodEnd));
+            periods.Add(CreatePeriod(periodStart, periodEnd));
         }
 
         // INTERMEDIATE PERIODS
@@ -59,32 +108,21 @@ public partial class InvoiceService
             }
             if (periodStart >= endDate) break;
 
-            steps.Add(GetStep(records, periodStart, periodEnd));
+            periods.Add(CreatePeriod(periodStart, periodEnd));
         }
 
-        return steps;
+        return periods;
     }
 
-    private static StatsStepResponse GetStep(IEnumerable<InvoiceListItem> records, DateOnly start, DateOnly end)
-    {
-        var invoicesInPeriod = records
-            .Where(x => x.IssueDate > start.ToDateTime(new()) && x.IssueDate <= end.ToDateTime(new()))
-            .ToList();
-
-        var total = invoicesInPeriod.Sum(s => s.PayableAmount);
-
-        return new()
-        {
-            Start = start.AddDays(1).ToDateTime(TimeOnly.MinValue),
-            End = end.ToDateTime(TimeOnly.MinValue),
-            TotalAmountWithVat = total
-        };
-    }
+    private static StatsPeriod CreatePeriod(DateOnly start, DateOnly end)
+        => new(start.ToDateTime(TimeOnly.MinValue), end.ToDateTime(TimeOnly.MinValue));
 
     private static DateOnly SafeDateOnly(int year, int month, int day)
     {
         var daysInMonth = DateTime.DaysInMonth(year, month);
         return new DateOnly(year, month, Math.Min(day, daysInMonth));
     }
+
+    private readonly record struct StatsPeriod(DateTime StartExclusive, DateTime EndInclusive);
 }
 

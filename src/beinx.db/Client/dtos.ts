@@ -75,6 +75,7 @@ export interface InvoiceLineDto {
     quantity: number;
     quantityCode: string;
     unitPrice: number;
+    lineTotal?: number;
     startDate?: string;
     endDate?: string;
     description?: string;
@@ -132,6 +133,7 @@ export interface InvoiceListItem {
   isPaid: boolean;
   year: number;
   payableAmount: number;
+  taxExclusiveAmount: number;
 }
 
 export interface InvoicesRequest {

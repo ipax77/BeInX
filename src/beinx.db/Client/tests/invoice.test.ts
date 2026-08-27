@@ -107,6 +107,46 @@ describe('invoices CRUD', () => {
     expect(firstPage[0].id).not.toEqual(secondPage[0].id);
   });
 
+  it('should project tax-inclusive and tax-exclusive list amounts', async () => {
+    const invoiceInfo = await getTestInvoiceInfo();
+    invoiceInfo.invoiceDto.payableAmount = 95.19;
+    invoiceInfo.invoiceDto.invoiceLines = [
+      {
+        id: '1',
+        quantity: 2,
+        quantityCode: 'H87',
+        unitPrice: 25,
+        lineTotal: 49.99,
+        name: 'Explicit line total'
+      },
+      {
+        id: '2',
+        quantity: 3,
+        quantityCode: 'H87',
+        unitPrice: 10,
+        name: 'Legacy line total fallback'
+      }
+    ];
+    await invoiceRepository.createInvoice(invoiceInfo, false);
+
+    const list = await invoiceRepository.getInvoiceList();
+    expect(list).toHaveLength(1);
+    expect(list[0].payableAmount).toBe(95.19);
+    expect(list[0].taxExclusiveAmount).toBeCloseTo(79.99);
+
+    const filtered = await invoiceRepository.getFilteredInvoiceList({
+      year: 2025,
+      isPaid: null,
+      search: null,
+      page: 0,
+      pageSize: 10,
+      sortBy: 'issueDate',
+      sortAsc: true
+    });
+    expect(filtered).toHaveLength(1);
+    expect(filtered[0].taxExclusiveAmount).toBeCloseTo(79.99);
+  });
+
   it('should delete an invoice', async () => {
     const invoiceInfo = await getTestInvoiceInfo();
     const id = await invoiceRepository.createInvoice(invoiceInfo, false);

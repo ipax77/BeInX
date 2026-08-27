@@ -66,6 +66,7 @@ Time Period;Time Period;Zeitraum;Período de tiempo;Période de temps
 Amount;Amount;Betrag;Importe;Montant
 Amount (tax exclusive);Amount (tax exclusive);Betrag (ohne Steuern);Importe (sin impuestos);Montant (hors taxes)
 Amount (tax inclusive);Amount (tax inclusive);Betrag (inkl. Steuern);Importe (con impuestos);Montant (TTC)
+Amounts include tax;Amounts include tax;Beträge inklusive Steuern;Importes con impuestos;Montants TTC
 Total;Total;Gesamt;Total;Total
 Search;Search;Suchen;Buscar;Rechercher
 Issue Date;Issue Date;Ausstellungsdatum;Fecha de emisión;Date d’émission
@@ -154,6 +155,7 @@ Discard;Discard;Verwerfen;Descartar;Jeter
 DiscardDesc;Click {0} to resume editing or {1} to start a new invoice.;Klicken Sie auf {0}, um die Bearbeitung fortzusetzen, oder auf {1}, um eine neue Rechnung zu beginnen.;Haga clic en {0} para reanudar la edición o en {1} para comenzar una nueva factura.;Cliquez sur {0} pour reprendre la modification ou sur {1} pour commencer une nouvelle facture.
 Language;Language;Sprache;Idioma;Langue
 ChartTitle;Paid Invoices (tax inclusive);Bezahlte Rechnungen (inkl. Steuern);Facturas pagadas (con impuestos);Factures payées (TTC) 
+ChartTitleTaxExclusive;Paid Invoices (tax exclusive);Bezahlte Rechnungen (ohne Steuern);Facturas pagadas (sin impuestos);Factures payées (hors taxes)
 Create Sample Invoice;Create Sample Invoice;Beispielrechnung erstellen;Crear factura de ejemplo;Créer une facture d'exemple
 KositWarn;Only enter trusted Servers or setup your own.;Geben Sie nur vertrauenswürdige Server ein oder richten Sie Ihren eigenen ein.;Ingrese solo servidores confiables o configure el suyo propio.;N'entrez que des serveurs de confiance ou configurez le vôtre.
 External Link;External Link;Externer Link;Enlace externo;Lien externe

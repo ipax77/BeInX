@@ -6,13 +6,16 @@
 	
 
 <div class="border rounded border-secondary bgchart"
-     style="min-width: 400px; width: 100%; aspect-ratio: 2 / 1; min-height: 200px; max-width: 800px; max-height: 400px;">
+     style="width: 100%; aspect-ratio: 2 / 1; min-height: 200px; max-width: 800px; max-height: 400px;">
     <ChartComponent ChartJsConfig="chartJsConfig" OnEventTriggered="ChartEventTriggered" />
 </div>
 
 @code {
     [Parameter, EditorRequired]
     public StatsResponse StatsResponse { get; set; } = null!;
+
+    [Parameter]
+    public bool AmountsIncludeTax { get; set; } = true;
 
     private ChartJsConfig chartJsConfig = null!;
     private bool chartIsReady;
@@ -23,24 +26,36 @@
         base.OnInitialized();
     }
 
-    public void Update(StatsResponse statsResponse)
+    public void Update(StatsResponse statsResponse, bool amountsIncludeTax)
     {
+        StatsResponse = statsResponse;
+        AmountsIncludeTax = amountsIncludeTax;
         if (!chartIsReady)
         {
             return;
         }
-        StatsResponse = statsResponse;
         chartJsConfig.RemoveDatasets(chartJsConfig.Data.Datasets);
         UpdateChart();
     }
 
     private void UpdateChart()
     {
-        var labels = StatsResponse.Steps.Select(s => s.Start.ToShortDateString()).ToList();
+        var labels = new List<string>(StatsResponse.Steps.Count);
+        var data = new List<object>(StatsResponse.Steps.Count);
+        foreach (var step in StatsResponse.Steps)
+        {
+            labels.Add(step.Start.ToShortDateString());
+            var amount = AmountsIncludeTax ? step.TotalAmountWithVat : step.TotalAmountWithoutVat;
+            data.Add(Math.Round(amount, 2));
+        }
+
+        chartJsConfig.Options!.Plugins!.Title!.Text = new IndexableOption<string>(GetChartTitle());
+        chartJsConfig.UpdateChartOptions();
+
         var dataset = new BarDataset
         {
-            Label = Loc["Amount"],
-            Data = StatsResponse.Steps.Select(s => s.TotalAmountWithVat).Cast<object>().ToList(),
+            Label = AmountsIncludeTax ? Loc["Amount (tax inclusive)"] : Loc["Amount (tax exclusive)"],
+            Data = data,
             BackgroundColor = "darkblue",
             BorderColor = "darkred",
             BorderWidth = 1
@@ -73,7 +88,7 @@
                     Title = new()
                     {
                         Display = true,
-                        Text = new IndexableOption<string>(Loc["ChartTitle"]),
+                        Text = new IndexableOption<string>(GetChartTitle()),
                         Color = "white",
                         Font = new()
                         {
@@ -138,9 +153,10 @@
                             Text = new IndexableOption<string>(Loc["Amount"]),
                             Color = mainColor
                         },
-                        Ticks = new ChartJsAxisTick()
+                        Ticks = new LinearAxisTick()
                         {
-                            Color = mainColor
+                            Color = mainColor,
+                            Precision = 2
                         },
                         Grid = new ChartJsGrid()
                         {
@@ -160,4 +176,7 @@
             }
         };
     }
+
+    private string GetChartTitle()
+        => AmountsIncludeTax ? Loc["ChartTitle"] : Loc["ChartTitleTaxExclusive"];
 }

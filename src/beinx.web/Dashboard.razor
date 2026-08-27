@@ -31,6 +31,11 @@
 					<input id="yearInput" type="number" class="form-control" step="1" @bind="year"
 						   @bind:after="LoadStats" />
 				</div>
+				<div class="form-check form-switch mb-2">
+					<input id="amountsIncludeTax" type="checkbox" class="form-check-input" role="switch"
+						   @bind="amountsIncludeTax" @bind:after="UpdateAmountDisplay" />
+					<label for="amountsIncludeTax" class="form-check-label text-nowrap">@Loc["Amounts include tax"]</label>
+				</div>
 				<div>
 					<button type="button" class="btn btn-sm btn-outline-primary w-100 w-sm-auto" @onclick="LoadStats">@Loc["Refresh"]</button>
 				</div>
@@ -102,7 +107,7 @@
 									<td class="d-none d-md-table-cell">@inv.IssueDate.ToShortDateString()</td>
 									<td class="d-none d-lg-table-cell"><span class="text-truncate d-inline-block" style="max-width: 120px">@inv.SellerName</span></td>
 									<td class="d-none d-lg-table-cell"><span class="text-truncate d-inline-block" style="max-width: 120px">@inv.BuyerName</span></td>
-									<td class="text-nowrap">@inv.PayableAmount.ToString("N2")</td>
+									<td class="text-nowrap">@GetInvoiceAmount(inv).ToString("N2")</td>
 									<td class="d-none d-sm-table-cell">@(inv.IsPaid ? "✔️" : "❌")</td>
 									<td>
 										<!-- Mobile: Compact icon buttons in a horizontal group -->
@@ -185,7 +190,7 @@
 					<thead class="table-light">
 						<tr>
 							<th>@Loc["Time Period"]</th>
-							<th class="text-end">@Loc["Amount (tax inclusive)"]</th>
+							<th class="text-end">@(amountsIncludeTax ? Loc["Amount (tax inclusive)"] : Loc["Amount (tax exclusive)"])</th>
 						</tr>
 					</thead>
 					@if (statsResponse != null)
@@ -195,7 +200,7 @@
 							{
 								<tr>
 									<td class="text-nowrap">@stat.Start.ToShortDateString() - @stat.End.ToShortDateString()</td>
-									<td class="text-end text-nowrap">@stat.TotalAmountWithVat.ToString("N2")</td>
+									<td class="text-end text-nowrap">@GetStepAmount(stat).ToString("N2")</td>
 								</tr>
 							}
 						</tbody>
@@ -203,7 +208,7 @@
 							<tr class="fw-bold">
 								<td>@Loc["Total"]</td>
 								<td class="text-end">
-									@statsResponse.Steps.Sum(s => s.TotalAmountWithVat).ToString("N2")
+									@GetTotalAmount(statsResponse).ToString("N2")
 								</td>
 							</tr>
 						</tfoot>
@@ -216,7 +221,7 @@
 		<div class="col-12 col-lg-7 mb-3">
 			@if (statsResponse != null)
 			{
-				<StatsChartComponent @ref="statsChartComponent" StatsResponse="statsResponse" />
+				<StatsChartComponent @ref="statsChartComponent" StatsResponse="statsResponse" AmountsIncludeTax="amountsIncludeTax" />
 			}
 		</div>
 	</div>
@@ -226,6 +231,7 @@
 	StatsResponse? statsResponse = null;
 	List<Draft<object>> drafts = [];
 	int year = DateTime.Now.Year;
+	bool amountsIncludeTax = true;
 	StatsChartComponent? statsChartComponent;
 
 	protected override async Task OnInitializedAsync()
@@ -242,7 +248,31 @@
 	{
 		statsResponse = await InvoiceService.GetStats(year);
 		await InvokeAsync(StateHasChanged);
-		statsChartComponent?.Update(statsResponse);
+		statsChartComponent?.Update(statsResponse, amountsIncludeTax);
+	}
+
+	private void UpdateAmountDisplay()
+	{
+		if (statsResponse is not null)
+		{
+			statsChartComponent?.Update(statsResponse, amountsIncludeTax);
+		}
+	}
+
+	private double GetInvoiceAmount(InvoiceListItem invoice)
+		=> amountsIncludeTax ? invoice.PayableAmount : invoice.TaxExclusiveAmount;
+
+	private double GetStepAmount(StatsStepResponse step)
+		=> amountsIncludeTax ? step.TotalAmountWithVat : step.TotalAmountWithoutVat;
+
+	private double GetTotalAmount(StatsResponse response)
+	{
+		double total = 0;
+		foreach (var step in response.Steps)
+		{
+			total += GetStepAmount(step);
+		}
+		return total;
 	}
 
 	private void NavigateToDraft(Draft<object> draft)
