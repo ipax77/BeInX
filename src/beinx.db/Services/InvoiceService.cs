@@ -35,6 +35,18 @@ public partial class InvoiceService(IConfigService configService,
             ArgumentNullException.ThrowIfNull(xmlInvoice, nameof(xmlInvoice));
 
             var xmlText = GetXmlText(xmlInvoice, invoiceDto, config.ExportType);
+            if (config.ExportValidate && config.ExportType == ExportType.PdfA3)
+            {
+                var result = ZugferdMapper.ValidateZugferdXml(xmlText);
+                if (!result.IsValid)
+                {
+                    var details = string.Join(Environment.NewLine, result.Validations
+                        .Where(v => v.Severity == System.Xml.Schema.XmlSeverityType.Error)
+                        .Select(v => $"{v.Code}: {v.Message} ({v.Path})"));
+                    return new ExportResult(null, string.Empty,
+                        $"ZUGFeRD XML validation failed. {result.Error}{Environment.NewLine}{details}".Trim());
+                }
+            }
             var pdfBytes = await GetPdfBytes(invoiceDto, config.ExportType, config.CultureName, xmlText);
 
             if (config.ExportEmbedPdf && config.ExportType != ExportType.PdfA3)
@@ -44,7 +56,7 @@ public partial class InvoiceService(IConfigService configService,
                 xmlInvoice = mapper.ToXml(invoiceDto);
             }
 
-            if (config.ExportValidate)
+            if (config.ExportValidate && config.ExportType != ExportType.PdfA3)
             {
                 var schemaResult = XmlInvoiceValidator.Validate(xmlInvoice);
                 if (!schemaResult.IsValid)

@@ -1,16 +1,20 @@
 ﻿using beinx.shared;
+using pax.XRechnung.NET;
 using pax.XRechnung.NET.AnnotatedDtos;
 using s2industries.ZUGFeRD;
 using System.Text;
+using System.Xml.Linq;
 
 namespace beinx.db.Services;
 
 public static class ZugferdMapper
 {
+    public static InvoiceValidationResult ValidateZugferdXml(string xmlText) => ZugferdXmlValidator.Validate(xmlText);
+
     public static string MapToZugferd(BlazorInvoiceDto invoice)
     {
         decimal taxRate = (decimal)invoice.GlobalTax / 100.0m;
-        decimal taxExclusiveAmount = Math.Round((decimal)invoice.InvoiceLines.Sum(s => s.LineTotal), 2);
+        decimal taxExclusiveAmount = invoice.InvoiceLines.Sum(GetLineTotal);
         decimal payableAmount = Math.Round(taxExclusiveAmount + taxExclusiveAmount * taxRate, 2);
         bool isSmallBusiness = taxRate == 0; // keine Umsatzsteuer nach § 19 UStG
         decimal taxAmount = isSmallBusiness ? 0 : Math.Round(payableAmount - taxExclusiveAmount, 2);
@@ -98,13 +102,28 @@ public static class ZugferdMapper
 
         using var memoryStream = new MemoryStream();
         desc.Save(memoryStream, ZUGFeRDVersion.Version23, Profile.Comfort, ZUGFeRDFormats.CII);
-        return Encoding.UTF8.GetString(
+        var xmlText = Encoding.UTF8.GetString(
             memoryStream.GetBuffer().AsSpan(0, checked((int)memoryStream.Length)));
+        // Version23 suppresses empty containers, but the official profile requires this one.
+        // An empty delivery container preserves the absence of optional delivery data.
+        XNamespace ram = "urn:un:unece:uncefact:data:standard:ReusableAggregateBusinessInformationEntity:100";
+        var xml = XDocument.Parse(xmlText);
+        var settlement = xml.Root!.Elements().Single(e => e.Name.LocalName == "SupplyChainTradeTransaction")
+            .Element(ram + "ApplicableHeaderTradeSettlement")!;
+        if (settlement.Parent!.Element(ram + "ApplicableHeaderTradeDelivery") is null)
+        {
+            settlement.AddBeforeSelf(new XElement(ram + "ApplicableHeaderTradeDelivery"));
+            return $"{xml.Declaration}{Environment.NewLine}{xml}";
+        }
+        return xmlText;
     }
+
+    // Use the same rounded line amount displayed by BeInX, in both line and header totals.
+    private static decimal GetLineTotal(InvoiceLineAnnotationDto line) => (decimal)line.LineTotal;
 
     private static void AddLine(InvoiceLineAnnotationDto line, BlazorInvoiceDto invoice, InvoiceDescriptor desc)
     {
-        desc.AddTradeLineItem(
+        var tradeLine = desc.AddTradeLineItem(
             name: line.Name,
             unitCode: GetEnum<QuantityCodes>(line.QuantityCode),
             grossUnitPrice: (decimal)line.UnitPrice,
@@ -117,6 +136,7 @@ public static class ZugferdMapper
             categoryCode: invoice.GlobalTax == 0 ? TaxCategoryCodes.E : GetEnum<TaxCategoryCodes>(invoice.GlobalTaxCategory),
             taxPercent: (decimal)invoice.GlobalTax
         );
+        tradeLine.LineTotalAmount = GetLineTotal(line);
     }
 
     private static T GetEnum<T>(string value) where T : struct, Enum
