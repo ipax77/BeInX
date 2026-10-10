@@ -7,6 +7,8 @@
     <OverrideHtmlAssetPlaceholders>true</OverrideHtmlAssetPlaceholders>
     <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
 	<BlazorWebAssemblyLoadAllGlobalizationData>true</BlazorWebAssemblyLoadAllGlobalizationData>
+    <!-- Match ConfigService.GetSupportedCultures; exclude dependency satellites for other languages. -->
+    <SatelliteResourceLanguages>en;de;es;fr</SatelliteResourceLanguages>
   </PropertyGroup>
 
   <ItemGroup>
