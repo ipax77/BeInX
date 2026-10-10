@@ -34,7 +34,9 @@ bld/
 [Oo]bj/
 [Ll]og/
 [Ll]ogs/
-/src/BlazorInvoice.Pdf/wwwroot/dist/
+/src/BlazorInvoice.Pdf/wwwroot/dist/*
+!/src/BlazorInvoice.Pdf/wwwroot/dist/pdf-generator.v*.js
+!/src/BlazorInvoice.Pdf/wwwroot/dist/pdf-generator.v*.js.LICENSE.txt
 /src/BlazorInvoice.Pdf/Typescript/.tsbuildinfo
 /src/BlazorInvoice.Pdf/Typescript/testinvoice.pdf
 /src/delobjbin.ps1
@@ -46,6 +48,7 @@ bld/
 #wwwroot/
 
 /src/beinx.db/wwwroot/js/*.js
+!/src/beinx.db/wwwroot/js/beinx-db.bundle.v*.js
 /src/beinx.db/wwwroot/js/*.js.map
 src/BlazorInvoice.Pdf/Typescript/testinvoice.pdf
 src/BlazorInvoice.Pdf/Typescript/testinvoiceA3.pdf

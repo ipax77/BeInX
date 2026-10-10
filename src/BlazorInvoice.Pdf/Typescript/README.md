@@ -46,4 +46,6 @@ Configured integration tests fail on service errors, invalid reports, or
 non-compliant PDFs. Each request has a 30-second timeout.
 
 The generation tests refresh `testinvoice.pdf` and `testinvoiceA3.pdf`. The webpack
-build refreshes the browser bundle in `../wwwroot/dist/pdf-generator.js`.
+build emits `../wwwroot/dist/pdf-generator.v<package-version>.js` and updates
+`../JsModule.g.cs` with its import path. Commit both generated files when bumping
+the package version. The db webpack build uses the same convention.

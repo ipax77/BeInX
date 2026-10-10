@@ -10,7 +10,7 @@ public class IndexedDbInterop : IDisposable, IIndexedDbInterop
     public IndexedDbInterop(IJSRuntime js)
     {
         _moduleTask = new(() => js.InvokeAsync<IJSObjectReference>(
-            "import", "./_content/beinx.db/js/beinx-db.bundle.js").AsTask());
+            "import", $"./{JsModule.Path}").AsTask());
     }
 
     public async Task<T> CallAsync<T>(string method, params object?[] args)

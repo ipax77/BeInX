@@ -16,6 +16,12 @@ jobs:
 
     steps:
     - uses: actions/checkout@v5
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 22
+    - name: Verify JavaScript imports and offline caching
+      run: node --test scripts/service-worker.test.cjs
     - name: Setup .NET
       uses: actions/setup-dotnet@v5
       with:

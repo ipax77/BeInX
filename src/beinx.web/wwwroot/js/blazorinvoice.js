@@ -1,4 +1,4 @@
-// v0.5.3
+// v0.6.0
 function waitForBrowserPaint() {
     // The second frame runs after the preceding frame has been painted.
     return new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
