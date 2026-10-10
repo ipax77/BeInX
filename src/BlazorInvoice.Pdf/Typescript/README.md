@@ -9,9 +9,16 @@ npm run build
 ```
 
 The tests check saved PDF content, font mappings, exact invoice XML attachment
-round-trips, XMP text and document information, and ICC profile caching/retries.
+round-trips, XMP text and document information, font-aware text/measurement caching,
+and ICC/font source caching and retries.
 XML parsing checks well-formedness and recovered text; invoice schema and business
 rule validation belong to the caller.
+
+The Inter font files are loaded once per module session, sharing in-flight
+requests across invoices. Failed loads are retried without reloading successful
+files. Each PDF still embeds its own fonts and subsets. Text and measurement
+caches use font object identity and Unicode code points; unsupported characters
+continue to be replaced with `?`.
 
 Generated PDFs attach the supplied UTF-8 XML as `invoice.xml` with an
 `Alternative` relationship. Import extraction recognizes `invoice.xml`,

@@ -13,6 +13,7 @@ import { InvoiceLineDto } from "./dtos/invoice-line-dto";
 import { PartyDto } from "./dtos/party-dto";
 import { PaymentMeansDto } from "./dtos/payment-means-dto";
 import { PdfFontCache } from "./pdf-font-cache";
+import { loadA3FontBytes } from "./pdf-font-loader";
 import { PdfA3Converter } from "./pdf-a3-converter";
 
 const TRANSLATIONS = {
@@ -718,14 +719,7 @@ async function embedA3Fonts(pdfDoc: PDFDocument): Promise<{
 }> {
     pdfDoc.registerFontkit(fontkit as Fontkit);
 
-    const fontUrls = [
-        './_content/BlazorInvoice.Pdf/fonts/Inter-Light.ttf',
-        './_content/BlazorInvoice.Pdf/fonts/Inter-Bold.ttf',
-        './_content/BlazorInvoice.Pdf/fonts/Inter-MediumItalic.ttf'
-    ];
-
-    const fontResponses = await Promise.all(fontUrls.map(url => fetch(url)));
-    const fontBuffers = await Promise.all(fontResponses.map(res => res.arrayBuffer()));
+    const fontBuffers = await loadA3FontBytes();
 
     const regularFont = await pdfDoc.embedFont(fontBuffers[0], { subset: true });
     const boldFont = await pdfDoc.embedFont(fontBuffers[1], { subset: true });
