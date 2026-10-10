@@ -9,7 +9,7 @@
       "sourceMap": true,
       "target": "ESNext",
       "module": "ESNext",
-      "moduleResolution": "node",
+      "moduleResolution": "bundler",
       "incremental": true,
       "tsBuildInfoFile": ".tsbuildinfo",
       "esModuleInterop": true,
