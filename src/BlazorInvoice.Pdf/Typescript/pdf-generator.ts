@@ -106,6 +106,12 @@ export class PdfGenerator {
   private fontCache: PdfFontCache;
   private logo?: PDFImage;
   private languageCode: string;
+  private currencyFormatter?: Intl.NumberFormat;
+  private timeFormatter?: Intl.DateTimeFormat;
+  private fullDateFormatter?: Intl.DateTimeFormat;
+  private dayFormatter?: Intl.DateTimeFormat;
+  private dayMonthFormatter?: Intl.DateTimeFormat;
+  private issueDateFormatter?: Intl.DateTimeFormat;
 
   constructor(
     document: PDFDocument,
@@ -153,7 +159,7 @@ export class PdfGenerator {
     let lineY = this.drawNote(page, invoice);
     lineY -= 10;
 
-    let remainingLines = invoice.invoiceLines.sort((a, b) => {
+    let remainingLines = [...invoice.invoiceLines].sort((a, b) => {
       const idA = parseInt(a.id, 10);
       const idB = parseInt(b.id, 10);
       if (isNaN(idA) || isNaN(idB)) {
@@ -249,11 +255,12 @@ export class PdfGenerator {
     y -= 50;
     const adr = `${invoice.sellerParty.name} - ${invoice.sellerParty.streetName} - ${invoice.sellerParty.postCode} ${invoice.sellerParty.city}`;
     this.drawText(page, adr, x, y);
-    const formattedDate = new Intl.DateTimeFormat(this.languageCode, {
+    this.issueDateFormatter ??= new Intl.DateTimeFormat(this.languageCode, {
       day: "2-digit",
       month: "2-digit",
       year: "numeric",
-    }).format(new Date(invoice.issueDate));
+    });
+    const formattedDate = this.issueDateFormatter.format(new Date(invoice.issueDate));
     this.drawText(page, `${this.t("date")}: ${formattedDate}`, page.getWidth() - 200, y);
   }
 
@@ -591,12 +598,12 @@ export class PdfGenerator {
   }
 
   private formatCurrency(amount: number, currency: string = "€"): string {
-    const str = new Intl.NumberFormat(this.languageCode, {
+    const str = (this.currencyFormatter ??= new Intl.NumberFormat(this.languageCode, {
       style: "currency",
       currency: "EUR",
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
-    })
+    }))
       .format(amount)
       .replace("€", currency);
     return str.replace(/\u202F|\u00A0/g, ' ');
@@ -617,11 +624,12 @@ export class PdfGenerator {
     if (!isoString) {
       return "";
     }
-    return new Date(isoString).toLocaleTimeString([], {
+    this.timeFormatter ??= new Intl.DateTimeFormat([], {
       hour: "2-digit",
       minute: "2-digit",
       hour12: false,
     });
+    return this.timeFormatter.format(new Date(isoString));
   }
 
   private getDate(startDate: string | null, endDate: string | null): string {
@@ -636,31 +644,32 @@ export class PdfGenerator {
       start.getMonth() === end.getMonth() &&
       start.getFullYear() === end.getFullYear()
     ) {
-      return new Intl.DateTimeFormat(this.languageCode, {
+      this.fullDateFormatter ??= new Intl.DateTimeFormat(this.languageCode, {
         day: "2-digit",
         month: "2-digit",
         year: "2-digit",
-      }).format(start);
+      });
+      return this.fullDateFormatter.format(start);
       // if startDate and endDate are on the same month print dd-dd.MM.yyyy
     } else if (
       start.getMonth() === end.getMonth() &&
       start.getFullYear() === end.getFullYear()
     ) {
-      return `${new Intl.DateTimeFormat(this.languageCode, {
+      this.dayFormatter ??= new Intl.DateTimeFormat(this.languageCode, {
         day: "2-digit",
-      }).format(start)}-${new Intl.DateTimeFormat(this.languageCode, {
+      });
+      this.fullDateFormatter ??= new Intl.DateTimeFormat(this.languageCode, {
         day: "2-digit",
         month: "2-digit",
         year: "2-digit",
-      }).format(end)}`;
+      });
+      return `${this.dayFormatter.format(start)}-${this.fullDateFormatter.format(end)}`;
     } else {
-      return `${new Intl.DateTimeFormat(this.languageCode, {
+      this.dayMonthFormatter ??= new Intl.DateTimeFormat(this.languageCode, {
         day: "2-digit",
         month: "2-digit",
-      }).format(start)}-${new Intl.DateTimeFormat(this.languageCode, {
-        day: "2-digit",
-        month: "2-digit",
-      }).format(end)}`;
+      });
+      return `${this.dayMonthFormatter.format(start)}-${this.dayMonthFormatter.format(end)}`;
     }
   }
 }

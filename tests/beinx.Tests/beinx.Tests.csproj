@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\BlazorInvoice.Pdf\BlazorInvoice.Pdf.csproj" />
     <PackageReference Include="MSTest" Version="4.2.1" />
   </ItemGroup>
 

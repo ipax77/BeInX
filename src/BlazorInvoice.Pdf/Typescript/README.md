@@ -20,6 +20,10 @@ files. Each PDF still embeds its own fonts and subsets. Text and measurement
 caches use font object identity and Unicode code points; unsupported characters
 continue to be replaced with `?`.
 
+Each generator reuses its number and date/time formatters. Invoice lines are
+sorted for rendering using a copy, preserving the caller's array and objects.
+Tests cover the existing English, German, French, and Spanish formatting.
+
 Generated PDFs attach the supplied UTF-8 XML as `invoice.xml` with an
 `Alternative` relationship. Import extraction recognizes `invoice.xml`,
 `factur-x.xml`, and `zugferd-invoice.xml` case-insensitively, preferring
