@@ -131,6 +131,11 @@ export class PdfGenerator {
   }
 
   public async generateInvoice(invoice: InvoiceDto): Promise<Uint8Array> {
+    await this.drawInvoice(invoice);
+    return this.document.save();
+  }
+
+  public async drawInvoice(invoice: InvoiceDto): Promise<void> {
     if (invoice.sellerParty.logoReferenceId) {
       const doc = invoice.additionalDocumentReferences.find(
         (f) => f.id === invoice.sellerParty.logoReferenceId,
@@ -185,9 +190,6 @@ export class PdfGenerator {
       this.drawPageNumber(docPage, i, pageCount);
       i += 1;
     });
-
-    const pdfBytes = await this.document.save();
-    return pdfBytes;
   }
 
   private drawFooter(page: PDFPage, invoice: InvoiceDto): void {
@@ -747,7 +749,7 @@ export async function createInvoicePdfA3Bytes(invoice: InvoiceDto, locale: strin
         fonts.italic,
         locale,
     );
-    await pdfGenerator.generateInvoice(invoice);
+    await pdfGenerator.drawInvoice(invoice);
     const pdfA3Converter = new PdfA3Converter();
     return await pdfA3Converter.createA3Pdf(pdfDoc, invoice, locale, hexId, xmlText);
 }

@@ -3,6 +3,8 @@ import { InvoiceDto } from "./dtos/invoice-dto";
 import * as pako from "pako";
 
 export class PdfA3Converter {
+    private static iccProfilePromise: Promise<Uint8Array> | undefined;
+
     public async createA3Pdf(doc: PDFDocument, invoiceDto: InvoiceDto, culture: string, hexId: string, xmlInvoice: string)
         : Promise<Uint8Array> {
         
@@ -18,26 +20,24 @@ export class PdfA3Converter {
         this.addMetadata(doc, invoiceDto);
         this.setCatalog(doc, culture);
         this.embedXmlInvoice(doc, xmlInvoice);
-        this.setCMAPS(doc);
         
         return await doc.save();
     }
 
     protected async loadIccProfile(): Promise<Uint8Array> {
-        const response = await fetch('./_content/BlazorInvoice.Pdf/colorprofiles/sRGB2014.icc');
-        const buffer = await response.arrayBuffer();
-        return new Uint8Array(buffer);
-    }
-
-    private setCMAPS(doc: PDFDocument): void {
-        doc.context.enumerateIndirectObjects().forEach(([ref, obj]) => {
-            if (obj instanceof PDFDict) {
-                const fontEntry = Array.from(obj.entries()).find(([key, value]) => value.toString().includes("Font"))
-                if (fontEntry) {
-                    obj.set(PDFName.of("CIDToGIDMap"), PDFName.of("Identity"))
+        if (!PdfA3Converter.iccProfilePromise) {
+            PdfA3Converter.iccProfilePromise = (async () => {
+                const response = await fetch('./_content/BlazorInvoice.Pdf/colorprofiles/sRGB2014.icc');
+                if (!response.ok) {
+                    throw new Error(`Failed to load ICC profile: HTTP ${response.status}`);
                 }
-            }
-        })
+                return new Uint8Array(await response.arrayBuffer());
+            })().catch(error => {
+                PdfA3Converter.iccProfilePromise = undefined;
+                throw error;
+            });
+        }
+        return PdfA3Converter.iccProfilePromise;
     }
 
     private embedXmlInvoice(doc: PDFDocument, xml: string): void {
@@ -92,6 +92,8 @@ export class PdfA3Converter {
     private addMetadata(doc: PDFDocument, invoiceDto: InvoiceDto): void {
         const date = new Date(invoiceDto.issueDate);
         const issueDateUTC = date.toISOString();
+        const sellerName = this.escapeXmlText(invoiceDto.sellerParty.name);
+        const invoiceId = this.escapeXmlText(invoiceDto.id);
         const metadataXML = `
             <?xpacket begin="" id="W5M0MpCehiHzreSzNTczkc9d"?>
             <x:xmpmeta xmlns:x="adobe:ns:meta/" x:xmptk="Adobe XMP Core 5.2-c001 63.139439, 2010/09/27-13:37:26        ">
@@ -101,25 +103,25 @@ export class PdfA3Converter {
                     <dc:format>application/pdf</dc:format>
                     <dc:creator>
                     <rdf:Seq>
-                        <rdf:li>${invoiceDto.sellerParty.name}</rdf:li>
+                        <rdf:li>${sellerName}</rdf:li>
                     </rdf:Seq>
                     </dc:creator>
                     <dc:title>
                     <rdf:Alt>
-                        <rdf:li xml:lang="x-default">${invoiceDto.id}</rdf:li>
+                        <rdf:li xml:lang="x-default">${invoiceId}</rdf:li>
                     </rdf:Alt>
                     </dc:title>
                 </rdf:Description>
         
                 <rdf:Description rdf:about="" xmlns:xmp="http://ns.adobe.com/xap/1.0/">
-                    <xmp:CreatorTool>${invoiceDto.sellerParty.name}</xmp:CreatorTool>
+                    <xmp:CreatorTool>${sellerName}</xmp:CreatorTool>
                     <xmp:CreateDate>${issueDateUTC}</xmp:CreateDate>
                     <xmp:ModifyDate>${issueDateUTC}</xmp:ModifyDate>
                     <xmp:MetadataDate>${issueDateUTC}</xmp:MetadataDate>
                 </rdf:Description>
         
                 <rdf:Description rdf:about="" xmlns:pdf="http://ns.adobe.com/pdf/1.3/">
-                    <pdf:Producer>${invoiceDto.sellerParty.name}</pdf:Producer>
+                    <pdf:Producer>${sellerName}</pdf:Producer>
                 </rdf:Description>
         
                 <rdf:Description rdf:about="" xmlns:pdfaid="http://www.aiim.org/pdfa/ns/id/">
@@ -131,18 +133,22 @@ export class PdfA3Converter {
             <?xpacket end="w"?>
             `.trim()
 
-        const metadataStream = doc.context.stream(metadataXML, {
+        const metadataStream = doc.context.stream(new TextEncoder().encode(metadataXML), {
         Type: "Metadata",
         Subtype: "XML",
-        Length: metadataXML.length,
         })
         const metadataStreamRef = doc.context.register(metadataStream)
         doc.catalog.set(PDFName.of("Metadata"), metadataStreamRef)
     }
 
+    private escapeXmlText(value: string): string {
+        return value.replace(/[&<>"']/g, character => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&apos;',
+        })[character]!);
+    }
+
     private setColorProfile(doc: PDFDocument, iccBuffer: Uint8Array): void {
         const iccStream = doc.context.stream(iccBuffer, {
-        Length: iccBuffer.length,
         N: 3,
         })
         const outputIntent = doc.context.obj({
