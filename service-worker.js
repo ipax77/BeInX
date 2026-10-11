@@ -1,4 +1,4 @@
-/* Manifest version: IEZuRWQT */
+/* Manifest version: GNNgObDe */
 // Caution! Be sure you understand the caveats before publishing an application with
 // offline support. See https://aka.ms/blazor-offline-considerations
 
@@ -12,9 +12,8 @@ const cacheName = `${cacheNamePrefix}${self.assetsManifest.version}`;
 const offlineAssetsInclude = [ /\.dll$/, /\.pdb$/, /\.wasm/, /\.html/, /\.js$/, /\.json$/, /\.css$/, /\.woff$/, /\.png$/, /\.jpe?g$/, /\.gif$/, /\.ico$/, /\.blat$/, /\.dat$/, /\.webmanifest$/ ];
 const offlineAssetsExclude = [ /^service-worker\.js$/ ];
 
-// Replace with your base path if you are hosting on a subfolder. Ensure there is a trailing '/'.
-const base = "/";
-const baseUrl = new URL(base, self.origin);
+// The registration scope also covers deployments under a subfolder such as /BeInX/.
+const baseUrl = new URL(self.registration.scope);
 const manifestUrlList = self.assetsManifest.assets.map(asset => new URL(asset.url, baseUrl).href);
 
 async function onInstall(event) {
@@ -50,6 +49,17 @@ async function onFetch(event) {
         const request = shouldServeIndexHtml ? 'index.html' : event.request;
         const cache = await caches.open(cacheName);
         cachedResponse = await cache.match(request);
+        // Version queries on precached scripts must still work on the first offline load.
+        // Restrict normalization to manifest scripts with only a v query parameter.
+        if (!cachedResponse && !shouldServeIndexHtml) {
+            const url = new URL(event.request.url);
+            if (url.pathname.endsWith('.js') && url.searchParams.size === 1 && url.searchParams.has('v')) {
+                url.search = '';
+                if (manifestUrlList.includes(url.href)) {
+                    cachedResponse = await cache.match(url.href);
+                }
+            }
+        }
     }
 
     return cachedResponse || fetch(event.request);

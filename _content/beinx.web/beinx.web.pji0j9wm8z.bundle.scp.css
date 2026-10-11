@@ -1,0 +1,55 @@
+/* _content/beinx.web/NavMenuCanvas.razor.rz.scp.css */
+.navbar[b-nje7tfjyek] {
+    /* Keep the navigation and its drawer above Bootstrap's sticky table headers. */
+    z-index: 1030;
+}
+
+.offcanvas-body[b-nje7tfjyek] {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.navbar-nav[b-nje7tfjyek]  .nav-link,
+.navbar-text[b-nje7tfjyek] {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.navbar-nav[b-nje7tfjyek]  .nav-link > .bi,
+.navbar-text > .bi[b-nje7tfjyek] {
+    flex: 0 0 1.25rem;
+    width: 1.25rem;
+    text-align: center;
+    line-height: 1;
+}
+
+.navbar-nav[b-nje7tfjyek]  .dropdown-toggle::after {
+    flex-shrink: 0;
+    margin-left: 0;
+}
+
+.nav-version[b-nje7tfjyek],
+.culture-selector[b-nje7tfjyek],
+.navbar-text[b-nje7tfjyek] {
+    flex-shrink: 0;
+}
+
+@media (min-width: 1400px) {
+    .offcanvas-body[b-nje7tfjyek] {
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.5rem 0.75rem;
+    }
+
+    .navbar-nav[b-nje7tfjyek] {
+        flex-wrap: wrap;
+    }
+
+    .navbar-nav[b-nje7tfjyek]  .nav-link,
+    .navbar-text[b-nje7tfjyek] {
+        white-space: nowrap;
+    }
+}
