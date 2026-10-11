@@ -440,7 +440,7 @@
 			{
 				var mapper = new BlazorInvoiceMapper();
 				var xmlInvoice = mapper.ToXml(CurrentDraft.Data.InvoiceDto);
-				invoiceValidationResult = XmlInvoiceValidator.Validate(xmlInvoice);
+				invoiceValidationResult = await XmlInvoiceValidator.ValidateSchematron(xmlInvoice);
 			}
 		}
 		catch (Exception ex)

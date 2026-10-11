@@ -1,6 +1,7 @@
 using beinx.db.Services;
 using beinx.shared;
 using beinx.shared.Interfaces;
+using pax.XRechnung.NET;
 using pax.XRechnung.NET.AnnotatedDtos;
 using System.Globalization;
 using System.Xml.Linq;
@@ -10,6 +11,55 @@ namespace beinx.Tests;
 [TestClass]
 public sealed class ZugferdValidationTests
 {
+    [TestMethod]
+    public async Task XRechnungLocalValidationRejectsInvalidTaxScheme()
+    {
+        var invoice = ZugferdTests.GetInvoiceAnnDto();
+        invoice.GlobalTaxScheme = "VAT2";
+        var xml = new BlazorInvoiceMapper().ToXml(invoice);
+
+        Assert.IsTrue(XmlInvoiceValidator.Validate(xml).IsValid);
+        var result = await XmlInvoiceValidator.ValidateSchematron(xml);
+
+        Assert.IsFalse(result.IsValid);
+        Assert.IsTrue(result.Validations.Any(v => v.Code == "BR-CO-04"));
+    }
+
+    [TestMethod]
+    [DataRow(true, "VAT2")]
+    [DataRow(false, "VAT2")]
+    [DataRow(true, "VAT")]
+    public async Task XRechnungExportUsesLocalValidationAndHonorsSetting(bool validate, string taxScheme)
+    {
+        var invoice = ZugferdTests.GetInvoiceAnnDto();
+        invoice.GlobalTaxScheme = taxScheme;
+        var entity = new InvoiceEntity { Id = 1, Info = new InvoiceDtoInfo { InvoiceDto = invoice } };
+        var repository = new Repository(entity);
+        var config = new Config(new AppConfigDto
+        {
+            ExportType = ExportType.Xml, ExportValidate = validate, ExportFinalize = true,
+            SchematronValidationUri = string.Empty
+        });
+        var service = new InvoiceService(config, repository, new Pdf(), null!, null!, null!);
+
+        var result = await service.ExportInvoice(1);
+
+        if (validate && taxScheme == "VAT2")
+        {
+            Assert.Contains("XML Schematron validation failed", result.Error!);
+            Assert.Contains("BR-CO-04", result.Error!);
+            Assert.IsNull(result.FinalizeResult);
+            Assert.IsNull(entity.FinalizeResult);
+            Assert.AreEqual(0, repository.Updates);
+        }
+        else
+        {
+            Assert.IsNull(result.Error, result.Error);
+            Assert.IsNotNull(entity.FinalizeResult);
+            Assert.AreEqual(1, repository.Updates);
+        }
+    }
+
     [TestMethod]
     [DataRow(19.0)]
     [DataRow(0.0)]
