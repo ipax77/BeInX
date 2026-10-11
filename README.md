@@ -43,9 +43,28 @@ We welcome contributions! If you're interested in helping improve BeInX, please 
 # Privacy Policy
 BeInX does not collect or transmit any personal data. See our full [privacy policy](./PRIVACY_POLICY.md) for more information.
 
+# Building JavaScript bundles
+
+When bumping either npm package version, run `npm run build` in `src/beinx.db`
+and `src/BlazorInvoice.Pdf/Typescript`. Commit the versioned JavaScript bundles
+and generated `JsModule.g.cs` files together. Run
+`node --test scripts/service-worker.test.cjs` to verify the import paths and offline caching.
+
 # Change Log
 
-<details open="open"><summary>v0.5.5</summary>
+<details open="open"><summary>v0.6.0</summary>
+
+>- Add a tax-exclusive toggle for dashboard statistics
+>- Version db and PDF JavaScript bundles from their npm packages and preserve offline loading of versioned scripts
+>- Improve PDF preview and generation performance, font caching, and PDF/A-3 attachments
+>- Add local ZUGFeRD XML validation before PDF/A-3 export when validation is enabled
+>- Improve ZUGFeRD XML structure and rounded invoice totals
+>- Limit PWA language resources to the supported English, German, Spanish, and French cultures
+>- Update npm dependencies for the db and PDF projects; bump beinx.db to v1.0.3 and blazor-invoice-pdf to v1.3.1
+
+</details>
+
+<details><summary>v0.5.5</summary>
 
 >- Update ZUGFeRD-csharp to v18.0.0
 >- Use the ZUGFeRD 2.3 Comfort/EN16931 profile for PDF/A-3 exports and preserve the seller CompanyId

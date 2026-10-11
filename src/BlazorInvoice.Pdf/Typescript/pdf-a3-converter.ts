@@ -1,8 +1,10 @@
-import { PDFArray, PDFDict, PDFDocument, PDFHexString, PDFName, PDFString } from "pdf-lib";
+import { AFRelationship, decodePDFRawStream, PDFArray, PDFDict, PDFDocument, PDFHexString, PDFName, PDFRawStream, PDFString } from "pdf-lib";
 import { InvoiceDto } from "./dtos/invoice-dto";
-import * as pako from "pako";
 
 export class PdfA3Converter {
+    private static readonly invoiceFileNames = ["invoice.xml", "factur-x.xml", "zugferd-invoice.xml"];
+    private static iccProfilePromise: Promise<Uint8Array> | undefined;
+
     public async createA3Pdf(doc: PDFDocument, invoiceDto: InvoiceDto, culture: string, hexId: string, xmlInvoice: string)
         : Promise<Uint8Array> {
         
@@ -17,62 +19,33 @@ export class PdfA3Converter {
         doc.setModificationDate(new Date(invoiceDto.issueDate))
         this.addMetadata(doc, invoiceDto);
         this.setCatalog(doc, culture);
-        this.embedXmlInvoice(doc, xmlInvoice);
-        this.setCMAPS(doc);
+        await this.embedXmlInvoice(doc, xmlInvoice);
         
         return await doc.save();
     }
 
     protected async loadIccProfile(): Promise<Uint8Array> {
-        const response = await fetch('./_content/BlazorInvoice.Pdf/colorprofiles/sRGB2014.icc');
-        const buffer = await response.arrayBuffer();
-        return new Uint8Array(buffer);
-    }
-
-    private setCMAPS(doc: PDFDocument): void {
-        doc.context.enumerateIndirectObjects().forEach(([ref, obj]) => {
-            if (obj instanceof PDFDict) {
-                const fontEntry = Array.from(obj.entries()).find(([key, value]) => value.toString().includes("Font"))
-                if (fontEntry) {
-                    obj.set(PDFName.of("CIDToGIDMap"), PDFName.of("Identity"))
+        if (!PdfA3Converter.iccProfilePromise) {
+            PdfA3Converter.iccProfilePromise = (async () => {
+                const response = await fetch('./_content/BlazorInvoice.Pdf/colorprofiles/sRGB2014.icc');
+                if (!response.ok) {
+                    throw new Error(`Failed to load ICC profile: HTTP ${response.status}`);
                 }
-            }
-        })
+                return new Uint8Array(await response.arrayBuffer());
+            })().catch(error => {
+                PdfA3Converter.iccProfilePromise = undefined;
+                throw error;
+            });
+        }
+        return PdfA3Converter.iccProfilePromise;
     }
 
-    private embedXmlInvoice(doc: PDFDocument, xml: string): void {
-        const encoder = new TextEncoder();
-        const xmlBuffer = encoder.encode(xml);
-        //const xmlBuffer = Buffer.from(xml, "utf8");
-        const embeddedFileStream = doc.context.flateStream(xmlBuffer, {
-            Type: PDFName.of("EmbeddedFile"),
-            Subtype: PDFName.of("application/xml"),
+    private async embedXmlInvoice(doc: PDFDocument, xml: string): Promise<void> {
+        await doc.attach(new TextEncoder().encode(xml), "invoice.xml", {
+            mimeType: "application/xml",
+            description: "Invoice XML",
+            afRelationship: AFRelationship.Alternative,
         });
-
-        const embeddedFileRef = doc.context.register(embeddedFileStream);
-
-        const fileSpec = doc.context.obj({
-            Type: PDFName.of("Filespec"),
-            F: PDFString.of("invoice.xml"),
-            UF: PDFString.of("invoice.xml"),
-            AFRelationship: PDFName.of("Alternative"),
-            Desc: PDFString.of("Invoice XML"),
-            EF: {
-                F: embeddedFileRef,
-                UF: embeddedFileRef,
-            },
-        });
-
-        const fileSpecRef = doc.context.register(fileSpec);
-        doc.catalog.set(PDFName.of("AF"), doc.context.obj([fileSpecRef]));
-
-        const embeddedFilesNameTree = doc.context.obj({
-            Names: [PDFString.of("invoice.xml"), fileSpecRef],
-        });
-
-        doc.catalog.set(PDFName.of("Names"), doc.context.obj({
-            EmbeddedFiles: embeddedFilesNameTree,
-        }));
     }
 
     private setCatalog(doc: PDFDocument, culture: string): void {
@@ -92,6 +65,8 @@ export class PdfA3Converter {
     private addMetadata(doc: PDFDocument, invoiceDto: InvoiceDto): void {
         const date = new Date(invoiceDto.issueDate);
         const issueDateUTC = date.toISOString();
+        const sellerName = this.escapeXmlText(invoiceDto.sellerParty.name);
+        const invoiceId = this.escapeXmlText(invoiceDto.id);
         const metadataXML = `
             <?xpacket begin="" id="W5M0MpCehiHzreSzNTczkc9d"?>
             <x:xmpmeta xmlns:x="adobe:ns:meta/" x:xmptk="Adobe XMP Core 5.2-c001 63.139439, 2010/09/27-13:37:26        ">
@@ -101,25 +76,25 @@ export class PdfA3Converter {
                     <dc:format>application/pdf</dc:format>
                     <dc:creator>
                     <rdf:Seq>
-                        <rdf:li>${invoiceDto.sellerParty.name}</rdf:li>
+                        <rdf:li>${sellerName}</rdf:li>
                     </rdf:Seq>
                     </dc:creator>
                     <dc:title>
                     <rdf:Alt>
-                        <rdf:li xml:lang="x-default">${invoiceDto.id}</rdf:li>
+                        <rdf:li xml:lang="x-default">${invoiceId}</rdf:li>
                     </rdf:Alt>
                     </dc:title>
                 </rdf:Description>
         
                 <rdf:Description rdf:about="" xmlns:xmp="http://ns.adobe.com/xap/1.0/">
-                    <xmp:CreatorTool>${invoiceDto.sellerParty.name}</xmp:CreatorTool>
+                    <xmp:CreatorTool>${sellerName}</xmp:CreatorTool>
                     <xmp:CreateDate>${issueDateUTC}</xmp:CreateDate>
                     <xmp:ModifyDate>${issueDateUTC}</xmp:ModifyDate>
                     <xmp:MetadataDate>${issueDateUTC}</xmp:MetadataDate>
                 </rdf:Description>
         
                 <rdf:Description rdf:about="" xmlns:pdf="http://ns.adobe.com/pdf/1.3/">
-                    <pdf:Producer>${invoiceDto.sellerParty.name}</pdf:Producer>
+                    <pdf:Producer>${sellerName}</pdf:Producer>
                 </rdf:Description>
         
                 <rdf:Description rdf:about="" xmlns:pdfaid="http://www.aiim.org/pdfa/ns/id/">
@@ -131,18 +106,22 @@ export class PdfA3Converter {
             <?xpacket end="w"?>
             `.trim()
 
-        const metadataStream = doc.context.stream(metadataXML, {
+        const metadataStream = doc.context.stream(new TextEncoder().encode(metadataXML), {
         Type: "Metadata",
         Subtype: "XML",
-        Length: metadataXML.length,
         })
         const metadataStreamRef = doc.context.register(metadataStream)
         doc.catalog.set(PDFName.of("Metadata"), metadataStreamRef)
     }
 
+    private escapeXmlText(value: string): string {
+        return value.replace(/[&<>"']/g, character => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&apos;',
+        })[character]!);
+    }
+
     private setColorProfile(doc: PDFDocument, iccBuffer: Uint8Array): void {
         const iccStream = doc.context.stream(iccBuffer, {
-        Length: iccBuffer.length,
         N: 3,
         })
         const outputIntent = doc.context.obj({
@@ -161,41 +140,68 @@ export class PdfA3Converter {
     }
 
     public async getXmlString(pdfBytes: Uint8Array): Promise<string | null> {
-        const pdfDoc = await PDFDocument.load(pdfBytes);
+        const doc = await PDFDocument.load(pdfBytes, { updateMetadata: false });
+        const files: { name: string; file: PDFDict }[] = [];
+        const seenFiles = new Set<PDFDict>();
+        const addFile = (file: unknown, treeName?: string) => {
+            if (!(file instanceof PDFDict) || seenFiles.has(file)) return;
+            const names = [treeName, this.decodeFileName(file.lookup(PDFName.of('UF'))),
+                this.decodeFileName(file.lookup(PDFName.of('F')))];
+            const name = names.find(value => value !== undefined &&
+                PdfA3Converter.invoiceFileNames.includes(value.toLowerCase()));
+            if (name !== undefined) {
+                seenFiles.add(file);
+                files.push({ name: name.toLowerCase(), file });
+            }
+        };
 
-        const catalog = pdfDoc.catalog;
-        const namesDict = catalog.lookup(PDFName.of('Names')) as PDFDict;
-        if (!namesDict) return null;
+        const names = doc.catalog.lookup(PDFName.of('Names'));
+        const tree = names instanceof PDFDict ? names.lookup(PDFName.of('EmbeddedFiles')) : undefined;
+        if (tree instanceof PDFDict) this.visitEmbeddedFiles(tree, addFile, new Set());
 
-        const embeddedFiles = namesDict.lookup(PDFName.of('EmbeddedFiles')) as PDFDict;
-        if (!embeddedFiles) return null;
-
-        const namesArray = embeddedFiles.lookup(PDFName.of('Names')) as PDFArray;
-        if (!namesArray || namesArray.size() === 0) return null;
-
-        for (let i = 0; i < namesArray.size(); i += 2) {
-            const nameObj = namesArray.lookup(i) as PDFString;
-            const name = nameObj?.decodeText?.() ?? '';
-
-            if (name === 'invoice.xml') {
-                const fileSpec = namesArray.lookup(i + 1) as PDFDict;
-                if (!fileSpec) continue;
-
-                const efDict = fileSpec.lookup(PDFName.of('EF')) as PDFDict;
-                if (!efDict) continue;
-
-                const fStream = efDict.lookup(PDFName.of('F'));
-                if (!fStream) continue;
-
-                const compressed = (fStream as any).getContents?.();
-                if (!compressed) continue;
-
-                // 🔧 Decompress using pako (zlib inflate)
-                const decoded = pako.inflate(compressed);
-                return new TextDecoder('utf-8').decode(decoded);
+        const associatedFiles = doc.catalog.lookup(PDFName.of('AF'));
+        if (associatedFiles instanceof PDFArray) {
+            for (let index = 0; index < associatedFiles.size(); index++) {
+                addFile(associatedFiles.lookup(index));
             }
         }
 
+        // Preserve preference for this application's invoice.xml when several files exist.
+        for (const name of PdfA3Converter.invoiceFileNames) {
+            for (const candidate of files.filter(candidate => candidate.name === name)) {
+                const embedded = candidate.file.lookup(PDFName.of('EF'));
+                if (!(embedded instanceof PDFDict)) continue;
+                const unicodeStream = embedded.lookup(PDFName.of('UF'));
+                const stream = unicodeStream instanceof PDFRawStream
+                    ? unicodeStream : embedded.lookup(PDFName.of('F'));
+                if (!(stream instanceof PDFRawStream)) continue;
+                const bytes = decodePDFRawStream(stream).decode();
+                return new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+            }
+        }
         return null;
+    }
+
+    private decodeFileName(value: unknown): string | undefined {
+        return value instanceof PDFString || value instanceof PDFHexString ? value.decodeText() : undefined;
+    }
+
+    private visitEmbeddedFiles(tree: PDFDict, addFile: (file: unknown, name?: string) => void,
+        visited: Set<PDFDict>): void {
+        if (visited.has(tree)) return;
+        visited.add(tree);
+        const names = tree.lookup(PDFName.of('Names'));
+        if (names instanceof PDFArray) {
+            for (let index = 0; index + 1 < names.size(); index += 2) {
+                addFile(names.lookup(index + 1), this.decodeFileName(names.lookup(index)));
+            }
+        }
+        const children = tree.lookup(PDFName.of('Kids'));
+        if (children instanceof PDFArray) {
+            for (let index = 0; index < children.size(); index++) {
+                const child = children.lookup(index);
+                if (child instanceof PDFDict) this.visitEmbeddedFiles(child, addFile, visited);
+            }
+        }
     }
 }

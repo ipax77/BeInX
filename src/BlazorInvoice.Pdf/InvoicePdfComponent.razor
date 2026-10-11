@@ -1,7 +1,10 @@
 ﻿@using System.Globalization
 @using beinx.shared
 @using beinx.shared.Interfaces
+@using Microsoft.JSInterop
+@implements IAsyncDisposable
 @inject IPdfJsInterop pdfJsInterop
+@inject IJSRuntime JS
 
 <div>
     @if (!string.IsNullOrEmpty(ObjectUrl))
@@ -20,6 +23,8 @@
 
     public string ObjectUrl { get; set; } = string.Empty;
     string error = string.Empty;
+    private long generation;
+    private bool disposed;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -32,30 +37,65 @@
 
     public void Update(BlazorInvoiceDto? invoice)
     {
+        if (disposed) return;
         this.Invoice = invoice;
         _ = CreatePdf();
     }
 
     private async Task CreatePdf()
     {
+        if (disposed) return;
+        var request = ++generation;
+        var invoice = Invoice;
+        string? newUrl = null;
+        var newError = string.Empty;
         try
         {
-            if (Invoice is null)
+            if (invoice is not null)
             {
-                return;
+                newUrl = await pdfJsInterop
+                    .CreateInvoicePdf(invoice, CultureInfo.CurrentCulture.TwoLetterISOLanguageName);
             }
-            else
-            {
-                ObjectUrl = await pdfJsInterop
-                    .CreateInvoicePdf(Invoice, CultureInfo.CurrentCulture.TwoLetterISOLanguageName);
-            }
-            error = string.Empty;
         }
         catch (Exception ex)
         {
-            error = ex.Message;
-            ObjectUrl = string.Empty;
+            newError = ex.Message;
         }
-        await InvokeAsync(StateHasChanged);
+
+        if (disposed || request != generation)
+        {
+            await ReleaseUrl(newUrl);
+            return;
+        }
+
+        var previousUrl = ObjectUrl;
+        ObjectUrl = newUrl ?? string.Empty;
+        error = newError;
+        await InvokeAsync(() =>
+        {
+            if (!disposed && request == generation) StateHasChanged();
+        });
+        await ReleaseUrl(previousUrl);
+    }
+
+    private async ValueTask ReleaseUrl(string? url)
+    {
+        if (string.IsNullOrEmpty(url)) return;
+        try
+        {
+            await JS.InvokeVoidAsync("URL.revokeObjectURL", url);
+        }
+        catch (JSDisconnectedException) { }
+        catch (ObjectDisposedException) { }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (disposed) return;
+        disposed = true;
+        generation++;
+        var previousUrl = ObjectUrl;
+        ObjectUrl = string.Empty;
+        await ReleaseUrl(previousUrl);
     }
 }

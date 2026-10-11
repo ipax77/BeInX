@@ -38,6 +38,7 @@ public partial class InvoiceImportComponent
 
     private async Task LoadFile(InputFileChangeEventArgs e)
     {
+        importResult = null;
         isLoading = true;
         await InvokeAsync(StateHasChanged);
         try
@@ -59,18 +60,18 @@ public partial class InvoiceImportComponent
             {
                 stream.Position = 0;
                 var dto = await JsonSerializer.DeserializeAsync<BlazorInvoiceDto>(stream);
-                ValidateJson(dto);
+                await ValidateJson(dto);
             }
             else if (fileName.EndsWith(".xml"))
             {
                 var xml = Encoding.UTF8.GetString(stream.ToArray());
-                ValidateXml(xml);
+                await ValidateXml(xml);
             }
             else if (fileName.EndsWith(".pdf"))
             {
                 var pdfBytes = stream.ToArray();
                 var extractedXml = await PdfJsInterop.GetXmlString(pdfBytes);
-                ValidateXml(extractedXml);
+                await ValidateXml(extractedXml);
             }
             else
             {
@@ -90,6 +91,7 @@ public partial class InvoiceImportComponent
 
     private async Task ValidateText()
     {
+        importResult = null;
         if (string.IsNullOrEmpty(xmlTextInput))
         {
             return;
@@ -101,11 +103,11 @@ public partial class InvoiceImportComponent
             if (xmlTextInput.StartsWith('{'))
             {
                 var dto = JsonSerializer.Deserialize<BlazorInvoiceDto>(xmlTextInput);
-                ValidateJson(dto);
+                await ValidateJson(dto);
             }
             else
             {
-                ValidateXml(xmlTextInput);
+                await ValidateXml(xmlTextInput);
             }
         }
         catch (Exception ex)
@@ -119,7 +121,7 @@ public partial class InvoiceImportComponent
         }
     }
 
-    private void ValidateJson(BlazorInvoiceDto? dto)
+    private async Task ValidateJson(BlazorInvoiceDto? dto)
     {
         if (dto is null)
         {
@@ -136,11 +138,14 @@ public partial class InvoiceImportComponent
             return;
         }
 
-        Validate(xmlInvoice);
+        var result = await XmlInvoiceValidator.ValidateSchematron(xmlInvoice);
+        if (SetValidationResult(result))
+            CompleteValidation(xmlInvoice);
     }
 
-    private void ValidateXml(string? xml)
+    private async Task ValidateXml(string? xml)
     {
+        importResult = null;
         if (string.IsNullOrEmpty(xml))
         {
             ToastService.ShowError(Loc["Failed getting xml data"]);
@@ -165,7 +170,7 @@ public partial class InvoiceImportComponent
         }
         else if (ns.Contains("xrechnung") || ns.Contains("ubl") || ns.Contains("cii"))
         {
-            HandleXRechnung(xml);
+            await HandleXRechnung(xml);
         }
         else
         {
@@ -175,6 +180,9 @@ public partial class InvoiceImportComponent
 
     private void HandleZugferd(string xml)
     {
+        if (!SetValidationResult(ZugferdXmlValidator.Validate(xml)))
+            return;
+
         var dto = InvoiceService.GetDtoFromZugferdXmlString(xml);
         if (dto is null)
         {
@@ -184,21 +192,34 @@ public partial class InvoiceImportComponent
         }
         var mapper = new BlazorInvoiceMapper();
         var xmlInvoice = mapper.ToXml(dto);
-        Validate(xmlInvoice);
+        CompleteValidation(xmlInvoice);
     }
 
-    private void HandleXRechnung(string xml)
+    private async Task HandleXRechnung(string xml)
     {
+        if (!SetValidationResult(await XmlInvoiceValidator.ValidateSchematron(xml)))
+            return;
+
         var serializer = new XmlSerializer(typeof(XmlInvoice));
         using var stream = new MemoryStream(Encoding.UTF8.GetBytes(xml));
         var xmlInvoice = (XmlInvoice?)serializer.Deserialize(stream);
-        Validate(xmlInvoice);
+        CompleteValidation(xmlInvoice);
     }
 
-    private void Validate(XmlInvoice? invoice)
+    private bool SetValidationResult(InvoiceValidationResult result)
     {
-        importResult = null;
+        importResult = new InvoiceImportResult { SchemaResult = result };
+        if (!result.IsValid)
+        {
+            importResult.Message = $"XML {Loc["ValFailed"]}";
+            ToastService.ShowError(importResult.Message);
+            return false;
+        }
+        return true;
+    }
 
+    private void CompleteValidation(XmlInvoice? invoice)
+    {
         if (invoice is null)
         {
             importResult = new InvoiceImportResult { Message = Loc["Failed mapping to final xml"] };
@@ -206,18 +227,7 @@ public partial class InvoiceImportComponent
             return;
         }
 
-        importResult = new InvoiceImportResult
-        {
-            XmlInvoice = invoice,
-            SchemaResult = XmlInvoiceValidator.Validate(invoice)
-        };
-
-        if (!importResult.SchemaResult.IsValid)
-        {
-            importResult.Message = $"XML {Loc["ValFailed"]}";
-            ToastService.ShowError(importResult.Message);
-            return;
-        }
+        importResult!.XmlInvoice = invoice;
         var mapper = new BlazorInvoiceMapper();
         importResult.InvoiceDto = mapper.FromXml(invoice);
         importResult.XmlText = XmlInvoiceWriter.Serialize(invoice);
@@ -232,7 +242,7 @@ public partial class InvoiceImportComponent
 
     private async Task Import()
     {
-        if (importResult?.InvoiceDto == null)
+        if (importResult?.InvoiceDto == null || importResult.SchemaResult?.IsValid != true)
         {
             ToastService.ShowError("No invoice to import.");
             return;

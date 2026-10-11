@@ -35,6 +35,18 @@ public partial class InvoiceService(IConfigService configService,
             ArgumentNullException.ThrowIfNull(xmlInvoice, nameof(xmlInvoice));
 
             var xmlText = GetXmlText(xmlInvoice, invoiceDto, config.ExportType);
+            if (config.ExportValidate && config.ExportType == ExportType.PdfA3)
+            {
+                var result = ZugferdMapper.ValidateZugferdXml(xmlText);
+                if (!result.IsValid)
+                {
+                    var details = string.Join(Environment.NewLine, result.Validations
+                        .Where(v => v.Severity == System.Xml.Schema.XmlSeverityType.Error)
+                        .Select(v => $"{v.Code}: {v.Message} ({v.Path})"));
+                    return new ExportResult(null, string.Empty,
+                        $"ZUGFeRD XML validation failed. {result.Error}{Environment.NewLine}{details}".Trim());
+                }
+            }
             var pdfBytes = await GetPdfBytes(invoiceDto, config.ExportType, config.CultureName, xmlText);
 
             if (config.ExportEmbedPdf && config.ExportType != ExportType.PdfA3)
@@ -44,20 +56,24 @@ public partial class InvoiceService(IConfigService configService,
                 xmlInvoice = mapper.ToXml(invoiceDto);
             }
 
-            if (config.ExportValidate)
+            if (config.ExportValidate && config.ExportType != ExportType.PdfA3)
             {
                 var schemaResult = XmlInvoiceValidator.Validate(xmlInvoice);
                 if (!schemaResult.IsValid)
                 {
                     return new(new(DateTime.UtcNow, string.Empty, Array.Empty<byte>()), string.Empty, Error: "XML Schema validation failed.");
                 }
-                if (!string.IsNullOrEmpty(config.SchematronValidationUri))
+                var validatorUri = string.IsNullOrWhiteSpace(config.SchematronValidationUri)
+                    ? null
+                    : new Uri(config.SchematronValidationUri);
+                var schematronResult = await XmlInvoiceValidator.ValidateSchematron(xmlInvoice, validatorUri);
+                if (!schematronResult.IsValid)
                 {
-                    var schematronResult = await XmlInvoiceValidator.ValidateSchematron(xmlInvoice, new Uri(config.SchematronValidationUri));
-                    if (!schematronResult.IsValid)
-                    {
-                        return new(new(DateTime.UtcNow, string.Empty, Array.Empty<byte>()), string.Empty, Error: "XML Schematron validation failed.");
-                    }
+                    var details = string.Join(Environment.NewLine, schematronResult.Validations
+                        .Where(v => v.Severity == System.Xml.Schema.XmlSeverityType.Error)
+                        .Select(v => $"{v.Code}: {v.Message} ({v.Path})"));
+                    return new(null, string.Empty,
+                        $"XML Schematron validation failed. {schematronResult.Error}{Environment.NewLine}{details}".Trim());
                 }
             }
             FinalizeResult finalizeResult;

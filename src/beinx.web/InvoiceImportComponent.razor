@@ -49,7 +49,7 @@
     @if (importResult?.XmlInvoice != null)
     {
         <div class="btn-group mt-2 mb-3">
-            <button type="button" class="btn btn-outline-warning" @onclick="Import">@Loc["Import"]</button>
+            <button type="button" class="btn btn-outline-warning" @onclick="Import" disabled="@(isLoading || importResult.InvoiceDto == null || importResult.SchemaResult?.IsValid != true)">@Loc["Import"]</button>
         </div>
 
         <h3 class="mt-2 mb-2">@Loc["Result"]</h3>
@@ -87,7 +87,7 @@
     @if (importResult?.SchemaResult != null)
     {
         <div class="mb-5 mt-3">
-            <ValidationResultComponent Result="importResult.SchemaResult" />
+            <ValidationResultComponent Result="importResult.SchemaResult" ShowWarnings="true" />
         </div>
     }
 </div>

@@ -158,9 +158,23 @@
 							</button>
 						</div>
 						<div class="collapse" id="validation">
+							<div class="btn-group mt-2 mb-2" role="group" aria-label="XML validation format">
+								<button type="button" class="btn @(validationFormat == ValidationFormat.XRechnung ? "btn-primary" : "btn-outline-primary")" disabled="@isValidating" aria-pressed="@(validationFormat == ValidationFormat.XRechnung ? "true" : "false")" @onclick="() => SetValidationFormat(ValidationFormat.XRechnung)">XRechnung XML</button>
+								<button type="button" class="btn @(validationFormat == ValidationFormat.Zugferd ? "btn-primary" : "btn-outline-primary")" disabled="@isValidating" aria-pressed="@(validationFormat == ValidationFormat.Zugferd ? "true" : "false")" @onclick="() => SetValidationFormat(ValidationFormat.Zugferd)">ZUGFeRD XML</button>
+							</div>
 							<div class="d-flex gap-2 mt-2 mb-2">
-								<button type="button" class="btn btn-outline-primary flex-grow-1" @onclick="ValidateInvoiceSchema">
-									Validate XML
+								<button type="button" class="btn btn-outline-primary flex-grow-1" disabled="@isValidating" @onclick="ValidateInvoiceSchema">
+									@if (isValidating)
+									{
+										<span role="status">
+											<span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+											Validating XML…
+										</span>
+									}
+									else
+									{
+										@Loc["Validate XML"]
+									}
 								</button>
 							</div>
 							<div class="mb-3">
@@ -275,6 +289,9 @@
 	private bool ShowValidation = false;
 
 	InvoiceValidationResult? invoiceValidationResult = null;
+	private enum ValidationFormat { XRechnung, Zugferd }
+	private ValidationFormat validationFormat = ValidationFormat.XRechnung;
+	private bool isValidating;
 
 	protected override async Task OnInitializedAsync()
 	{
@@ -394,15 +411,46 @@
 		await JSRuntime.InvokeVoidAsync("downloadFileFromStream", fileName, streamRef, mimeType);
 	}
 
-	private void ValidateInvoiceSchema()
+	private void SetValidationFormat(ValidationFormat format)
 	{
-		if (EditContext is not null)
+		if (isValidating || validationFormat == format)
+			return;
+		validationFormat = format;
+		invoiceValidationResult = null;
+	}
+
+	private async Task ValidateInvoiceSchema()
+	{
+		if (isValidating)
+			return;
+		isValidating = true;
+		invoiceValidationResult = null;
+		try
 		{
-			EditContext.Validate();
+			StateHasChanged();
+			// Give the browser a paint opportunity before synchronous WASM validation.
+			await JSRuntime.InvokeVoidAsync("waitForBrowserPaint");
+			EditContext?.Validate();
+			if (validationFormat == ValidationFormat.Zugferd)
+			{
+				var xmlText = InvoiceService.GetZugferdXmlString(CurrentDraft.Data.InvoiceDto);
+				invoiceValidationResult = ZugferdXmlValidator.Validate(xmlText);
+			}
+			else
+			{
+				var mapper = new BlazorInvoiceMapper();
+				var xmlInvoice = mapper.ToXml(CurrentDraft.Data.InvoiceDto);
+				invoiceValidationResult = await XmlInvoiceValidator.ValidateSchematron(xmlInvoice);
+			}
 		}
-		var mapper = new BlazorInvoiceMapper();
-		var xmlInvoice = mapper.ToXml(CurrentDraft.Data.InvoiceDto);
-		invoiceValidationResult = XmlInvoiceValidator.Validate(xmlInvoice);
+		catch (Exception ex)
+		{
+			invoiceValidationResult = new InvoiceValidationResult { Error = ex.Message };
+		}
+		finally
+		{
+			isValidating = false;
+		}
 	}
 
 	protected override async Task SaveDraftAsync()

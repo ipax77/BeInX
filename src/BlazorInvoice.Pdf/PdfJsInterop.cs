@@ -14,7 +14,7 @@ namespace BlazorInvoice.Pdf
         {
             var baseUri = nav.BaseUri;
             moduleTask = new(() => jsRuntime.InvokeAsync<IJSObjectReference>(
-                "import", $"{baseUri}_content/BlazorInvoice.Pdf/dist/pdf-generator.js").AsTask());
+                "import", $"{baseUri}{JsModule.Path}").AsTask());
         }
 
         public async ValueTask<string> CreateInvoicePdf(BlazorInvoiceDto invoice, string cultureName)

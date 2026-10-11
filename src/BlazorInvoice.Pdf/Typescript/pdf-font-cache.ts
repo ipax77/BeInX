@@ -1,62 +1,60 @@
-
 import { PDFFont } from "pdf-lib";
 
+interface FontCacheEntry {
+  characters?: Set<number>;
+  text: Map<string, string>;
+  widths: Map<number, Map<string, number>>;
+  heights: Map<number, number>;
+}
+
 export class PdfFontCache {
-  private textCache: Record<string, string> = {};
-  private sanitizedCache: Record<string, boolean> = {};
-  private widthCache: Record<string, number> = {};
-  private heightCache: Record<string, number> = {};
+  private readonly fonts = new WeakMap<PDFFont, FontCacheEntry>();
 
-  public sanitizeText(font: PDFFont, text: string): string {
-    if (text in this.textCache) {
-      return this.textCache[text];
+  private getCache(font: PDFFont): FontCacheEntry {
+    let cache = this.fonts.get(font);
+    if (!cache) {
+      cache = { text: new Map(), widths: new Map(), heights: new Map() };
+      this.fonts.set(font, cache);
     }
-
-    if (text in this.sanitizedCache) {
-      return text;
-    }
-
-    const characterSet = font.getCharacterSet();
-    const isCharacterSupported = (char: string) =>
-      characterSet.includes(char.charCodeAt(0));
-    const sanitizedText = Array.from(text)
-      .map((char) => (isCharacterSupported(char) ? char : "?"))
-      .join("");
-
-    this.textCache[text] = sanitizedText;
-    this.sanitizedCache[sanitizedText] = true;
-
-    return sanitizedText;
+    return cache;
   }
 
-  public getTextWidth(font: PDFFont, text: string, size: number) {
-    const sanitizedText = this.sanitizeText(font, text);
-    const fontRef = font.ref.toString();
-    const cacheKey = `${fontRef}-${sanitizedText}-${size}`;
+  public sanitizeText(font: PDFFont, text: string): string {
+    const cache = this.getCache(font);
+    const cached = cache.text.get(text);
+    if (cached !== undefined) return cached;
 
-    if (cacheKey in this.widthCache) {
-      return this.widthCache[cacheKey];
+    cache.characters ??= new Set(font.getCharacterSet());
+    const characters = cache.characters;
+    const sanitized = Array.from(text, character =>
+      characters.has(character.codePointAt(0)!) ? character : "?",
+    ).join("");
+    cache.text.set(text, sanitized);
+    cache.text.set(sanitized, sanitized);
+    return sanitized;
+  }
+
+  public getTextWidth(font: PDFFont, text: string, size: number): number {
+    const sanitized = this.sanitizeText(font, text);
+    const cache = this.getCache(font);
+    let widths = cache.widths.get(size);
+    if (!widths) {
+      widths = new Map();
+      cache.widths.set(size, widths);
     }
-
-    const width = font.widthOfTextAtSize(sanitizedText, size);
-
-    this.widthCache[cacheKey] = width;
-
+    const cached = widths.get(sanitized);
+    if (cached !== undefined) return cached;
+    const width = font.widthOfTextAtSize(sanitized, size);
+    widths.set(sanitized, width);
     return width;
   }
 
-  public getTextHeight(font: PDFFont, size: number) {
-    const fontRef = font.ref.toString();
-    const cacheKey = `${fontRef}-${size}`;
-
-    if (cacheKey in this.heightCache) {
-      return this.heightCache[cacheKey];
-    }
-
+  public getTextHeight(font: PDFFont, size: number): number {
+    const cache = this.getCache(font);
+    const cached = cache.heights.get(size);
+    if (cached !== undefined) return cached;
     const height = font.heightAtSize(size);
-
-    this.heightCache[cacheKey] = height;
-
+    cache.heights.set(size, height);
     return height;
   }
 }

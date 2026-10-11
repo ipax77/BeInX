@@ -1,85 +1,89 @@
-import * as fs from 'fs';
-import { PdfGenerator, sampleInvoice } from "../pdf-generator";
-import { PDFDocument, StandardFonts } from 'pdf-lib';
+import fs from 'fs';
+import { PDFDict, PDFDocument, PDFName } from 'pdf-lib';
+import { vi } from 'vitest';
+import { createInvoicePdfA3Bytes, createInvoicePdfBytes, sampleInvoice } from '../pdf-generator';
 import { PdfA3Converter } from '../pdf-a3-converter';
-import path from 'path';
-import fontkit from "@pdf-lib/fontkit";
-import { Fontkit } from "pdf-lib/cjs/types/fontkit";
-import { randomBytes } from 'crypto';
+import { documentId, extractXmp, invoiceXml, mockPdfAssets, parseXml, readPageContent, roundTripXml } from './pdf-test-helpers';
+
+beforeEach(mockPdfAssets);
+afterEach(() => {
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+});
 
 describe('PdfGenerator', () => {
-    it('should create a valid PDF file', async () => {
-        const pdfDoc = await PDFDocument.create();
-        const defaultFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
-        const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
-        const italicFont = await pdfDoc.embedFont(StandardFonts.HelveticaOblique);
-
-        const pdfGenerator = new PdfGenerator(pdfDoc, defaultFont, boldFont, italicFont, "fr");
-
-        const invoice = sampleInvoice();
-        const pdf = await pdfGenerator.generateInvoice(invoice);
-        fs.writeFileSync('testinvoice.pdf', pdf);
+    it('creates a readable ordinary PDF with content on every page', async () => {
+        const save = vi.spyOn(PDFDocument.prototype, 'save');
+        const bytes = await createInvoicePdfBytes(sampleInvoice(), 'fr');
+        expect(save).toHaveBeenCalledTimes(1);
+        const contents = await readPageContent(bytes);
+        expect(contents.length).toBeGreaterThan(1);
+        contents.forEach(content => expect(content).toMatch(/\bTj\b|\bTJ\b/));
+        fs.writeFileSync('testinvoice.pdf', bytes);
     });
 
-    it('should create a valid PDF/A3 file', async () => {
-        const pdfDoc = await PDFDocument.create();
-        pdfDoc.registerFontkit(fontkit as Fontkit);
-        const regularFontBytes = fs.readFileSync(path.join(__dirname, '../../wwwroot/fonts/Inter-Light.ttf'));
-        const boldFontBytes = fs.readFileSync(path.join(__dirname, '../../wwwroot/fonts/Inter-Bold.ttf'));
-        const italicFontBytes = fs.readFileSync(path.join(__dirname, '../../wwwroot/fonts/Inter-MediumItalic.ttf'));
-        const defaultFont = await pdfDoc.embedFont(regularFontBytes, { subset: true });
-        const boldFont = await pdfDoc.embedFont(boldFontBytes, { subset: true });
-        const italicFont = await pdfDoc.embedFont(italicFontBytes, { subset: true });
-        const culture = "de";
-        const pdfGenerator = new PdfGenerator(pdfDoc, defaultFont, boldFont, italicFont, culture);
-
-        const invoice = sampleInvoice();
-        await pdfGenerator.generateInvoice(invoice);
-        
-        const xmlInvoice = fs.readFileSync("./__tests__/data/sample.xml",'utf8');
-        const pdfA3Converter = new MockPdfA3Converter();
-        const documentId = randomBytes(16).toString("hex");
-        const pdf = await pdfA3Converter.createA3Pdf(pdfDoc, invoice, culture, documentId, xmlInvoice);
-
-        fs.writeFileSync('testinvoiceA3.pdf', pdf);
+    it('creates a readable A3 PDF with one save and embedded font mappings', async () => {
+        const save = vi.spyOn(PDFDocument.prototype, 'save');
+        const bytes = await createInvoicePdfA3Bytes(sampleInvoice(), 'de', documentId, invoiceXml);
+        expect(save).toHaveBeenCalledTimes(1);
+        const contents = await readPageContent(bytes);
+        expect(contents.length).toBeGreaterThan(1);
+        contents.forEach(content => expect(content).toMatch(/\bTj\b|\bTJ\b/));
+        const pdf = await PDFDocument.load(bytes, { updateMetadata: false });
+        let cidFonts = 0;
+        for (const [, object] of pdf.context.enumerateIndirectObjects()) {
+            if (!(object instanceof PDFDict)) continue;
+            if (object.get(PDFName.of('Subtype')) === PDFName.of('CIDFontType2')) {
+                cidFonts++;
+                expect(object.get(PDFName.of('CIDToGIDMap'))).toBe(PDFName.of('Identity'));
+            } else {
+                expect(object.has(PDFName.of('CIDToGIDMap'))).toBe(false);
+            }
+        }
+        expect(cidFonts).toBe(3);
+        fs.writeFileSync('testinvoiceA3.pdf', bytes);
     });
 
-    it('should embed and extract the same XML invoice', async () => {
-        // 1️⃣ Create base PDF
-        const pdfDoc = await PDFDocument.create();
-        pdfDoc.registerFontkit(fontkit as any);
-
-        const regularFontBytes = fs.readFileSync(path.join(__dirname, '../../wwwroot/fonts/Inter-Light.ttf'));
-        const boldFontBytes = fs.readFileSync(path.join(__dirname, '../../wwwroot/fonts/Inter-Bold.ttf'));
-        const italicFontBytes = fs.readFileSync(path.join(__dirname, '../../wwwroot/fonts/Inter-MediumItalic.ttf'));
-        const defaultFont = await pdfDoc.embedFont(regularFontBytes, { subset: true });
-        const boldFont = await pdfDoc.embedFont(boldFontBytes, { subset: true });
-        const italicFont = await pdfDoc.embedFont(italicFontBytes, { subset: true });
-
-        const culture = 'de';
-        const pdfGenerator = new PdfGenerator(pdfDoc, defaultFont, boldFont, italicFont, culture);
-
-        const invoice = sampleInvoice();
-        await pdfGenerator.generateInvoice(invoice);
-
-        // 2️⃣ Embed XML via PdfA3Converter
-        const xmlInvoice = fs.readFileSync('./__tests__/data/sample.xml', 'utf8');
-        const pdfA3Converter = new MockPdfA3Converter();
-        const documentId = randomBytes(16).toString('hex');
-        const pdfBytes = await pdfA3Converter.createA3Pdf(pdfDoc, invoice, culture, documentId, xmlInvoice);
-
-        fs.writeFileSync('testinvoiceA3.pdf', pdfBytes);
-
-        // 3️⃣ Extract XML from the generated PDF
-        const extractedXml = await pdfA3Converter.getXmlString(pdfBytes);
-
-        // 4️⃣ Assert that the embedded and extracted XML match
-        expect(extractedXml?.trim()).toBe(xmlInvoice.trim());
+    it.each([invoiceXml, roundTripXml])('preserves the supplied attachment exactly %#', async xml => {
+        const bytes = await createInvoicePdfA3Bytes(sampleInvoice(), 'de', documentId, xml);
+        const extracted = await new PdfA3Converter().getXmlString(bytes);
+        expect(extracted).toBe(xml);
+        if (xml === roundTripXml) {
+            const parsed = parseXml(extracted!);
+            expect(parsed.getElementsByTagName('Name')[0].textContent).toBe('Müller & sons');
+            expect(parsed.getElementsByTagName('Note')[0].textContent).toBe(`Łódź 東京 <offer> "yes" 'ok'`);
+        }
     });
-  });
 
-  class MockPdfA3Converter extends PdfA3Converter {
-    protected override async loadIccProfile(): Promise<Uint8Array> {
-        return fs.readFileSync(path.join(__dirname, "../../wwwroot/colorprofiles/sRGB2014.icc"));
-    }
-}
+    it.each([
+        'Müller & sons',
+        'Łódź 東京',
+        `<offer> "quoted" 'apostrophe' &amp;`,
+    ])('round-trips XMP and document information: %s', async value => {
+        const invoice = sampleInvoice();
+        invoice.sellerParty.name = value;
+        invoice.id = `INV-${value}`;
+        const bytes = await createInvoicePdfA3Bytes(invoice, 'de', documentId, roundTripXml);
+        const { pdf, metadata } = await extractXmp(bytes);
+        const dc = 'http://purl.org/dc/elements/1.1/';
+        const rdf = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#';
+        const xmp = 'http://ns.adobe.com/xap/1.0/';
+        const pdfNs = 'http://ns.adobe.com/pdf/1.3/';
+        const creator = metadata.getElementsByTagNameNS(dc, 'creator')[0];
+        const title = metadata.getElementsByTagNameNS(dc, 'title')[0];
+        expect(creator.getElementsByTagNameNS(rdf, 'li')[0].textContent).toBe(value);
+        expect(title.getElementsByTagNameNS(rdf, 'li')[0].textContent).toBe(invoice.id);
+        expect(metadata.getElementsByTagNameNS(xmp, 'CreatorTool')[0].textContent).toBe(value);
+        expect(metadata.getElementsByTagNameNS(pdfNs, 'Producer')[0].textContent).toBe(value);
+        expect(pdf.getAuthor()).toBe(value);
+        expect(pdf.getCreator()).toBe(value);
+        expect(pdf.getProducer()).toBe(value);
+        expect(pdf.getTitle()).toBe(invoice.id);
+        const issueDate = new Date(invoice.issueDate);
+        expect(pdf.getCreationDate()).toEqual(issueDate);
+        expect(pdf.getModificationDate()).toEqual(issueDate);
+        for (const field of ['CreateDate', 'ModifyDate', 'MetadataDate']) {
+            expect(metadata.getElementsByTagNameNS(xmp, field)[0].textContent).toBe(issueDate.toISOString());
+        }
+    });
+});

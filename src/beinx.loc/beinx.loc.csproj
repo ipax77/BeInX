@@ -6,18 +6,10 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-	<ItemGroup>
-		<Compile Update="InvoiceLoc.Designer.cs">
-			<DesignTime>True</DesignTime>
-			<AutoGen>True</AutoGen>
-			<DependentUpon>InvoiceLoc.resx</DependentUpon>
-		</Compile>
-	</ItemGroup>
-
   <ItemGroup>
+		<!-- InvoiceLoc is the IStringLocalizer marker in SharedResources.cs; no generated class is needed. -->
 		<EmbeddedResource Update="InvoiceLoc.resx">
-			<Generator>PublicResXFileCodeGenerator</Generator>
-			<LastGenOutput>InvoiceLoc.Designer.cs</LastGenOutput>
+			<Generator></Generator>
 		</EmbeddedResource>
 	</ItemGroup>
 </Project>

@@ -11,7 +11,7 @@
 @inject IConfigService ConfigService
 @implements IDisposable
 
-<nav class="navbar navbar-expand-lg bg-body-tertiary fixed-top">
+<nav class="navbar navbar-expand-xxl bg-body-tertiary sticky-top">
 	<div class="container-fluid">
 		<div class="navbar-brand p-1 bg-light rounded rounded-2">
 			<img src="./_content/beinx.web/images/beinx.svg" alt="beinx"
@@ -35,25 +35,25 @@
 				<button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
 			</div>
 			<div class="offcanvas-body">
-				<ul class="navbar-nav me-auto mb-2 mb-lg-0">
+				<ul class="navbar-nav me-auto mb-0">
 					<li class="nav-item">
 						<NavLink class="nav-link" href="" Match="NavLinkMatch.All" @onclick="CloseNavbar">
-							<i class="bi bi-house-door"></i> @Loc["Dashboard"]
+							<i class="bi bi-house-door" aria-hidden="true"></i><span>@Loc["Dashboard"]</span>
 						</NavLink>
 					</li>
 					<li class="nav-item">
 						<NavLink class="nav-link" href="invoices" @onclick="CloseNavbar">
-							<i class="bi bi-file-earmark-text"></i> @Loc["Invoices"]
+							<i class="bi bi-file-earmark-text" aria-hidden="true"></i><span>@Loc["Invoices"]</span>
 						</NavLink>
 					</li>
 					<li class="nav-item">
 						<NavLink class="nav-link" href="invoice" @onclick="CloseNavbar">
-							<i class="bi bi-pencil-square"></i> @Loc["New Invoice"]
+							<i class="bi bi-pencil-square" aria-hidden="true"></i><span>@Loc["New Invoice"]</span>
 						</NavLink>
 					</li>
 					<li class="nav-item dropdown">
 						<a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-							<i class="bi bi-people"></i> @Loc["Parties"]
+							<i class="bi bi-people" aria-hidden="true"></i><span>@Loc["Parties"]</span>
 						</a>
 						<ul class="dropdown-menu">
 							<li><NavLink class="dropdown-item" href="sellers">@Loc["Sellers"]</NavLink></li>
@@ -62,17 +62,17 @@
 					</li>
 					<li class="nav-item">
 						<NavLink class="nav-link" href="payments" @onclick="CloseNavbar">
-							<i class="bi bi-credit-card"></i> @Loc["Means of Payments"]
+							<i class="bi bi-credit-card" aria-hidden="true"></i><span>@Loc["Means of Payments"]</span>
 						</NavLink>
 					</li>
 					<li class="nav-item">
 						<NavLink class="nav-link" href="import" @onclick="CloseNavbar">
-							<i class="bi bi-upload"></i> @Loc["Import"]
+							<i class="bi bi-upload" aria-hidden="true"></i><span>@Loc["Import"]</span>
 						</NavLink>
 					</li>
 					<li class="nav-item">
 						<NavLink class="nav-link" href="config" @onclick="CloseNavbar">
-							<i class="bi bi-gear"></i> @Loc["Settings"]
+							<i class="bi bi-gear" aria-hidden="true"></i><span>@Loc["Settings"]</span>
 						</NavLink>
 					</li>
 				</ul>
@@ -85,15 +85,15 @@
 				}
 				else
 				{
-					<div class="me-2 mt-2">
-						v0.5.5
+					<div class="nav-version">
+						v0.6.0
 					</div>
 				}
 				@if (IsHomePage)
 				{
-					<form class="d-flex" name="cultureselect">
+					<form class="d-flex culture-selector" name="cultureselect">
 						<fieldset>
-							<label class="form-label">
+							<label class="form-label mb-0">
 								<select class="form-select"
 										required
 										@bind="cultureName"
@@ -111,7 +111,7 @@
 				else
 				{
 					<div class="navbar-text text-muted me-3">
-						<i class="bi bi-translate"></i> @CultureInfo.CurrentCulture.NativeName
+						<i class="bi bi-translate" aria-hidden="true"></i><span>@CultureInfo.CurrentCulture.NativeName</span>
 					</div>
 				}
 			</div>

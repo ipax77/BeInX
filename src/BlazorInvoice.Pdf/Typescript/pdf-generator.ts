@@ -13,6 +13,7 @@ import { InvoiceLineDto } from "./dtos/invoice-line-dto";
 import { PartyDto } from "./dtos/party-dto";
 import { PaymentMeansDto } from "./dtos/payment-means-dto";
 import { PdfFontCache } from "./pdf-font-cache";
+import { loadA3FontBytes } from "./pdf-font-loader";
 import { PdfA3Converter } from "./pdf-a3-converter";
 
 const TRANSLATIONS = {
@@ -105,6 +106,12 @@ export class PdfGenerator {
   private fontCache: PdfFontCache;
   private logo?: PDFImage;
   private languageCode: string;
+  private currencyFormatter?: Intl.NumberFormat;
+  private timeFormatter?: Intl.DateTimeFormat;
+  private fullDateFormatter?: Intl.DateTimeFormat;
+  private dayFormatter?: Intl.DateTimeFormat;
+  private dayMonthFormatter?: Intl.DateTimeFormat;
+  private issueDateFormatter?: Intl.DateTimeFormat;
 
   constructor(
     document: PDFDocument,
@@ -131,6 +138,11 @@ export class PdfGenerator {
   }
 
   public async generateInvoice(invoice: InvoiceDto): Promise<Uint8Array> {
+    await this.drawInvoice(invoice);
+    return this.document.save();
+  }
+
+  public async drawInvoice(invoice: InvoiceDto): Promise<void> {
     if (invoice.sellerParty.logoReferenceId) {
       const doc = invoice.additionalDocumentReferences.find(
         (f) => f.id === invoice.sellerParty.logoReferenceId,
@@ -147,7 +159,7 @@ export class PdfGenerator {
     let lineY = this.drawNote(page, invoice);
     lineY -= 10;
 
-    let remainingLines = invoice.invoiceLines.sort((a, b) => {
+    let remainingLines = [...invoice.invoiceLines].sort((a, b) => {
       const idA = parseInt(a.id, 10);
       const idB = parseInt(b.id, 10);
       if (isNaN(idA) || isNaN(idB)) {
@@ -185,9 +197,6 @@ export class PdfGenerator {
       this.drawPageNumber(docPage, i, pageCount);
       i += 1;
     });
-
-    const pdfBytes = await this.document.save();
-    return pdfBytes;
   }
 
   private drawFooter(page: PDFPage, invoice: InvoiceDto): void {
@@ -246,11 +255,12 @@ export class PdfGenerator {
     y -= 50;
     const adr = `${invoice.sellerParty.name} - ${invoice.sellerParty.streetName} - ${invoice.sellerParty.postCode} ${invoice.sellerParty.city}`;
     this.drawText(page, adr, x, y);
-    const formattedDate = new Intl.DateTimeFormat(this.languageCode, {
+    this.issueDateFormatter ??= new Intl.DateTimeFormat(this.languageCode, {
       day: "2-digit",
       month: "2-digit",
       year: "numeric",
-    }).format(new Date(invoice.issueDate));
+    });
+    const formattedDate = this.issueDateFormatter.format(new Date(invoice.issueDate));
     this.drawText(page, `${this.t("date")}: ${formattedDate}`, page.getWidth() - 200, y);
   }
 
@@ -588,12 +598,12 @@ export class PdfGenerator {
   }
 
   private formatCurrency(amount: number, currency: string = "€"): string {
-    const str = new Intl.NumberFormat(this.languageCode, {
+    const str = (this.currencyFormatter ??= new Intl.NumberFormat(this.languageCode, {
       style: "currency",
       currency: "EUR",
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
-    })
+    }))
       .format(amount)
       .replace("€", currency);
     return str.replace(/\u202F|\u00A0/g, ' ');
@@ -614,11 +624,12 @@ export class PdfGenerator {
     if (!isoString) {
       return "";
     }
-    return new Date(isoString).toLocaleTimeString([], {
+    this.timeFormatter ??= new Intl.DateTimeFormat([], {
       hour: "2-digit",
       minute: "2-digit",
       hour12: false,
     });
+    return this.timeFormatter.format(new Date(isoString));
   }
 
   private getDate(startDate: string | null, endDate: string | null): string {
@@ -633,31 +644,32 @@ export class PdfGenerator {
       start.getMonth() === end.getMonth() &&
       start.getFullYear() === end.getFullYear()
     ) {
-      return new Intl.DateTimeFormat(this.languageCode, {
+      this.fullDateFormatter ??= new Intl.DateTimeFormat(this.languageCode, {
         day: "2-digit",
         month: "2-digit",
         year: "2-digit",
-      }).format(start);
+      });
+      return this.fullDateFormatter.format(start);
       // if startDate and endDate are on the same month print dd-dd.MM.yyyy
     } else if (
       start.getMonth() === end.getMonth() &&
       start.getFullYear() === end.getFullYear()
     ) {
-      return `${new Intl.DateTimeFormat(this.languageCode, {
+      this.dayFormatter ??= new Intl.DateTimeFormat(this.languageCode, {
         day: "2-digit",
-      }).format(start)}-${new Intl.DateTimeFormat(this.languageCode, {
+      });
+      this.fullDateFormatter ??= new Intl.DateTimeFormat(this.languageCode, {
         day: "2-digit",
         month: "2-digit",
         year: "2-digit",
-      }).format(end)}`;
+      });
+      return `${this.dayFormatter.format(start)}-${this.fullDateFormatter.format(end)}`;
     } else {
-      return `${new Intl.DateTimeFormat(this.languageCode, {
+      this.dayMonthFormatter ??= new Intl.DateTimeFormat(this.languageCode, {
         day: "2-digit",
         month: "2-digit",
-      }).format(start)}-${new Intl.DateTimeFormat(this.languageCode, {
-        day: "2-digit",
-        month: "2-digit",
-      }).format(end)}`;
+      });
+      return `${this.dayMonthFormatter.format(start)}-${this.dayMonthFormatter.format(end)}`;
     }
   }
 }
@@ -716,14 +728,7 @@ async function embedA3Fonts(pdfDoc: PDFDocument): Promise<{
 }> {
     pdfDoc.registerFontkit(fontkit as Fontkit);
 
-    const fontUrls = [
-        './_content/BlazorInvoice.Pdf/fonts/Inter-Light.ttf',
-        './_content/BlazorInvoice.Pdf/fonts/Inter-Bold.ttf',
-        './_content/BlazorInvoice.Pdf/fonts/Inter-MediumItalic.ttf'
-    ];
-
-    const fontResponses = await Promise.all(fontUrls.map(url => fetch(url)));
-    const fontBuffers = await Promise.all(fontResponses.map(res => res.arrayBuffer()));
+    const fontBuffers = await loadA3FontBytes();
 
     const regularFont = await pdfDoc.embedFont(fontBuffers[0], { subset: true });
     const boldFont = await pdfDoc.embedFont(fontBuffers[1], { subset: true });
@@ -747,7 +752,7 @@ export async function createInvoicePdfA3Bytes(invoice: InvoiceDto, locale: strin
         fonts.italic,
         locale,
     );
-    await pdfGenerator.generateInvoice(invoice);
+    await pdfGenerator.drawInvoice(invoice);
     const pdfA3Converter = new PdfA3Converter();
     return await pdfA3Converter.createA3Pdf(pdfDoc, invoice, locale, hexId, xmlText);
 }

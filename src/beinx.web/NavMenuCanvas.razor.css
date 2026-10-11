@@ -1,12 +1,54 @@
-.crop {
-    width: 105px;
-    height: 30px;
-    background-color: antiquewhite;
-    overflow: hidden;
+.navbar {
+    /* Keep the navigation and its drawer above Bootstrap's sticky table headers. */
+    z-index: 1030;
 }
 
-    .crop img {
-        width: 85px;
-        height: 85px;
-        margin: -26px 0 0 10px;
+.offcanvas-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.navbar-nav ::deep .nav-link,
+.navbar-text {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.navbar-nav ::deep .nav-link > .bi,
+.navbar-text > .bi {
+    flex: 0 0 1.25rem;
+    width: 1.25rem;
+    text-align: center;
+    line-height: 1;
+}
+
+.navbar-nav ::deep .dropdown-toggle::after {
+    flex-shrink: 0;
+    margin-left: 0;
+}
+
+.nav-version,
+.culture-selector,
+.navbar-text {
+    flex-shrink: 0;
+}
+
+@media (min-width: 1400px) {
+    .offcanvas-body {
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.5rem 0.75rem;
     }
+
+    .navbar-nav {
+        flex-wrap: wrap;
+    }
+
+    .navbar-nav ::deep .nav-link,
+    .navbar-text {
+        white-space: nowrap;
+    }
+}
